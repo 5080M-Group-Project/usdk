@@ -8,6 +8,7 @@ serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 
+print("Add test")
 while True:
     data.motorType = MotorType.A1
     cmd.motorType = MotorType.A1

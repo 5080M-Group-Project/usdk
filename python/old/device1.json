@@ -1,0 +1,35 @@
+{
+  "port":{
+  	"right_thigh":"/dev/ttyUSB0",
+  	"left_thigh":"/dev/ttyUSB1",
+  	"right_knee":"/dev/ttyUSB2",
+  	"left_knee":"/dev/ttyUSB3",
+  	"right_calf":"/dev/ttyUSB4",
+  	"left_calf":"/dev/ttyUSB5"
+  },
+  "right_thigh":{
+   	"name":["up_motor","mid_motor","down_motor"],
+   	"id":[0,1,2]
+  },
+  "left_thigh":{
+   	"name":["up_motor","mid_motor","down_motor"],
+   	"id":[0,1,2]
+  },
+  "right_knee":{
+   	"name":["right_motor","left_motor"],
+   	"id":[0,1]
+  },
+  "left_knee":{
+   	"name":["left_motor","right_motor"],
+   	"id":[0,1]
+  },
+  "right_calf":{
+   	"name":["down_motor","up_motor"],
+   	"id":[0,1]
+  },
+  "left_calf":{
+   	"name":["down_motor","up_motor"],
+   	"id":[0,1]
+  }
+   	
+}

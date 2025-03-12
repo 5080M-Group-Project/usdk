@@ -1,0 +1,15 @@
+{
+  "port":{
+  	"right_knee":"/dev/ttyUSB0",
+  	"right_calf":"/dev/ttyUSB1"
+  },
+  "right_knee":{
+   	"name":["right_motor","left_motor"],
+   	"id":[0,1]
+  },
+  "right_calf":{
+   	"name":["down_motor","up_motor"],
+   	"id":[0,1]
+  }
+   	
+}

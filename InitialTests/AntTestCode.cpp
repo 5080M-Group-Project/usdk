@@ -1,86 +1,118 @@
+#include <iostream>
 #include <unistd.h>
 #include "serialPort/SerialPort.h"
 #include "unitreeMotor/unitreeMotor.h"
 #include <math.h>
+
 #define PI 3.1415926
 
 int main() {
 
-  SerialPort  serial("/dev/ttyUSB0");
-  MotorCmd    cmd;
-  MotorData   data;
+    // Global variables for serial communication
+    SerialPort serial("/dev/ttyUSB0");
+    MotorCmd cmd;
+    MotorData data;
 
-  float output_kp = 25;
-  float output_kd = 0.6;
-  float rotor_kp = 0;
-  float rotor_kd = 0;
-  float gear_ratio = queryGearRatio(MotorType::A1);
-  float sin_counter = 0.0;
+    float gear_ratio = queryGearRatio(MotorType::A1);
 
-  rotor_kp = (output_kp / (gear_ratio * gear_ratio)) / 26.07;
-  rotor_kd = (output_kd / (gear_ratio * gear_ratio)) * 100.0;
+    // Initialize Hip Motor
+    float kpHipOut = 25, kdHipOut = 0.6;
+    auto [kpRotorHip, kdRotorHip] = outputToRotorCoefficients(kpHipOut, kdHipOut, gear_ratio);
+    cmdActuator(0, 0.0, 0.0, 0.0, 0.0, 0.0);
+    float hipAngleOutputInitial = getCurrentOutputAngle(gear_ratio);
 
-  cmdActuator(0,0.0,0.0,0.0,0.0,0.0);
+    // Initialize Knee Motor
+    float kpKneeOut = 25, kdKneeOut = 0.6;
+    auto [kpRotorKnee, kdRotorKnee] = outputToRotorCoefficients(kpKneeOut, kdKneeOut, gear_ratio);
+    cmdActuator(1, 0.0, 0.0, 0.0, 0.0, 0.0);
+    float kneeAngleOutputInitial = getCurrentOutputAngle(gear_ratio);
 
-  cmdActuator(1,0.0,0.0,0.0,0.0,0.0);
-  
-  cmdActuator(2,0.0,0.0,0.0,0.0,0.0);
+    // Initialize Wheel Motor
+    float kpWheelOut = 0.0, kdWheelOut = 0.6;
+    auto [kpRotorWheel, kdRotorWheel] = outputToRotorCoefficients(kpWheelOut, kdWheelOut, gear_ratio);
+    cmdActuator(2, 0.0, 0.0, 0.0, 0.0, 0.0);
+    float wheelAngleOutputInitial = getCurrentOutputAngle(gear_ratio);
 
+    //Initialize Loop Variables
+    float torque = 0.0;
+    float hipRotorAngleDesired = 0.0;
+    float kneeRotorAngleDesired = 0.0;
+    float wheelRotorAngularVelocityDesired = 0.0;
+    float hipTau = 0.0;
+    float kneeTau = 0.0;
 
-  outputAngleCurrent = getCurrentOutputAngle();
-  while(true) 
-  {
-    
+    while (true) {
+        // Hip Motor Control
+        //#####DETERMINING DESIRED ANGLE#######
+        cmdActuator(0, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau);
+        torque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau, data.q, data.dq);
+        outputData(0, torque, gear_ratio);
 
-    cmdActuator(0,hip_rotor_kp,hip_rotor_kd,hip_rotor_angle_d,0.0,0.0);
-    outputData(0);
+        // Knee Motor Control
+        //#####DETERMINING DESIRED ANGLE#######
+        cmdActuator(1, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau);
+        torque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau, data.q, data.dq);
+        outputData(1, torque, gear_ratio);
 
-    cmdActuator(1,knee_rotor_kp,hip_rotor_kd,knee_rotor_angle_d,0.0,0.0);
-    outputData(1);
+        // Wheel Motor Control
+        //#####DETERMINING DESIRED ANGLE#######
+        cmdActuator(2, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, 0.0);
+        torque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, 0.0, data.q, data.dq);
+        outputData(2, torque, gear_ratio);
 
-    cmdActuator(2,wheel_rotor_kp,wheel_rotor_kd,0.0,wheel_rotor_angular_velocity,0.0);
-    outputData(2);
+        usleep(200);
+    }
 
-    usleep(200);
-  }
-
+    return 0;
 }
 
-float getCurrentOutputAngle(){
-     float outputAngleCurrent;
-     outputAngleCurrent = (data.q / gear_ratio) * (180/PI);
-     return outputAngleCurrent
-}
-    
-
-float getRotorAngle(outputAngleCurrent){
-    sin_counter+=0.0001;
-    float outputAngleDesired;
-    outputAngleDesired = outputAngleCurrent + 90 * sin(2*PI*sin_counter);
-    float rotorAngleDesired = (outputAngleDesired * (PI/180)) * gear_ratio;
+// Function to convert output gains to rotor gains
+std::pair<float, float> outputToRotorCoefficients(float kpOutput, float kdOutput, float gear_ratio) {
+    float kpRotor = (kpOutput / (gear_ratio * gear_ratio)) / 26.07;
+    float kdRotor = (kdOutput / (gear_ratio * gear_ratio)) * 100.0;
+    return std::make_pair(kpRotor, kdRotor);
 }
 
-void cmdActuator(id,kp,kd,q,dq,tau){
-  cmd.motorType = MotorType::A1;
-  data.motorType = MotorType::A1;
-  cmd.mode  = queryMotorMode(MotorType::A1,MotorMode::FOC);
-  cmd.id    = 0;
-  cmd.kp    = 0.0;
-  cmd.kd    = 0.0;
-  cmd.q     = 0.0;
-  cmd.dq    = 0.0;
-  cmd.tau   = 0.0;
-  serial.sendRecv(&cmd,&data);
+// Function to get the current motor output angle
+float getCurrentOutputAngle(float gear_ratio) {
+    return (data.q / gear_ratio) * (180 / PI);
 }
 
-void outputData(id){
-  std::cout <<  std::endl;
-  std::cout <<  "motor.ID: "    << id  <<  std::endl;
-  std::cout <<  "motor.q: "    << data.q / gear_ratio    <<  std::endl;
-  std::cout <<  "motor.temp: "   << data.temp   <<  std::endl;
-  std::cout <<  "motor.W: "      << data.dq / gear_ratio     <<  std::endl;
-  std::cout <<  "motor.merror: " << data.merror <<  std::endl;
-  std::cout <<  "rotor_kp: " << rotor_kp <<  std::endl;
-  std::cout <<  "rotor_kd: " << rotor_kd <<  std::endl;
-  std::cout <<  std::endl;
+// Function to compute the desired rotor angle
+float getDesiredRotorAngle(float outputAngleDesired, float gear_ratio) {
+    return (outputAngleDesired * (PI / 180)) * gear_ratio;
+}
+
+// Function to send actuator commands
+void cmdActuator(int id, float kp, float kd, float q, float dq, float tau) {
+    cmd.motorType = MotorType::A1;
+    data.motorType = MotorType::A1;
+    cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
+    cmd.id    = id;
+    cmd.kp    = kp;
+    cmd.kd    = kd;
+    cmd.q     = q;
+    cmd.dq    = dq;
+    cmd.tau   = tau;
+
+    serial.sendRecv(&cmd, &data);
+}
+
+// Function to compute output torque
+float calculateOutputTorque(float kp, float kd, float qDesired, float dqDesired, float tau, float qCurrent, float dqCurrent) {
+    return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent);
+}
+
+// Function to output motor data
+void outputData(int id, float torque, float gear_ratio) {
+    std::string motorLabel = (id == 0) ? "Hip" : (id == 1) ? "Knee" : "Wheel";
+
+    std::cout << std::endl;
+    std::cout << motorLabel << " Motor" << std::endl;
+    std::cout << "Angle (rad): " << data.q / gear_ratio << std::endl;
+    std::cout << "Angular Velocity (rad/s): " << data.dq / gear_ratio << std::endl;
+    std::cout << "Torque (N.m): " << torque << std::endl;
+    std::cout << "Temperature: " << data.temp << std::endl;
+    std::cout << "ISSUE? " << data.merror << std::endl;
+    std::cout << std::endl;
 }

@@ -87,7 +87,7 @@ int main() {
     float kneeAngleOutputInitial = getOutputAngle(data.q);
 
     // Initialize Wheel Motor
-    float kpOutWheel = 25, kdOutWheel = 0.6, kpRotorWheel = 0.0, kdRotorWheel = 0.0;
+    float kpOutWheel = 0.0, kdOutWheel = 2.0, kpRotorWheel = 0.0, kdRotorWheel = 0.0;
     kpRotorWheel = kpOutputToRotor(kpOutWheel);
     kdRotorWheel = kdOutputToRotor(kdOutWheel);
     cmdActuator(2, 0.0, 0.0, 0.0, 0.0, 0.0);

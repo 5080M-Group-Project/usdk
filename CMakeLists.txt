@@ -18,6 +18,9 @@ endif()
 add_executable(AntTestCode InitialTests/AntTestCode.cpp)
 target_link_libraries(AntTestCode ${EXTRA_LIBS})
 
+add_executable(up_down InitialTests/up_down.cpp)
+target_link_libraries(up_down ${EXTRA_LIBS})
+
 #example
 add_executable(example_a1_motor example/example_a1_motor.cpp)
 target_link_libraries(example_a1_motor ${EXTRA_LIBS})

@@ -14,7 +14,7 @@ int main() {
     cmd.motorType = MotorType::A1;
     data.motorType = MotorType::A1;
     cmd.mode  = queryMotorMode(MotorType::A1,MotorMode::FOC);
-    cmd.id    = 0;
+    cmd.id    = 2;
     cmd.kp    = 0.0;
     cmd.kd    = 2;
     cmd.q     = 0.0;

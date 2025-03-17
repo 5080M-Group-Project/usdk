@@ -1,0 +1,13 @@
+JOURNAL
+
+KNEE: neutral position is 0.5, so range is -2 and 3 
+
+HIP: neutral position is 0.3, so range is and -1.4 and 2
+
+
+17th MArch
+we do not need to update the initial angle
+
+coms wire might be broken - trying to move the wheel up and down,  move knee twice the degrees to the opposite side.
+
+

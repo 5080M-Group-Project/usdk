@@ -14,7 +14,7 @@ while True:
     cmd.mode = queryMotorMode(MotorType.A1,MotorMode.FOC)
     cmd.id   = 0
     cmd.q    = 0.0
-    cmd.dq   = 6.28*queryGearRatio(MotorType.A1)
+    cmd.dq   = 0.0 #6.28*queryGearRatio(MotorType.A1)
     cmd.kp   = 0.0
     cmd.kd   = 2
     cmd.tau  = 0.0

@@ -52,15 +52,15 @@ float calculateOutputTorque(float kp, float kd, float qDesired, float dqDesired,
 
 // Function to output motor data
 void outputData(int id, float q, float dq, float torque, float temp, bool merror) {
-    std::string motorLabel = (id == 0) ? "Hip" : (id == 1) ? "Knee" : "Wheel";
 
     std::cout << std::endl;
-//    std::cout << motorLabel << " Motor" << std::endl;
+    std::string motorLabel = (id == 0) ? "Hip" : (id == 1) ? "Knee" : "Wheel";
+    std::cout << motorLabel << " Motor" << std::endl;
     std::cout << "Angle (rad): " << q / gearRatio << std::endl;
-  //  std::cout << "Angular Velocity (rad/s): " << dq / gearRatio << std::endl;
-    //std::cout << "Torque (N.m): " << torque << std::endl;
-    //std::cout << "Temperature: " << temp << std::endl;
-    //std::cout << "ISSUE? " << merror << std::endl;
+    std::cout << "Angular Velocity (rad/s): " << dq / gearRatio << std::endl;
+    std::cout << "Torque (N.m): " << torque << std::endl;
+    std::cout << "Temperature: " << temp << std::endl;
+    std::cout << "ISSUE? " << merror << std::endl;
     std::cout << std::endl;
 }
 
@@ -74,7 +74,7 @@ int main() {
     // Initialize Hip Motor
     float kpOutHip = 25, kdOutHip = 0.6, kpRotorHip = 0.0, kdRotorHip = 0.0;
     kpRotorHip = kpOutputToRotor(kpOutHip);
-    kdRotorHip = kpOutputToRotor(kdOutHip);
+    kdRotorHip = kdOutputToRotor(kdOutHip);
     //          id  kp   kd   q   dq   tau
     cmdActuator(0, 0.0, 0.0, 0.0, 0.0, 0.0);
     float hipAngleOutputInitial = getOutputAngle(data.q);
@@ -102,24 +102,24 @@ int main() {
     float kneeTau = 0.0;
 
     while (true) {
-    /*      // Hip Motor Control
+        // Hip Motor Control
         //#####DETERMINING DESIRED ANGLE#######
         cmdActuator(0, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau);
         torque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau, data.q, data.dq);
         outputData(0, data.q, data.dq, torque, data.temp, data.merror);
-*/
+
         // Knee Motor Control
         //#####DETERMINING DESIRED ANGLE#######
         cmdActuator(1, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau);
         torque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau, data.q, data.dq);
         outputData(1, data.q, data.dq, torque, data.temp, data.merror);
 
- /*       // Wheel Motor Control
+        // Wheel Motor Control
         //#####DETERMINING DESIRED ANGULAR VELOCITY#######
         cmdActuator(2, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, 0.0);
         torque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, 0.0, data.q, data.dq);
-        //outputData(2, data.q, data.dq, torque, data.temp, data.merror);
-*/
+        outputData(2, data.q, data.dq, torque, data.temp, data.merror);
+
         usleep(200);
     }
     return 0;

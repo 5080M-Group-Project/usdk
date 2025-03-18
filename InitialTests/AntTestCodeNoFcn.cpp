@@ -6,7 +6,6 @@
 
 #define PI 3.1415926
 
-
 int main() {
 
     SerialPort serial("/dev/ttyUSB0");
@@ -104,6 +103,7 @@ int main() {
         cmd.q     = kneeRotorAngleDesired; //angle, radians
         cmd.dq    = 0.0; //angular velocity, radians/s
         cmd.tau   = kneeTau; //rotor feedforward torque
+        serial.sendRecv(&cmd, &data);
         torque = kneeTau + kpRotorKnee * (KneeRotorAngleDesired - data.q) + kdRotorKnee * (0.0 - data.dq);
         std::cout << std::endl;
         std::cout << "Knee Motor" << std::endl;
@@ -125,6 +125,7 @@ int main() {
         cmd.q     = 0.0; //angle, radians
         cmd.dq    = wheelRotorAngularVelocityDesired; //angular velocity, radians/s
         cmd.tau   = 0.0; //rotor feedforward torque
+        serial.sendRecv(&cmd, &data);
         torque = 0.0 + 0.0 * (0.0 - data.q) + kdRotorWheel * (wheelRotorAngularVelocityDesired - data.dq);
         std::cout << std::endl;
         std::cout << "Wheel Motor" << std::endl;

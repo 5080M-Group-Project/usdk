@@ -5,6 +5,7 @@ from unitree_actuator_sdk import *
 
 
 serial = SerialPort('/dev/ttyUSB0')
+#serial = SerialPort('/dev/tty.usbserial-FT4XEWL1')
 cmd = MotorCmd()
 data = MotorData()
 

@@ -17,7 +17,7 @@ float kpOutputToRotor(float kpOutput){
 }
 
 float kdOutputToRotor(float kdOutput){
-    return (kdOutput / (gearRatio * gearRatio)) / 100.0;
+    return (kdOutput / (gearRatio * gearRatio)) * 100.0;
 }
 
 // Function to get the current motor output angle in DEGREES

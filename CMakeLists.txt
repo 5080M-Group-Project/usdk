@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 include_directories(include)
 link_directories(lib)
 
-if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64") 
+if(CMAKE_HOST_SYSTEM_PROCESSOR MATCHES "aarch64")
     set(EXTRA_LIBS libUnitreeMotorSDK_Arm64.so)
 else()
     set(EXTRA_LIBS libUnitreeMotorSDK_Linux64.so)

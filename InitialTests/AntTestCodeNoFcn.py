@@ -12,7 +12,7 @@ gearRatio = queryGearRatio(MotorType.A1)
 # Initialize Hip Motor
 kpOutHip, kdOutHip, kpRotorHip, kdRotorHip = 25, 0.6, 0.0, 0.0
 kpRotorHip = (kpOutHip / (gearRatio * gearRatio)) / 26.07
-kdRotorHip = (kdOutHip / (gearRatio * gearRatio)) / 100.0
+kdRotorHip = (kdOutHip / (gearRatio * gearRatio)) * 100.0
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -26,10 +26,11 @@ serial.sendRecv(cmd, data)
 
 hipAngleOutputInitial = (data.q / gearRatio) * (180 / np.pi)
 
+
 # Initialize Knee Motor
 kpOutKnee, kdOutKnee, kpRotorKnee, kdRotorKnee = 25, 0.6, 0.0, 0.0
 kpRotorKnee = (kpOutKnee / (gearRatio * gearRatio)) / 26.07
-kdRotorKnee = (kdOutKnee / (gearRatio * gearRatio)) / 100.0
+kdRotorKnee = (kdOutKnee / (gearRatio * gearRatio)) * 100.0
 
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1
@@ -44,10 +45,11 @@ serial.sendRecv(cmd, data)
 
 kneeAngleOutputInitial = (data.q / gearRatio) * (180 / np.pi)
 
+
 # Initialize Wheel Motor
 kpOutWheel, kdOutWheel, kpRotorWheel, kdRotorWheel = 0.0, 2, 0.0, 0.0
 kpRotorWheel = (kpOutWheel / (gearRatio * gearRatio)) / 26.07
-kdRotorWheel = (kdOutWheel / (gearRatio * gearRatio)) / 100.0
+kdRotorWheel = (kdOutWheel / (gearRatio * gearRatio)) * 100.0
 
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1

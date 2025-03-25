@@ -15,8 +15,11 @@ endif()
 
 
 #test
-add_executable(AntTestCode InitialTests/AntTestCode.cpp)
-target_link_libraries(AntTestCode ${EXTRA_LIBS})
+add_executable(FcnTest InitialTests/FcnTest.cpp)
+target_link_libraries(FcnTest ${EXTRA_LIBS})
+
+add_executable(upDown2 InitialTests/upDown2.cpp)
+target_link_libraries(upDown2 ${EXTRA_LIBS})
 
 add_executable(up_down InitialTests/up_down.cpp)
 target_link_libraries(up_down ${EXTRA_LIBS})

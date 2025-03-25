@@ -11,6 +11,27 @@ MotorCmd cmd;
 MotorData data;
 float gearRatio = queryGearRatio(MotorType::A1);
 
+// Function to calculate thetaHip and thetaKnee
+auto inverseKinematicsDeg(float xdes, float ydes) {
+    struct result {float thetaHip; float thetaKnee;};
+
+    // Define link lengths
+    const float L1 = 0.165;  // Length of link 1
+    const float L2 = 0.165;  // Length of link 2
+
+    // Calculate intermediate angles
+    float beta = acos((pow(L1, 2) + pow(L2, 2) - pow(xdes, 2) - pow(ydes, 2)) / (2 * L1 * L2));
+    float alpha = acos((pow(xdes, 2) + pow(ydes, 2) + pow(L1, 2) - pow(L2, 2)) / (2 * L1 * sqrt(pow(xdes, 2) + pow(ydes, 2))));
+    float gamma = atan2(ydes, xdes);
+
+    // Calculate angles in degrees
+    float thetaHip = (gamma - alpha) * (180.0 / PI);
+    float thetaKnee = (PI - beta) * (180.0 / PI);
+
+    // Return the result
+    return result {thetaHip, thetaKnee};
+}
+
 // Functions to convert output gains to rotor gains
 float kpOutputToRotor(float kpOutput){
     return (kpOutput / (gearRatio * gearRatio)) / 26.07;
@@ -21,7 +42,7 @@ float kdOutputToRotor(float kdOutput){
 }
 
 // Function to get the current motor output angle in DEGREES
-float getOutputAngle(float rotorAngle) {
+float getOutputAngleDeg(float rotorAngle) {
     return (rotorAngle / gearRatio) * (180 / PI);
 }
 
@@ -70,28 +91,36 @@ int main() {
     SerialPort serial("/dev/ttyUSB0");
     MotorCmd cmd;
     MotorData data;
+    float gearRatio = queryGearRatio(MotorType::A1);
+
+    float sin_counter = 0.0;
+
+    float xdes = 0.0;
+    float ydes = 0.15;
+
+    auto angles = inverseKinematicsDeg(xdes, ydes);
 
     // Initialize Hip Motor
-    float kpOutHip = 25, kdOutHip = 0.6, kpRotorHip = 0.0, kdRotorHip = 0.0;
+    float kpOutHip = 2.5, kdOutHip = 0.2, kpRotorHip = 0.0, kdRotorHip = 0.0;
     kpRotorHip = kpOutputToRotor(kpOutHip);
     kdRotorHip = kdOutputToRotor(kdOutHip);
     //          id  kp   kd   q   dq   tau
     cmdActuator(0, 0.0, 0.0, 0.0, 0.0, 0.0);
-    float hipAngleOutputInitial = getOutputAngle(data.q);
+    float hipAngleOutputInitial = getOutputAngleDeg(data.q);
 
     // Initialize Knee Motor
-    float kpOutKnee = 25, kdOutKnee = 0.6, kpRotorKnee = 0.0, kdRotorKnee = 0.0;
+    float kpOutKnee = 2.5, kdOutKnee = 0.2, kpRotorKnee = 0.0, kdRotorKnee = 0.0;
     kpRotorKnee = kpOutputToRotor(kpOutKnee);
     kdRotorKnee = kdOutputToRotor(kdOutKnee);
     cmdActuator(1, 0.0, 0.0, 0.0, 0.0, 0.0);
-    float kneeAngleOutputInitial = getOutputAngle(data.q);
+    float kneeAngleOutputInitial = getOutputAngleDeg(data.q);
 
     // Initialize Wheel Motor
     float kpOutWheel = 0.0, kdOutWheel = 2.0, kpRotorWheel = 0.0, kdRotorWheel = 0.0;
     kpRotorWheel = kpOutputToRotor(kpOutWheel);
     kdRotorWheel = kdOutputToRotor(kdOutWheel);
     cmdActuator(2, 0.0, 0.0, 0.0, 0.0, 0.0);
-    float wheelAngleOutputInitial = getOutputAngle(data.q);
+    float wheelAngleOutputInitial = getOutputAngleDeg(data.q);
 
     //Initialize Loop Variables
     float torque = 0.0;
@@ -102,14 +131,24 @@ int main() {
     float kneeTau = 0.0;
 
     while (true) {
+        sin_counter+=0.005;
+
         // Hip Motor Control
         //#####DETERMINING DESIRED ANGLE#######
+        float hipOutputAngleDesired;
+        hipOutputAngleDesired =  hipAngleOutputInitial -  (90-angles.thetaHip)*sin(2*PI*sin_counter); //change thetaHip to 30
+        float hipRotorAngleDesired = (hipOutputAngleDesired * (PI/180)) * gearRatio;
+
         cmdActuator(0, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau);
         torque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau, data.q, data.dq);
         outputData(0, data.q, data.dq, torque, data.temp, data.merror);
 
         // Knee Motor Control
         //#####DETERMINING DESIRED ANGLE#######
+        float kneeOutputAngleDesired;
+        kneeOutputAngleDesired =  kneeAngleOutputInitial +  (angles.thetaKnee)*sin(2*PI*sin_counter); //change thetaHip to 30
+        float kneeRotorAngleDesired = (kneeOutputAngleDesired * (PI/180)) * gearRatio;
+
         cmdActuator(1, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau);
         torque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau, data.q, data.dq);
         outputData(1, data.q, data.dq, torque, data.temp, data.merror);
@@ -120,7 +159,7 @@ int main() {
         torque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, 0.0, data.q, data.dq);
         outputData(2, data.q, data.dq, torque, data.temp, data.merror);
 
-        usleep(200);
+        usleep(250);
     }
-    return 0;
+    //return 0;
 }

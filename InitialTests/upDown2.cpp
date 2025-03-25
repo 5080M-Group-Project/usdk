@@ -13,10 +13,26 @@ int main() {
     MotorData data;
     float gearRatio = queryGearRatio(MotorType::A1);
 
+    float sin_counter = 0.0;
+
+    float L1 = 0.165;    // Example length 1
+    float L2 = 0.165;    // Example length 2
+    float xdes = 0.0;  // Desired x coordinate
+    float ydes = 0.15;  // Desired y coordinate
+
+    // Use pow() for exponentiation
+    float beta = acos((pow(L1, 2) + pow(L2, 2) - pow(xdes, 2) - pow(ydes, 2)) / (2 * L1 * L2));
+    float alpha = acos((pow(xdes, 2) + pow(ydes, 2) + pow(L1, 2) - pow(L2, 2)) / (2 * L1 * sqrt(pow(xdes, 2) + pow(ydes, 2))));
+    float gamma = atan2(ydes, xdes);  // atan2(y, x) is correct
+
+    // Correct multiplication (no dereferencing needed)
+    float thetaHip = (gamma - alpha) * (180.0 / PI);
+    float thetaKnee = (PI - beta) * (180.0 / PI);
+
     // Initialize Hip Motor
-    float kpOutHip = 25, kdOutHip = 0.6, kpRotorHip = 0.0, kdRotorHip = 0.0;
+    float kpOutHip = 2.5, kdOutHip = 0.2, kpRotorHip = 0.0, kdRotorHip = 0.0;
     kpRotorHip = (kpOutHip / (gearRatio * gearRatio)) / 26.07;
-    kdRotorHip = (kdOutHip / (gearRatio * gearRatio)) / 100.0;
+    kdRotorHip = (kdOutHip / (gearRatio * gearRatio)) * 100.0;
     cmd.motorType = MotorType::A1;
     data.motorType = MotorType::A1;
     cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
@@ -30,9 +46,9 @@ int main() {
     float hipAngleOutputInitial = (data.q / gearRatio) * (180 / PI);
 
     // Initialize Knee Motor
-    float kpOutKnee = 25, kdOutKnee = 0.6, kpRotorKnee = 0.0, kdRotorKnee = 0.0;
+    float kpOutKnee = 2.5, kdOutKnee = 0.2, kpRotorKnee = 0.0, kdRotorKnee = 0.0;
     kpRotorKnee = (kpOutKnee / (gearRatio * gearRatio)) / 26.07;
-    kdRotorKnee = (kdOutKnee / (gearRatio * gearRatio)) / 100.0;
+    kdRotorKnee = (kdOutKnee / (gearRatio * gearRatio)) * 100.0;
     cmd.motorType = MotorType::A1;
     data.motorType = MotorType::A1;
     cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
@@ -48,7 +64,7 @@ int main() {
     // Initialize Wheel Motor
     float kpOutWheel = 0.0, kdOutWheel = 2.0, kpRotorWheel = 0.0, kdRotorWheel = 0.0;
     kpRotorWheel = (kpOutWheel / (gearRatio * gearRatio)) / 26.07;
-    kdRotorWheel = (kdOutWheel / (gearRatio * gearRatio)) / 100.0;
+    kdRotorWheel = (kdOutWheel / (gearRatio * gearRatio)) * 100.0;
     cmd.motorType = MotorType::A1;
     data.motorType = MotorType::A1;
     cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
@@ -70,8 +86,14 @@ int main() {
     float kneeTau = 0.0;
 
     while (true) {
+        sin_counter+=0.005;
+
         // Hip Motor Control
         //#####DETERMINING DESIRED ANGLE#######
+        float hipOutputAngleDesired;
+        hipOutputAngleDesired =  hipAngleOutputInitial -  (90-thetaHip)*sin(2*PI*sin_counter); //change thetaHip to 30
+        float hipRotorAngleDesired = (hipOutputAngleDesired * (PI/180)) * gearRatio;
+
         cmd.motorType = MotorType::A1;
         data.motorType = MotorType::A1;
         cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
@@ -94,6 +116,10 @@ int main() {
 
         // Knee Motor Control
         //#####DETERMINING DESIRED ANGLE#######
+        float kneeOutputAngleDesired;
+        kneeOutputAngleDesired =  kneeAngleOutputInitial +  (thetaKnee)*sin(2*PI*sin_counter); //change thetaHip to 30
+        float kneeRotorAngleDesired = (kneeOutputAngleDesired * (PI/180)) * gearRatio;
+
         cmd.motorType = MotorType::A1;
         data.motorType = MotorType::A1;
         cmd.mode  = queryMotorMode(MotorType::A1, MotorMode::FOC);
@@ -104,7 +130,7 @@ int main() {
         cmd.dq    = 0.0; //angular velocity, radians/s
         cmd.tau   = kneeTau; //rotor feedforward torque
         serial.sendRecv(&cmd, &data);
-        torque = kneeTau + kpRotorKnee * (KneeRotorAngleDesired - data.q) + kdRotorKnee * (0.0 - data.dq);
+        torque = kneeTau + kpRotorKnee * (kneeRotorAngleDesired - data.q) + kdRotorKnee * (0.0 - data.dq);
         std::cout << std::endl;
         std::cout << "Knee Motor" << std::endl;
         std::cout << "Angle (rad): " << data.q / gearRatio << std::endl;
@@ -136,7 +162,7 @@ int main() {
         std::cout << "ISSUE? " << data.merror << std::endl;
         std::cout << std::endl;
 
-        usleep(200);
+        usleep(250);
     }
-    return 0;
+    //return 0;
 }

@@ -9,10 +9,28 @@ cmd = MotorCmd()
 data = MotorData()
 gearRatio = queryGearRatio(MotorType.A1)
 
+# Initializing variables
+sin_counter = 0.0
+
+L1 = 0.165  # Example length 1
+L2 = 0.165  # Example length 2
+xdes = 0.0  # Desired x coordinate
+ydes = 0.15  # Desired y coordinate
+
+# Use ** for exponentiation in Python
+beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
+alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
+gamma = np.arctan2(ydes, xdes)  # atan2(y, x) is correct
+
+# Correct multiplication (no dereferencing in Python)
+thetaHip = (gamma - alpha) * (180.0 / np.pi)
+thetaKnee = (np.pi - beta) * (180.0 / np.pi)
+
 # Initialize Hip Motor
-kpOutHip, kdOutHip, kpRotorHip, kdRotorHip = 25, 0.6, 0.0, 0.0
+kpOutHip, kdOutHip = 25, 0.6
 kpRotorHip = (kpOutHip / (gearRatio * gearRatio)) / 26.07
 kdRotorHip = (kdOutHip / (gearRatio * gearRatio)) * 100.0
+
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -28,7 +46,7 @@ hipAngleOutputInitial = (data.q / gearRatio) * (180 / np.pi)
 
 
 # Initialize Knee Motor
-kpOutKnee, kdOutKnee, kpRotorKnee, kdRotorKnee = 25, 0.6, 0.0, 0.0
+kpOutKnee, kdOutKnee = 25, 0.6
 kpRotorKnee = (kpOutKnee / (gearRatio * gearRatio)) / 26.07
 kdRotorKnee = (kdOutKnee / (gearRatio * gearRatio)) * 100.0
 
@@ -47,7 +65,7 @@ kneeAngleOutputInitial = (data.q / gearRatio) * (180 / np.pi)
 
 
 # Initialize Wheel Motor
-kpOutWheel, kdOutWheel, kpRotorWheel, kdRotorWheel = 0.0, 2, 0.0, 0.0
+kpOutWheel, kdOutWheel = 0.0, 2
 kpRotorWheel = (kpOutWheel / (gearRatio * gearRatio)) / 26.07
 kdRotorWheel = (kdOutWheel / (gearRatio * gearRatio)) * 100.0
 
@@ -74,8 +92,12 @@ hipTau = 0.0
 kneeTau = 0.0
 
 while True:
+        sin_counter += 0.005
+
         # Hip Motor Control
-        ######DETERMINING DESIRED ANGLE#######
+        hipOutputAngleDesired = hipAngleOutputInitial - (90 - thetaHip) * np.sin(2 * np.pi * sin_counter)
+        hipRotorAngleDesired = (hipOutputAngleDesired * (np.pi / 180)) * gearRatio
+
         data.motorType = MotorType.A1
         cmd.motorType = MotorType.A1
         cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -97,7 +119,9 @@ while True:
         print('\n')
 
         # Knee Motor Control
-        ######DETERMINING DESIRED ANGLE#######
+        kneeOutputAngleDesired = kneeAngleOutputInitial + (thetaKnee) * np.sin( 2 * np.pi * sin_counter)
+        kneeRotorAngleDesired = (kneeOutputAngleDesired * (np.pi / 180)) * gearRatio
+
         data.motorType = MotorType.A1
         cmd.motorType = MotorType.A1
         cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -108,7 +132,7 @@ while True:
         cmd.dq    = 0.0 #angular velocity, radians/s
         cmd.tau   = kneeTau #rotor feedforward torque
         serial.sendRecv(cmd, data)
-        torque = kneeTau + kpRotorKnee * (KneeRotorAngleDesired - data.q) + kdRotorKnee * (0.0 - data.dq);
+        torque = kneeTau + kpRotorKnee * (kneeRotorAngleDesired - data.q) + kdRotorKnee * (0.0 - data.dq)
         print('\n')
         print("Knee Motor")
         print("Angle (rad): " + str(data.q / gearRatio))
@@ -130,7 +154,7 @@ while True:
         cmd.dq    = wheelRotorAngularVelocityDesired #angular velocity, radians/s
         cmd.tau   = 0.0 #rotor feedforward torque
         serial.sendRecv(cmd, data)
-        torque = 0.0 + 0.0 * (0.0 - data.q) + kdRotorWheel * (wheelRotorAngularVelocityDesired - data.dq);
+        torque = 0.0 + 0.0 * (0.0 - data.q) + kdRotorWheel * (wheelRotorAngularVelocityDesired - data.dq)
         print('\n')
         print("Wheel Motor")
         print("Angle (rad): " + str(data.q / gearRatio))

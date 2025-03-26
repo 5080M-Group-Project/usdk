@@ -15,23 +15,16 @@ data = MotorData()
 gearRatio = queryGearRatio(MotorType.A1)
 ############################
 
-# Initializing variables
-sin_counter = 0.0
-
-xdes = 0.0  # Desired x coordinate
-ydes = 0.15  # Desired y coordinate
-
-thetaHipIK, thetaKneeIK = inverseKinematicsDeg(xdes, ydes)
 
 # Initialize Hip Motor
-kpOutHip, kdOutHip = 25, 0.6
+kpOutHip, kdOutHip = 2.5, 0.2
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0)
 hipAngleOutputInitial = getOutputAngleDeg(data.q)
 
 
 # Initialize Knee Motor
-kpOutKnee, kdOutKnee = 25, 0.6
+kpOutKnee, kdOutKnee = 2.5, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 kneeAngleOutputInitial  = getOutputAngleDeg(data.q)
@@ -45,15 +38,22 @@ wheeAngleOutputInitial  = getOutputAngleDeg(data.q)
 
 
 #Initialize Loop Variables
+sinCounter = 0.0
 torque = 0.0
 hipRotorAngleDesired, kneeRotorAngleDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0, 0.0
 hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 
+
+#Inverse Kinematics
+xdes = 0.0  # Desired x coordinate
+ydes = 0.15  # Desired y coordinate
+thetaHipIK, thetaKneeIK = inverseKinematicsDeg(xdes, ydes)
+
 while True:
-        sin_counter += 0.005
+        sinCounter += 0.005
 
         # Hip Motor Control
-        hipOutputAngleDesired = hipAngleOutputInitial - (90 - thetaHipIK) * np.sin(2 * np.pi * sin_counter)
+        hipOutputAngleDesired = hipAngleOutputInitial - (90 - thetaHipIK) * np.sin(2 * np.pi * sinCounter)
         hipRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired)
 
         cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
@@ -61,7 +61,7 @@ while True:
         outputData(id.hip,data.q,data.dq,torque,data.temp,data.merror)
 
         # Knee Motor Control
-        kneeOutputAngleDesired = kneeAngleOutputInitial + (thetaKneeIK) * np.sin( 2 * np.pi * sin_counter)
+        kneeOutputAngleDesired = kneeAngleOutputInitial + (thetaKneeIK) * np.sin( 2 * np.pi * sinCounter)
         kneeRotorAngleDesired = getRotorAngleRad(kneeOutputAngleDesired)
 
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)

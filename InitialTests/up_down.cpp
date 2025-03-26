@@ -62,6 +62,7 @@ int main() {
   
   while(true) {
     sin_counter+=0.005;
+    //float startTime = millis();
     float output_angle_d0;
     output_angle_d0 =  output_angle_c0 -  (90-thetaHip)*sin(2*PI*sin_counter); //change thetaHip to 30
     float rotor_angle_d0 = (output_angle_d0 * (PI/180)) * gear_ratio;
@@ -92,9 +93,11 @@ int main() {
     cmd.tau   = 0.0;
     serial.sendRecv(&cmd,&data);
 
+    //float loopTime = millis()-startTime;
     std::cout <<  std::endl;
-    std::cout <<  "motor.q: "    << data.q * (180/PI)/ gear_ratio    <<  std::endl;
+    //std::cout <<  "Loop Time: "    << loopTime    <<  std::endl;
     std::cout <<  std::endl;
+
     usleep(250);
   }
 

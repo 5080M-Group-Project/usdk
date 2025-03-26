@@ -8,6 +8,7 @@ from unitree_actuator_sdk import *
 serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
+
 gearRatio = queryGearRatio(MotorType.A1)
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
@@ -91,8 +92,8 @@ def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent)
     return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
 
 # Function to output motor data
-def outputData(id, q, dq, torque, temp, merror):
-        motorLabel = id.getName(id)
+def outputData(MotorID, q, dq, torque, temp, merror):
+        motorLabel = id.getName(MotorID)
 
         print("\n")
         print(f"{motorLabel} Motor")

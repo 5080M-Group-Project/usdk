@@ -15,6 +15,9 @@ endif()
 
 
 #test
+add_executable(AngleReadingTest Test/AngleReadingTest.cpp)
+target_link_libraries(AngleReadingTest ${EXTRA_LIBS})
+
 add_executable(upDown2 InitialTests/upDown2.cpp)
 target_link_libraries(upDown2 ${EXTRA_LIBS})
 

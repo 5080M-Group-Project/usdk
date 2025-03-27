@@ -65,11 +65,11 @@ def getRotorGains(kpOutput, kdOutput):
     kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
     return np.array([kpRotor, kdRotor])
 
-# Function to get the current motor output angle in DEGREES
+# Function to get the current motor output angle in DEGREES from rotor in RAD
 def getOutputAngleDeg(rotorAngle):
     return (rotorAngle / gearRatio) * (180 / np.pi)
 
-# Function to compute the desired rotor angle in RADIANS
+# Function to compute the desired rotor angle in RADIANS from output in RAD
 def getRotorAngleRad(outputAngle):
     return (outputAngle * (np.pi / 180)) * gearRatio
 
@@ -92,15 +92,41 @@ def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent)
     return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
 
 # Function to output motor data
-def outputData(MotorID, q, dq, torque, temp, merror):
+def outputData(MotorID, q, dq, torque, temp, merror, offset):
         motorLabel = id.getName(MotorID)
 
         print("\n")
         print(f"{motorLabel} Motor")
-        print(f"Angle (rad): {q / gearRatio}")
+        print(f"Angle (Deg): {getOutputAngleDeg(q) + offset}")
         print(f"Angular Velocity (rad/s): {dq / gearRatio}")
         print(f"Torque (N.m): {torque}")
         print(f"Temperature: {temp}")
         print(f"ISSUE? {merror}")
         print("\n")
+
+def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
+    # Define step size (dt) inside the function
+    dt = 0.1  # Fraction of the distance to move per iteration (LERP step size)
+
+    # Get current and desired joint angles
+    thetaHipCurrent, thetaKneeCurrent = inverseKinematicsDeg(0.0, crouchHeightCurrent)
+    thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, crouchHeightDesired)
+
+    # Apply standard linear interpolation (LERP) using dt
+    thetaHipNew = thetaHipCurrent + dt * (thetaHipDesired - thetaHipCurrent)
+    thetaKneeNew = thetaKneeCurrent + dt * (thetaKneeDesired - thetaKneeCurrent)
+
+    # Return the updated angles
+    return thetaHipNew, thetaKneeNew
+
+def forwardKinematicsDeg(thetaHip, thetaKnee):
+    L1 = 0.165  # Length of link 1
+    L2 = 0.165  # Length of link 2
+
+    xKnee = L1*np.cos(thetaHip)
+    yKnee = L1*np.sin(thetaHip)
+
+    yWheel = yKnee + L2*np.sin(thetaKnee + thetaHip)
+    xWheel = xKnee + L2*np.cos(thetaKnee + thetaHip)
+    return xWheel, yWheel
 

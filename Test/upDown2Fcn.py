@@ -67,7 +67,7 @@ while True:
                 kneeOffset = kneeModelledInitial - kneeAngleInitialRaw
 
                 hipAngleOutputDesired, kneeAngleOutputDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
-                calibration = True
+                offsetCalibration = True
         else:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeRotorAngleDesired - kneeOffset)
                 # Hip Motor Control

@@ -19,14 +19,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
 
 # Initialize Hip Motor
-kpOutHip, kdOutHip = 2.5, 0.2
+kpOutHip, kdOutHip = 5.0, 0.2
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0)
 
 
 
 # Initialize Knee Motor
-kpOutKnee, kdOutKnee = 2.5, 0.2
+kpOutKnee, kdOutKnee = 5.0, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 

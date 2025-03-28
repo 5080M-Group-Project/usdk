@@ -22,18 +22,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 kpOutHip, kdOutHip = 2.5, 0.2
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0)
-hipModelledInitial = 90
-hipAngleInitialRaw = getOutputAngleDeg(data.q)
-hipOffset = hipModelledInitial - hipAngleInitialRaw
+
 
 
 # Initialize Knee Motor
 kpOutKnee, kdOutKnee = 2.5, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
-kneeModelledInitial = 0.0
-kneeAngleInitialRaw  = getOutputAngleDeg(data.q)
-kneeOffset = kneeModelledInitial - kneeAngleInitialRaw
+
 
 
 # Initialize Wheel Motor
@@ -49,37 +45,60 @@ wheelAngularVelocityDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0
 hipAngleOutputDesired, kneeAngleOutputDesired  = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
 hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 
+offsetCalibration = False
+
 while True:
-        hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeRotorAngleDesired - kneeOffset)
-        # Hip Motor Control
-        cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
-        hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.hip,data.q,data.dq,torque,data.temp,data.merror,hipOffset)
-        hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+        if offsetCalibration == False:
+                data.motorType = MotorType.A1
+                cmd.motorType = MotorType.A1
+                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+                cmd.id = 0
+                serial.sendRecv(cmd, data)
+                hipModelledInitial = 90
+                hipAngleInitialRaw = getOutputAngleDeg(data.q)
+                hipOffset = hipModelledInitial - hipAngleInitialRaw
 
-        # Knee Motor Control
-        cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
-        kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.knee, data.q, data.dq, torque, data.temp, data.merror,kneeOffset)
-        kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+                data.motorType = MotorType.A1
+                cmd.motorType = MotorType.A1
+                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+                cmd.id = 1
+                serial.sendRecv(cmd, data)
+                kneeModelledInitial = 0.0
+                kneeAngleInitialRaw = getOutputAngleDeg(data.q)
+                kneeOffset = kneeModelledInitial - kneeAngleInitialRaw
 
-        #Crouch Control
-        crouchHeightDesired = 0.2  ## max = 0.33 / in future, read signal from RC controller to change
-        crouchThreshold = 0.01  # m
-
-        xWheelCurrent, crouchHeightCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
-        crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
-        if crouchHeightError > crouchThreshold:
-                hipOutputAngleDesired , kneeOutputAngleDesired = crouchingMechanismDeg(crouchHeightCurrent,crouchHeightDesired)
-                print(f"Adjusting Crouch Height - Current: {crouchHeightCurrent:.2f}, Desired: {crouchHeightDesired:.2f}")
+                calibration = True
         else:
-                hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
-                print("Correct crouch height. Legs Fixed")
+                hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeRotorAngleDesired - kneeOffset)
+                # Hip Motor Control
+                cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+                hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
+                outputData(id.hip,data.q,data.dq,torque,data.temp,data.merror,hipOffset)
+                hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
 
-        # Wheel Motor Control
-        ######DETERMINING DESIRED ANGULAR VELOCITY FROM: POSITION, STEERING, AND BALANCE CONTROLLERS#######
-        cmdActuator(id.wheel, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau)
-        wheelTorque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.wheel, data.q, data.dq, torque, data.temp, data.merror, 0.0)
-        #### When reading angle, can do q/2pi and remainder gives angle, then apply offset?
-        time.sleep(0.0002) # 200 us
+                # Knee Motor Control
+                cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+                kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
+                outputData(id.knee, data.q, data.dq, torque, data.temp, data.merror,kneeOffset)
+                kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+
+                #Crouch Control
+                crouchHeightDesired = 0.2  ## max = 0.33 / in future, read signal from RC controller to change
+                crouchThreshold = 0.01  # m
+
+                xWheelCurrent, crouchHeightCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
+                crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
+                if crouchHeightError > crouchThreshold:
+                        hipOutputAngleDesired , kneeOutputAngleDesired = crouchingMechanismDeg(crouchHeightCurrent,crouchHeightDesired)
+                        print(f"Adjusting Crouch Height - Current: {crouchHeightCurrent:.2f}, Desired: {crouchHeightDesired:.2f}")
+                else:
+                        hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
+                        print("Correct crouch height. Legs Fixed")
+
+                # Wheel Motor Control
+                ######DETERMINING DESIRED ANGULAR VELOCITY FROM: POSITION, STEERING, AND BALANCE CONTROLLERS#######
+                cmdActuator(id.wheel, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau)
+                wheelTorque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau, data.q, data.dq) #kpRotor or kpOutput??
+                outputData(id.wheel, data.q, data.dq, torque, data.temp, data.merror, 0.0)
+                #### When reading angle, can do q/2pi and remainder gives angle, then apply offset?
+                time.sleep(0.0002) # 200 us

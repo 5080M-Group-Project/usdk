@@ -91,6 +91,8 @@ while True:
                 if crouchHeightError > crouchThreshold:
                         hipOutputAngleDesired , kneeOutputAngleDesired = crouchingMechanismDeg(crouchHeightCurrent,crouchHeightDesired)
                         print(f"Adjusting Crouch Height - Current: {crouchHeightCurrent:.2f}, Desired: {crouchHeightDesired:.2f}")
+                        print(f"Hip Angle - Current: {hipOutputAngleCurrent:.2f}, Desired: {hipOutputAngleDesired:.2f}")
+                        print(f"Knee Angle - Current: {kneeOutputAngleCurrent:.2f}, Desired: {kneeOutputAngleDesired:.2f}")
                 else:
                         hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
                         print("Correct crouch height. Legs Fixed")

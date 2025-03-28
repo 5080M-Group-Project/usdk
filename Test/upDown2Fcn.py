@@ -42,7 +42,6 @@ wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq)
 #Initialize Loop Variables
 torque = 0.0
 wheelAngularVelocityDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0
-hipAngleOutputDesired, kneeAngleOutputDesired  = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
 hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 
 offsetCalibration = False
@@ -67,6 +66,7 @@ while True:
                 kneeAngleInitialRaw = getOutputAngleDeg(data.q)
                 kneeOffset = kneeModelledInitial - kneeAngleInitialRaw
 
+                hipAngleOutputDesired, kneeAngleOutputDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
                 calibration = True
         else:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeRotorAngleDesired - kneeOffset)

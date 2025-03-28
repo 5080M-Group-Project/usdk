@@ -36,7 +36,7 @@ cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 kpOutWheel, kdOutWheel = 0.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 cmdActuator(id.wheel,0.0,0.0,0.0,0.0,0.0)
-wheeAngularVelocityInitial  = getOutputAngleDeg(data.dqq)
+wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq)
 
 
 #Initialize Loop Variables

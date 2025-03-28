@@ -84,7 +84,7 @@ while True:
 
                 #Crouch Control
                 crouchHeightDesired = 0.2  ## max = 0.33 / in future, read signal from RC controller to change
-                crouchThreshold = 0.01  # m
+                crouchThreshold = 0.001  # m
 
                 xWheelCurrent, crouchHeightCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
                 crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)

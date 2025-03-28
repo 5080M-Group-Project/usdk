@@ -54,7 +54,7 @@ def inverseKinematicsDeg(xdes, ydes):
 
     # Calculate angles in degrees
     thetaHip = (gamma - alpha) * (180.0 / np.pi)
-    thetaKnee = (np.pi - beta) * (180.0 / np.pi)
+    thetaKnee = -(np.pi - beta) * (180.0 / np.pi)
 
     # Return the angles as a numpy array (vector)
     return np.array([thetaHip, thetaKnee])

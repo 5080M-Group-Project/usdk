@@ -66,7 +66,7 @@ while True:
                 kneeAngleInitialRaw = getOutputAngleDeg(data.q)
                 kneeOffset = kneeModelledInitial - kneeAngleInitialRaw
 
-                hipAngleOutputDesired, kneeAngleOutputDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
+                hipOutputAngleDesired, kneeOutputAngleDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
                 offsetCalibration = True
         else:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeRotorAngleDesired - kneeOffset)

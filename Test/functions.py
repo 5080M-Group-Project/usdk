@@ -106,7 +106,7 @@ def outputData(MotorID, q, dq, torque, temp, merror, offset):
 
 def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
     # Define step size (dt) inside the function
-    dt = 0.01  # Fraction of the distance to move per iteration (LERP step size)
+    dt = 0.0001  # Fraction of the distance to move per iteration (LERP step size)
 
     # Get current and desired joint angles
     thetaHipCurrent, thetaKneeCurrent = inverseKinematicsDeg(0.0, crouchHeightCurrent)

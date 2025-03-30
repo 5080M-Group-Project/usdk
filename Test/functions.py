@@ -42,23 +42,6 @@ class id: # e.g. id.hip = 0, id.get('Hip') = 0
         else:
             return None
 
-def inverseKinematicsDeg(xdes, ydes):
-    # Define link lengths
-    L1 = 0.165  # Length of link 1
-    L2 = 0.165  # Length of link 2
-
-    # Calculate intermediate angles
-    beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
-    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
-    gamma = np.arctan2(ydes, xdes)
-
-    # Calculate angles in degrees
-    thetaHip = (gamma - alpha) * (180.0 / np.pi)
-    thetaKnee = -(np.pi - beta) * (180.0 / np.pi)
-
-    # Return the angles as a numpy array (vector)
-    return np.array([thetaHip, thetaKnee])
-
 # Function to convert output gains to rotor gains
 def getRotorGains(kpOutput, kdOutput):
     kpRotor = (kpOutput / (gearRatio * gearRatio)) / 26.07
@@ -71,7 +54,7 @@ def getOutputAngleDeg(rotorAngle):
 
 # Function to compute the desired rotor angle in RADIANS from output in RAD
 def getRotorAngleRad(outputAngle):
-    return (outputAngle * (np.pi / 180)) * gearRatio
+    return float (outputAngle * (np.pi / 180)) * gearRatio
 
 # Function to send actuator commands
 def cmdActuator(id, kp, kd, q, dq, tau):
@@ -87,37 +70,47 @@ def cmdActuator(id, kp, kd, q, dq, tau):
 
     serial.sendRecv(cmd, data)
 
+def getOffset(motorId, modelledInitialAngle):
+    """Calibrate a motor and return its offset and initial raw angle."""
+    cmdActuator(motorId, 0.0, 0.0, 0.0, 0.0, 0.0)
+    rawInitialAngle = getOutputAngleDeg(data.q)
+    offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
+    return offset, rawInitialAngle
+
+def calibrateJointReadings():
+    """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
+    hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
+    kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
+
+    # Check if the combined offset is within the acceptable range
+    offsetCalibration = (abs(hipOffset) + abs(kneeOffset)) <= 720
+
+    if offsetCalibration:
+        print("\n")
+        print(f"Angle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}")
+        hipOutputAngleDesired, kneeOutputAngleDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
+        # Return offsets, desired angles, and calibration status
+        return hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, True
+
+    # Return offsets and status when calibration is not successful
+    return hipOffset, kneeOffset, None, None, False
+
 # Function to compute output torque
 def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent):
     return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
 
 # Function to output motor data
-def outputData(MotorID, q, dq, torque, temp, merror, offset):
+def outputData(MotorID, qDeg, dqRads, torqueNm, temp, merror):
         motorLabel = id.getName(MotorID)
 
         print("\n")
         print(f"{motorLabel} Motor")
-        print(f"Angle (Deg): {getOutputAngleDeg(q) + offset}")
-        print(f"Angular Velocity (rad/s): {dq / gearRatio}")
-        print(f"Torque (N.m): {torque}")
+        print(f"Angle (Deg): {qDeg}")
+        print(f"Angular Velocity (rad/s): {dqRads / gearRatio}")
+        print(f"Torque (N.m): {torqueNm}")
         print(f"Temperature: {temp}")
         print(f"ISSUE? {merror}")
         print("\n")
-
-def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
-    # Define step size (dt) inside the function
-    dt = 0.00001  # Fraction of the distance to move per iteration (LERP step size)
-
-    # Get current and desired joint angles
-    thetaHipCurrent, thetaKneeCurrent = inverseKinematicsDeg(0.0, crouchHeightCurrent)
-    thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, crouchHeightDesired)
-
-    # Apply standard linear interpolation (LERP) using dt
-    thetaHipNew = thetaHipCurrent + dt * (thetaHipDesired - thetaHipCurrent)
-    thetaKneeNew = thetaKneeCurrent + dt * (thetaKneeDesired - thetaKneeCurrent)
-
-    # Return the updated angles
-    return thetaHipNew, thetaKneeNew
 
 def forwardKinematicsDeg(thetaHip, thetaKnee):
     L1 = 0.165  # Length of link 1
@@ -129,4 +122,72 @@ def forwardKinematicsDeg(thetaHip, thetaKnee):
     yWheel = yKnee + L2*np.sin(thetaKnee + thetaHip)
     xWheel = xKnee + L2*np.cos(thetaKnee + thetaHip)
     return xWheel, yWheel
+
+def inverseKinematicsDeg(xdes, ydes, kneeDir):
+    # Define link lengths
+    L1 = 0.165  # Length of link 1
+    L2 = 0.165  # Length of link 2
+    if np.sqrt(xdes ** 2 + ydes ** 2) > L1 + L2:
+        print("\nOut of range!")
+        return None, None
+
+    # Handle kneeDir input
+    kneeDir = kneeDir.lower()
+    if kneeDir not in ['front', 'back']:
+        print("\nInvalid Knee Direction!")
+        return None, None
+
+    # Calculate intermediate angles
+    beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
+    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
+    gamma = np.arctan2(ydes, xdes)
+
+    if kneeDir == 'front':
+        thetaHip = (gamma - alpha) * (180.0 / np.pi)
+        thetaKnee = (np.pi - beta) * (180.0 / np.pi)
+    elif kneeDir == 'back':
+        thetaHip = (gamma + alpha) * (180.0 / np.pi)
+        thetaKnee = (beta - np.pi) * (180.0 / np.pi)
+
+    # Return angles as a tuple
+    return thetaHip, thetaKnee
+
+
+
+def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
+    # Define step size (dt) inside the function
+    dt = 0.00001  # Fraction of the distance to move per iteration (LERP step size)
+
+    # Get current and desired joint angles
+    thetaHipCurrent, thetaKneeCurrent = inverseKinematicsDeg(0.0, -crouchHeightCurrent,'front')
+    thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, -crouchHeightDesired,'front')
+
+    # Apply standard linear interpolation (LERP) using dt
+    thetaHipNew = thetaHipCurrent + dt * (thetaHipDesired - thetaHipCurrent)
+    thetaKneeNew = thetaKneeCurrent + dt * (thetaKneeDesired - thetaKneeCurrent)
+
+    # Return the updated angles
+    return thetaHipNew, thetaKneeNew
+
+def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent):
+    crouchThreshold = 0.001  # m
+
+    xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
+    crouchHeightCurrent = abs(yWheelCurrent)
+    crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
+
+    if crouchHeightError > crouchThreshold:
+        ### IDEA: use moving leg kp and kd for crouching motion??
+        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired)
+        print("\n")
+        print(f"Adjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
+        ##print(f"Hip Angle - Current: {hipOutputAngleCurrent:.3f}, Desired: {hipOutputAngleDesired:.3f}")
+        ##print(f"Knee Angle - Current: {kneeOutputAngleCurrent:.3f}, Desired: {kneeOutputAngleDesired:.3f}")
+    else:
+        ### IDEA: use fixed leg kp and kd for suspension??
+        hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
+        print("\n")
+        print("Correct crouch height. Legs Fixed")
+
+    return hipOutputAngleDesired, kneeOutputAngleDesired
 

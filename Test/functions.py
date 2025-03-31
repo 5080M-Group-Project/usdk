@@ -95,6 +95,7 @@ def calibrateJointReadings():
         return hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, True
 
     # Return offsets and status when calibration is not successful
+    print(f"Raw Initial Angles - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}")
     return hipOffset, kneeOffset, None, None, False
 
 # Function to compute output torque

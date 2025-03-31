@@ -88,14 +88,13 @@ def calibrateJointReadings():
     offsetCalibration = hipCalibration + kneeCalibration
 
     if offsetCalibration:
-        print("\n")
-        print(f"Angle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}")
+        print(f"\nAngle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}\n")
         hipOutputAngleDesired, kneeOutputAngleDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
         # Return offsets, desired angles, and calibration status
         return hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, True
 
     # Return offsets and status when calibration is not successful
-    print(f"Raw Initial Angles - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}")
+    print(f"\nRaw Initial Angles - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
     return hipOffset, kneeOffset, None, None, False
 
 # Function to compute output torque
@@ -131,13 +130,13 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
     L1 = 0.165  # Length of link 1
     L2 = 0.165  # Length of link 2
     if np.sqrt(xdes ** 2 + ydes ** 2) > L1 + L2:
-        print("\nOut of range!")
+        print("\nOut of range!\n")
         return None, None
 
     # Handle kneeDir input
     kneeDir = kneeDir.lower()
     if kneeDir not in ['front', 'back']:
-        print("\nInvalid Knee Direction!")
+        print("\nInvalid Knee Direction!\n")
         return None, None
 
     # Calculate intermediate angles

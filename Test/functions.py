@@ -83,7 +83,7 @@ def calibrateJointReadings():
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 73 > hipAngleInitialRaw > 69
+    hipCalibration = 20 > hipAngleInitialRaw > 17
     kneeCalibration = 12 > kneeAngleInitialRaw > 9
     offsetCalibration = hipCalibration + kneeCalibration
 

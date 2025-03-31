@@ -55,6 +55,11 @@ while True:
                 ### IDEA: Add position calibration
 
         # MAIN CONTROL LOOP
+        if hipOutputAngleDesired < 0:
+                hipOutputAngleDesired = (hipOutputAngleDesired + 360)
+        elif kneeOutputAngleDesired < 0:
+                kneeOutputAngleDesired = (kneeOutputAngleDesired + 360)
+
         hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
         # Hip Motor Control

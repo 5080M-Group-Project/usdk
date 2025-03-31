@@ -35,6 +35,7 @@ while True:
         cmd.motorType = MotorType.A1
         cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
         cmd.id = 0
+        time.sleep(0.0002)  # 200 us
         serial.sendRecv(cmd, data)
         hipInitial = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
         offsetHip = -90.0 - hipInitial
@@ -43,6 +44,7 @@ while True:
         cmd.motorType = MotorType.A1
         cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
         cmd.id = 1
+        time.sleep(0.0002)  # 200 us
         serial.sendRecv(cmd, data)
         kneeInitial = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
         offsetKnee = 0.0 - kneeInitial
@@ -69,7 +71,7 @@ while True:
         print("Offset (Hip) deg: " + str(offsetHip))
         print(f"ISSUE? {data.merror}")
         print('\n')
-        time.sleep(0.0002)  # 200 us
+
 
         data.motorType = MotorType.A1
         cmd.motorType = MotorType.A1

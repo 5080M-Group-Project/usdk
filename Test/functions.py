@@ -70,10 +70,14 @@ def cmdActuator(id, kp, kd, q, dq, tau):
 
     serial.sendRecv(cmd, data)
 
-def getOffset(motorId, modelledInitialAngle):
+def getOffset(motorID, modelledInitialAngle):
     """Calibrate a motor and return its offset and initial raw angle."""
-    cmdActuator(motorId, 0.0, 0.0, 0.0, 0.0, 0.0)
-    time.sleep(0.002)
+    cmd.motorType = MotorType.A1
+    data.motorType = MotorType.A1
+    cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+    cmd.id = motorID
+    serial.sendRecv(cmd, data)
+
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
     return offset, rawInitialAngle
@@ -81,11 +85,12 @@ def getOffset(motorId, modelledInitialAngle):
 def calibrateJointReadings():
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
     hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
+    time.sleep(0.0002)
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 17 > hipAngleInitialRaw > 16
-    kneeCalibration = 27 > kneeAngleInitialRaw > 26
+    hipCalibration = 17 > hipAngleInitialRaw > 15
+    kneeCalibration = 28 > kneeAngleInitialRaw > 26
     offsetCalibration = hipCalibration + kneeCalibration
 
     if offsetCalibration:
@@ -103,8 +108,14 @@ def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent)
     return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
 
 # Function to output motor data
-def outputData(MotorID, qDeg, dqRads, torqueNm, temp, merror):
-        motorLabel = id.getName(MotorID)
+def outputData(motorID, qDeg, dqRads, torqueNm, temp, merror):
+        cmd.motorType = MotorType.A1
+        data.motorType = MotorType.A1
+        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+        cmd.id = motorID
+        serial.sendRecv(cmd, data)
+
+        motorLabel = id.getName(motorID)
 
         print("\n")
         print(f"{motorLabel} Motor")

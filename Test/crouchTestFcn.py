@@ -64,6 +64,15 @@ while True:
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
 
+        cmd.motorType = MotorType.A1
+        data.motorType = MotorType.A1
+        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+        cmd.id = id.hip
+        serial.sendRecv(cmd, data)
+        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
+
+
+        time.sleep(loopTime)
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
@@ -71,20 +80,19 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
-        if hipOutputAngleDesired < 0:
-                hipOutputAngleDesired = (hipOutputAngleDesired + 360)
-        elif kneeOutputAngleDesired < 0:
-                kneeOutputAngleDesired = (kneeOutputAngleDesired + 360)
-
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        print(f"\nHip Angle (Deg) COMMAND: {hipOutputAngleDesired}\n")
+        cmd.motorType = MotorType.A1
+        data.motorType = MotorType.A1
+        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+        cmd.id = id.knee
+        serial.sendRecv(cmd, data)
         print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        print(f"\nKnee Angle (Deg) COMMAND: {kneeOutputAngleDesired}\n")
+
 
 
         # Crouch Control
-        #crouchHeightDesired = 0.33  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
-        #crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
+        crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
+
 
         '''
         # Wheel Motor Control

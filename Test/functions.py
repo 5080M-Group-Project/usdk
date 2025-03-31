@@ -80,12 +80,12 @@ def getOffset(motorId, modelledInitialAngle):
 
 def calibrateJointReadings():
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
-    hipOffset, hipAngleInitialRaw = getOffset(id.hip, 90)
+    hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 17 > hipAngleInitialRaw > 12
-    kneeCalibration = 30 > kneeAngleInitialRaw > 26
+    hipCalibration = 17 > hipAngleInitialRaw > 16
+    kneeCalibration = 27 > kneeAngleInitialRaw > 26
     offsetCalibration = hipCalibration + kneeCalibration
 
     if offsetCalibration:

@@ -2,7 +2,7 @@ import time
 import sys
 import numpy as np
 
-sys.path.append('../lib')
+sys.path.append('/lib')
 from unitree_actuator_sdk import *
 
 serial = SerialPort('/dev/ttyUSB0')

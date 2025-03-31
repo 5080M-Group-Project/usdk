@@ -61,13 +61,13 @@ while True:
         cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
         hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
-        outputData(id.hip,hipOutputAngleCurrent,data.dq,hipTorque,data.temp,data.merror)
+        outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
         kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
-        outputData(id.knee, kneeOutputAngleCurrent, data.dq, kneeTorque, data.temp, data.merror)
+        outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
         # Crouch Control
         #crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change

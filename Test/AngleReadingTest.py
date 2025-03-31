@@ -16,7 +16,7 @@ cmd.mode = queryMotorMode(MotorType.A1,MotorMode.FOC)
 cmd.id   = 0
 serial.sendRecv(cmd, data)
 hipInitial = ((data.q /queryGearRatio(MotorType.A1)) * (180 / np.pi))
-offsetHip  = 90.0 - hipInitial
+offsetHip  = -90.0 - hipInitial
 
 
 data.motorType = MotorType.A1
@@ -37,7 +37,7 @@ while True:
         cmd.id = 0
         serial.sendRecv(cmd, data)
         hipInitial = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
-        offsetHip = 90.0 - hipInitial
+        offsetHip = -90.0 - hipInitial
 
         data.motorType = MotorType.A1
         cmd.motorType = MotorType.A1

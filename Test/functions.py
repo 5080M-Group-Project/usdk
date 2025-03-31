@@ -152,6 +152,7 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
         thetaHip = (gamma + alpha) * (180.0 / np.pi)
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)
 
+
     # Return angles as a tuple
     return thetaHip, thetaKnee
 

@@ -63,13 +63,16 @@ while True:
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
         print(f"\nHip Angle (Deg) NO OFFSET: {(data.q/gearRatio)*(180 / np.pi)}\n")
+        print(f"\nHip Angle (Deg) COMMAND: {hipOutputAngleDesired}\n")
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
         kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
+        print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
+        print(f"\nKnee Angle (Deg) COMMAND: {kneeOutputAngleDesired}\n")
+
 
         # Crouch Control
         #crouchHeightDesired = 0.33  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change

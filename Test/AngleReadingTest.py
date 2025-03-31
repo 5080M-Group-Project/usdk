@@ -67,6 +67,7 @@ while True:
         print("Angle w. offset (Hip) deg: " + str(Angle))
         print("Initial (Hip) deg: " + str(hipInitial))
         print("Offset (Hip) deg: " + str(offsetHip))
+        print(f"ISSUE? {data.merror}")
         print('\n')
         time.sleep(0.0002)  # 200 us
 
@@ -89,5 +90,6 @@ while True:
         print("Angle w. offset (Knee) deg: " + str(Angle))
         print("Initial (Knee) deg: " + str(kneeInitial))
         print("Offset (Knee) deg: " + str(offsetKnee))
+        print(f"ISSUE? {data.merror}")
         print('\n')
         time.sleep(0.0002)  # 200 us

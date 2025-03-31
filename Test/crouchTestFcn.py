@@ -70,6 +70,7 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
         print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
+
         # Crouch Control
         #crouchHeightDesired = 0.33  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
         #crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)

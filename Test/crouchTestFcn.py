@@ -55,10 +55,6 @@ while True:
                 ### IDEA: Add position calibration
 
         # MAIN CONTROL LOOP
-        if hipOutputAngleDesired < 0:
-                hipOutputAngleDesired = (hipOutputAngleDesired + 360)
-        elif kneeOutputAngleDesired < 0:
-                kneeOutputAngleDesired = (kneeOutputAngleDesired + 360)
 
         hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
@@ -67,14 +63,21 @@ while True:
         hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q/gearRatio)*(180 / np.pi)}\n")
-        print(f"\nHip Angle (Deg) COMMAND: {hipOutputAngleDesired}\n")
+
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
         kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
+
+        if hipOutputAngleDesired < 0:
+                hipOutputAngleDesired = (hipOutputAngleDesired + 360)
+        elif kneeOutputAngleDesired < 0:
+                kneeOutputAngleDesired = (kneeOutputAngleDesired + 360)
+
+        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
+        print(f"\nHip Angle (Deg) COMMAND: {hipOutputAngleDesired}\n")
         print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
         print(f"\nKnee Angle (Deg) COMMAND: {kneeOutputAngleDesired}\n")
 

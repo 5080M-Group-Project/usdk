@@ -73,6 +73,7 @@ def cmdActuator(id, kp, kd, q, dq, tau):
 def getOffset(motorId, modelledInitialAngle):
     """Calibrate a motor and return its offset and initial raw angle."""
     cmdActuator(motorId, 0.0, 0.0, 0.0, 0.0, 0.0)
+    time.sleep(0.002)
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
     return offset, rawInitialAngle

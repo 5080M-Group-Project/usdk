@@ -11,6 +11,12 @@ data = MotorData()
 
 gearRatio = queryGearRatio(MotorType.A1)
 
+# Global variables for crouching state
+crouching = False
+count = 0
+thetaHipVector = []
+thetaKneeVector = []
+
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
     # Static variables (class variables)
     hip = 0
@@ -80,17 +86,19 @@ def getOffset(motorID, modelledInitialAngle):
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
+    time.sleep(0.002)  # 200 us
     return offset, rawInitialAngle
 
 def calibrateJointReadings():
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
     hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
-    time.sleep(0.0002)
+
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
+
 
     # Check if the combined offset is within the acceptable range
     hipCalibration = 17 > hipAngleInitialRaw > 15
-    kneeCalibration = 28 > kneeAngleInitialRaw > 26
+    kneeCalibration = 27 > kneeAngleInitialRaw > 26
     offsetCalibration = hipCalibration + kneeCalibration
 
     if offsetCalibration:
@@ -109,11 +117,13 @@ def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent)
 
 # Function to output motor data
 def outputData(motorID, qDeg, dqRads, torqueNm, temp, merror):
+        '''
         cmd.motorType = MotorType.A1
         data.motorType = MotorType.A1
         cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
         cmd.id = motorID
         serial.sendRecv(cmd, data)
+        '''
 
         motorLabel = id.getName(motorID)
 
@@ -206,3 +216,67 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
 
+
+''' Alternate Implementation'''
+
+def startCrouchPhase(crouchHeightDesired, thetaHipCurrent, thetaKneeCurrent, dt, T):
+    """Initialize the crouching phase by computing interpolation vectors."""
+    global crouching, count, thetaHipVector, thetaKneeVector, thetaHipDesired, thetaKneeDesired
+
+    N = int(T / dt)  # Ensure N is an integer
+    count = 0  # Reset step counter
+
+    # Get current and desired joint angles
+    thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, -crouchHeightDesired, 'front')
+
+    # Generate interpolation vectors
+    thetaHipVector = np.linspace(thetaHipCurrent, thetaHipDesired, num=N)
+    thetaKneeVector = np.linspace(thetaKneeCurrent, thetaKneeDesired, num=N)
+
+    crouching = True  # Enable crouching phase
+
+
+def getCrouchAnglesDeg():
+    """Returns the next set of crouch angles in the sequence."""
+    global crouching, count, thetaHipVector, thetaKneeVector, thetaHipDesired, thetaKneeDesired
+
+    if not crouching or count >= len(thetaHipVector):
+        crouching = False  # Stop crouching when done
+        count = 0  # Reset count when finished
+        return thetaHipDesired, thetaKneeDesired
+
+    # Get next angles in sequence
+    thetaHipNew = thetaHipVector[count]
+    thetaKneeNew = thetaKneeVector[count]
+    count += 1  # Increment step
+    print(f"\nCount: {(count)}\n")
+
+    return thetaHipNew, thetaKneeNew
+
+
+
+def crouchingMotion2(crouchHeightDesired, hipOutputAngleCurrent, kneeOutputAngleCurrent, dt, T):
+    """Controls the crouching motion and selects the appropriate angles."""
+    global crouching
+
+    crouchThreshold = 0.01  # m
+
+    xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
+    crouchHeightCurrent = abs(yWheelCurrent)
+    crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
+
+    if crouchHeightError > crouchThreshold:
+        ### IDEA: use moving leg kp and kd for crouching motion??
+        if not crouching:
+            startCrouchPhase(crouchHeightDesired, hipOutputAngleCurrent, kneeOutputAngleCurrent, dt,
+                             T)  # Initialize crouch phase
+        hipOutputAngleDesired, kneeOutputAngleDesired = getCrouchAnglesDeg()
+        # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
+    else:
+        ### IDEA: use fixed leg kp and kd for suspension??
+        hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
+        print("\n")
+        print("Correct crouch height. Legs Fixed")
+
+    print(f"\nCrouch Error {crouchHeightError:.3f}\n")
+    return hipOutputAngleDesired, kneeOutputAngleDesired

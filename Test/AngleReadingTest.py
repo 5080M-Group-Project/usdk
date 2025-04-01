@@ -72,6 +72,7 @@ while True:
         print(f"ISSUE? {data.merror}")
         print('\n')
 
+        time.sleep(0.0002)  # 200 us
 
         data.motorType = MotorType.A1
         cmd.motorType = MotorType.A1

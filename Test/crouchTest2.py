@@ -36,7 +36,7 @@ kpOutWheel, kdOutWheel = 0.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 cmdActuator(id.wheel,0.0,0.0,0.0,0.0,0.0)
 
-wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
+#wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
 
 #Initialize Loop Variables
 torque = 0.0
@@ -61,6 +61,7 @@ kneeCommandAngles = []
 timeSteps = []
 
 globalStartTime = time.time()
+
 try:
         while True:
                 while not offsetCalibration: ### & other
@@ -71,6 +72,7 @@ try:
 
                 # MAIN CONTROL LOOP
                 startTime = time.time()
+
                 elapsedTime = startTime - globalStartTime
                 timeSteps.append(elapsedTime)
 
@@ -110,7 +112,6 @@ try:
                         thetaKneeVector = np.linspace(kneeOutputAngleDesired, kneeCrouchAngleDesired, num=N)
                         count = 0
                         crouching = True  # Enable crouching phase
-
                 elif crouching and count < len(thetaHipVector):
                         hipOutputAngleDesired, kneeOutputAngleDesired = thetaHipVector[count], thetaKneeVector[count]
                         count += 1  # Increment step

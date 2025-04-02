@@ -105,7 +105,7 @@ while True:
                 count = 0
                 crouching = True  # Enable crouching phase
 
-        if crouching and count < len(thetaHipVector):
+        elif crouching and count < len(thetaHipVector):
                 hipOutputAngleDesired = thetaHipVector[count]
                 kneeOutputAngleDesired = thetaKneeVector[count]
                 count += 1  # Increment step

@@ -46,7 +46,7 @@ hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 hipOffset, kneeOffset = 0.0, 0.0
 
 offsetCalibration = False
-sleepTime = 0.002
+sleepTime = 0.02
 
 crouching = False
 crouchHeightDesiredPrev = 0.33

@@ -128,30 +128,48 @@ try:
 
 
                 time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
-                loopTime = startTime - time.time()
+                loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
-        min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
-                         len(kneeCommandAngles))
 
-        timeSteps = timeSteps[:min_length]
-        hipOutputAngles = hipOutputAngles[:min_length]
-        kneeOutputAngles = kneeOutputAngles[:min_length]
-        hipCommandAngles = hipCommandAngles[:min_length]
-        kneeCommandAngles = kneeCommandAngles[:min_length]
-        
-        # Plotting
-        plt.figure()
-        plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
-        plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
-        plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
-        plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
-        plt.xlabel('Time (s)')
-        plt.ylabel('Angle (deg)')
-        plt.title('Hip and Knee Angles Over Time')
-        plt.legend()
-        plt.grid()
-        plt.show()
-        plt.savefig("AnglesPlot.png", dpi=300)  # Save as a high-resolution PNG
+        try:
+                # Ensure all lists have the same length
+                min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
+                                 len(kneeCommandAngles))
+
+                if min_length == 0:
+                        print("No data collected. Exiting without saving.")
+                        sys.exit(0)  # Exit safely if no data
+
+                timeSteps = timeSteps[:min_length]
+                hipOutputAngles = hipOutputAngles[:min_length]
+                kneeOutputAngles = kneeOutputAngles[:min_length]
+                hipCommandAngles = hipCommandAngles[:min_length]
+                kneeCommandAngles = kneeCommandAngles[:min_length]
+
+                # Plotting
+                plt.figure()
+                plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+                plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+                plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+                plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+
+                plt.xlabel('Time (s)')
+                plt.ylabel('Angle (deg)')
+                plt.title('Hip and Knee Angles Over Time')
+                plt.legend()
+                plt.grid()
+
+                # Save the figure before exiting
+                plt.savefig("hip_knee_angles.png", dpi=300)
+                print("Figure saved as hip_knee_angles.png")
+
+                plt.show()
+
+        except Exception as e:
+                print(f"Error encountered while saving figure: {e}")
+
+        finally:
+                sys.exit(0)  # Ensure clean exit

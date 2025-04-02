@@ -133,7 +133,15 @@ try:
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
+        min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
+                         len(kneeCommandAngles))
 
+        timeSteps = timeSteps[:min_length]
+        hipOutputAngles = hipOutputAngles[:min_length]
+        kneeOutputAngles = kneeOutputAngles[:min_length]
+        hipCommandAngles = hipCommandAngles[:min_length]
+        kneeCommandAngles = kneeCommandAngles[:min_length]
+        
         # Plotting
         plt.figure()
         plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')

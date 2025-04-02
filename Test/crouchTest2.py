@@ -51,26 +51,16 @@ sleepTime = 0.02
 crouching = False
 crouchHeightDesiredPrev = 0.33
 
-globalStartTime = time.time()
-
 # Data storage for plotting
 hipOutputAngles = []
 kneeOutputAngles = []
+
 hipCommandAngles = []
 kneeCommandAngles = []
+
 timeSteps = []
 
-plt.ion()
-fig, ax = plt.subplots()
-ax.set_xlabel('Time (s)')
-ax.set_ylabel('Angle (deg)')
-ax.set_title('Hip and Knee Angles Over Time')
-line1, = ax.plot([], [], label='Hip Output Angles')
-line2, = ax.plot([], [], label='Knee Output Angles')
-line3, = ax.plot([], [], label='Hip Command Angle')
-line4, = ax.plot([], [], label='Knee Command Angle')
-ax.legend()
-ax.grid()
+globalStartTime = time.time()
 
 while True:
         while not offsetCalibration: ### & other
@@ -136,15 +126,6 @@ while True:
                 crouchHeightDesiredPrev = crouchHeightDesiredNew
                 print("\nCorrect crouch height. Legs Fixed\n")
 
-        line1.set_data(timeSteps, hipOutputAngles)
-        line2.set_data(timeSteps, kneeOutputAngles)
-        line3.set_data(timeSteps, hipCommandAngles)
-        line4.set_data(timeSteps, kneeCommandAngles)
-        ax.relim()
-        ax.autoscale_view()
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        plt.pause(0.01)
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
         loopTime = startTime - time.time()
@@ -162,3 +143,4 @@ plt.title('Hip and Knee Angles Over Time')
 plt.legend()
 plt.grid()
 plt.show()
+plt.savefig("AnglesPlot.png", dpi=300)  # Save as a high-resolution PNG

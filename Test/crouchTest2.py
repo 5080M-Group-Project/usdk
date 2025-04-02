@@ -118,8 +118,10 @@ while True:
                 crouching = False
                 crouchHeightDesiredNew = crouchHeightDesiredPrev
                 # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
+
         else:
                 hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
+                crouchHeightDesiredNew = crouchHeightDesiredPrev
                 print("\n")
                 print("Correct crouch height. Legs Fixed")
 

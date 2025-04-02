@@ -221,10 +221,8 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
 
 def startCrouchPhase(crouchHeightDesired, thetaHipCurrent, thetaKneeCurrent, dt, T):
     """Initialize the crouching phase by computing interpolation vectors."""
-    global crouching, count, thetaHipVector, thetaKneeVector, thetaHipDesired, thetaKneeDesired
 
     N = int(T / dt)  # Ensure N is an integer
-    count = 0  # Reset step counter
 
     # Get current and desired joint angles
     thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, -crouchHeightDesired, 'front')
@@ -233,25 +231,8 @@ def startCrouchPhase(crouchHeightDesired, thetaHipCurrent, thetaKneeCurrent, dt,
     thetaHipVector = np.linspace(thetaHipCurrent, thetaHipDesired, num=N)
     thetaKneeVector = np.linspace(thetaKneeCurrent, thetaKneeDesired, num=N)
 
-    crouching = True  # Enable crouching phase
+    return thetaHipVector, thetaKneeVector
 
-
-def getCrouchAnglesDeg():
-    """Returns the next set of crouch angles in the sequence."""
-    global crouching, count, thetaHipVector, thetaKneeVector, thetaHipDesired, thetaKneeDesired
-
-    if not crouching or count >= len(thetaHipVector):
-        crouching = False  # Stop crouching when done
-        count = 0  # Reset count when finished
-        return thetaHipDesired, thetaKneeDesired
-
-    # Get next angles in sequence
-    thetaHipNew = thetaHipVector[count]
-    thetaKneeNew = thetaKneeVector[count]
-    count += 1  # Increment step
-    print(f"\nCount: {(count)}\n")
-
-    return thetaHipNew, thetaKneeNew
 
 
 

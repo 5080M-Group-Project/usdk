@@ -48,6 +48,9 @@ hipOffset, kneeOffset = 0.0, 0.0
 offsetCalibration = False
 sleepTime = 0.002
 
+crouching = False
+crouchStart = False
+
 while True:
         while not offsetCalibration: ### & other
                 hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
@@ -80,27 +83,45 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
-        '''
-        cmd.motorType = MotorType.A1
-        data.motorType = MotorType.A1
-        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-        cmd.id = id.knee
-        serial.sendRecv(cmd, data)
-        print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        '''
-
+        crouchHeightDesiredPrev = 0.33
         # Crouch Control
-        crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
-        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
+        crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+        #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
+        crouchThreshold = 0.01  # m
 
+        #xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
+        #crouchHeightCurrent = abs(yWheelCurrent)
+        #crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
 
-        '''
-        # Wheel Motor Control
-        ######DETERMINING DESIRED ANGULAR VELOCITY FROM: POSITION, STEERING, AND BALANCE CONTROLLERS#######
-        cmdActuator(id.wheel, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau)
-        wheelTorque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.wheel, data.q, data.dq, torque, data.temp, data.merror)
-        #### When reading angle, can do q/2pi and remainder gives angle, then apply offset?
-        '''
+        if (crouchHeightDesiredNew != crouchHeightDesiredPrev) and not crouching:
+                N = int(2.0 / sleepTime)  # Ensure N is an integer
+
+                # Get current and desired joint angles
+                hipCrouchAngleDesired, kneeCrouchAngleDesired = inverseKinematicsDeg(0.0, -crouchHeightDesiredNew, 'front')
+
+                # Generate interpolation vectors
+                thetaHipVector = np.linspace(hipOutputAngleCurrent, hipCrouchAngleDesired, num=N)
+                thetaKneeVector = np.linspace(kneeOutputAngleDesired, kneeCrouchAngleDesired, num=N)
+
+                count = 0
+                crouching = True  # Enable crouching phase
+
+        if crouching and count <= len(thetaHipVector):
+                hipOutputAngleDesired = thetaHipVector[count]
+                kneeOutputAngleDesired = thetaKneeVector[count]
+                count += 1  # Increment step
+                print(f"\nCount: {(count)}\n")
+                # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
+
+        elif crouching and count > len(thetaHipVector):
+                hipOutputAngleDesired = hipCrouchAngleDesired
+                kneeOutputAngleDesired = kneeCrouchAngleDesired
+                crouching = False
+                # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
+        else:
+                hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
+                print("\n")
+                print("Correct crouch height. Legs Fixed")
+
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism

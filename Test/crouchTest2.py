@@ -54,11 +54,21 @@ crouchHeightDesiredPrev = 0.33
 # Data storage for plotting
 hipOutputAngles = []
 kneeOutputAngles = []
-
 hipCommandAngles = []
 kneeCommandAngles = []
-
 timeSteps = []
+
+plt.ion()
+fig, ax = plt.subplots()
+ax.set_xlabel('Time (s)')
+ax.set_ylabel('Angle (deg)')
+ax.set_title('Hip and Knee Angles Over Time')
+line1, = ax.plot([], [], label='Hip Output Angles')
+line2, = ax.plot([], [], label='Knee Output Angles')
+line3, = ax.plot([], [], label='Hip Command Angle')
+line4, = ax.plot([], [], label='Knee Command Angle')
+ax.legend()
+ax.grid()
 
 globalStartTime = time.time()
 
@@ -126,20 +136,15 @@ while True:
                 crouchHeightDesiredPrev = crouchHeightDesiredNew
                 print("\nCorrect crouch height. Legs Fixed\n")
 
+        line1.set_data(timeSteps, hipOutputAngles)
+        line2.set_data(timeSteps, kneeOutputAngles)
+        line3.set_data(timeSteps, hipCommandAngles)
+        line4.set_data(timeSteps, kneeCommandAngles)
+        ax.relim()
+        ax.autoscale_view()
+        plt.pause(sleepTime)
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
         loopTime = startTime - time.time()
         print(f"Loop Time: {loopTime}\n")
 
-# Plotting
-plt.figure()
-plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
-plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
-plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
-plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
-plt.xlabel('Time (s)')
-plt.ylabel('Angle (deg)')
-plt.title('Hip and Knee Angles Over Time')
-plt.legend()
-plt.grid()
-plt.show()

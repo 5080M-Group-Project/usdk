@@ -1,6 +1,7 @@
 import time
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
@@ -173,7 +174,6 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
         thetaHip = (gamma + alpha) * (180.0 / np.pi)
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)
 
-
     # Return angles as a tuple
     return thetaHip, thetaKnee
 
@@ -216,19 +216,3 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
 
-
-''' Alternate Implementation'''
-
-def startCrouchPhase(crouchHeightDesired, thetaHipCurrent, thetaKneeCurrent, dt, T):
-    """Initialize the crouching phase by computing interpolation vectors."""
-
-    N = int(T / dt)  # Ensure N is an integer
-
-    # Get current and desired joint angles
-    thetaHipDesired, thetaKneeDesired = inverseKinematicsDeg(0.0, -crouchHeightDesired, 'front')
-
-    # Generate interpolation vectors
-    thetaHipVector = np.linspace(thetaHipCurrent, thetaHipDesired, num=N)
-    thetaKneeVector = np.linspace(thetaKneeCurrent, thetaKneeDesired, num=N)
-
-    return thetaHipVector, thetaKneeVector

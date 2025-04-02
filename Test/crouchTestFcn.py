@@ -1,7 +1,7 @@
 import time
 import sys
 from typing import Any
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 from functions import *
@@ -65,14 +65,7 @@ while True:
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
         time.sleep(sleepTime)
-        '''
-        cmd.motorType = MotorType.A1
-        data.motorType = MotorType.A1
-        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-        cmd.id = id.hip
-        serial.sendRecv(cmd, data)
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        '''
+
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
@@ -80,27 +73,10 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
-        '''
-        cmd.motorType = MotorType.A1
-        data.motorType = MotorType.A1
-        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-        cmd.id = id.knee
-        serial.sendRecv(cmd, data)
-        print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        '''
 
         # Crouch Control
         crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
         hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
 
-
-        '''
-        # Wheel Motor Control
-        ######DETERMINING DESIRED ANGULAR VELOCITY FROM: POSITION, STEERING, AND BALANCE CONTROLLERS#######
-        cmdActuator(id.wheel, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau)
-        wheelTorque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.wheel, data.q, data.dq, torque, data.temp, data.merror)
-        #### When reading angle, can do q/2pi and remainder gives angle, then apply offset?
-        '''
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism

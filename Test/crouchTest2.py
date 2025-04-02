@@ -51,31 +51,41 @@ sleepTime = 0.02
 crouching = False
 crouchHeightDesiredPrev = 0.33
 
+# Data storage for plotting
+hipOutputAngles = []
+kneeOutputAngles = []
+
+hipCommandAngles = []
+kneeCommandAngles = []
+
+timeSteps = []
+
+globalStartTime = time.millis()
+
 while True:
         while not offsetCalibration: ### & other
                 hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                 time.sleep(sleepTime)
                 ### IDEA: Add position calibration
+                #globalStartTime = time.millis()
 
         # MAIN CONTROL LOOP
+        startTime = time.millis()
+        elapsedTime = startTime - globalStartTime
+        timeSteps.append(elapsedTime)
 
         hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
         # Hip Motor Control
-
         cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
         hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
-        time.sleep(sleepTime)
-        '''
-        cmd.motorType = MotorType.A1
-        data.motorType = MotorType.A1
-        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-        cmd.id = id.hip
-        serial.sendRecv(cmd, data)
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        '''
+
+        hipOutputAngles.append(hipOutputAngleCurrent)
+        hipCommandAngles.append(hipOutputAngleDesired)
+        #time.sleep(sleepTime)
+
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
@@ -83,47 +93,53 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
+        kneeOutputAngles.append(kneeOutputAngleCurrent)
+        kneeCommandAngles.append(kneeOutputAngleDesired)
 
         # Crouch Control
         crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
         #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 
-        #xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
-        #crouchHeightCurrent = abs(yWheelCurrent)
-        #crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
 
         if (crouchHeightDesiredNew != crouchHeightDesiredPrev) and not crouching:
                 N = int(2.0 / sleepTime)  # Ensure N is an integer
-
                 # Get current and desired joint angles
                 hipCrouchAngleDesired, kneeCrouchAngleDesired = inverseKinematicsDeg(0.0, -crouchHeightDesiredNew, 'front')
-
                 # Generate interpolation vectors
                 thetaHipVector = np.linspace(hipOutputAngleCurrent, hipCrouchAngleDesired, num=N)
                 thetaKneeVector = np.linspace(kneeOutputAngleDesired, kneeCrouchAngleDesired, num=N)
-
                 count = 0
                 crouching = True  # Enable crouching phase
 
         elif crouching and count < len(thetaHipVector):
-                hipOutputAngleDesired = thetaHipVector[count]
-                kneeOutputAngleDesired = thetaKneeVector[count]
+                hipOutputAngleDesired, kneeOutputAngleDesired = thetaHipVector[count], thetaKneeVector[count]
                 count += 1  # Increment step
                 print(f"\nCount: {(count)}\n")
                 # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
-
         elif crouching and count >= len(thetaHipVector):
-                hipOutputAngleDesired = hipCrouchAngleDesired
-                kneeOutputAngleDesired = kneeCrouchAngleDesired
+                hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
                 crouching = False
-                crouchHeightDesiredNew = crouchHeightDesiredPrev
-                # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
-
+                crouchHeightDesiredPrev = crouchHeightDesiredNew
+                print("\nCorrect crouch height. Legs Fixed\n")
         else:
                 hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
-                crouchHeightDesiredNew = crouchHeightDesiredPrev
-                print("\n")
-                print("Correct crouch height. Legs Fixed")
+                crouchHeightDesiredPrev = crouchHeightDesiredNew
+                print("\nCorrect crouch height. Legs Fixed\n")
 
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+        loopTime = startTime - time.millis()
+        print(f"Loop Time: {loopTime}\n")
+
+# Plotting
+plt.figure()
+plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (deg)')
+plt.title('Hip and Knee Angles Over Time')
+plt.legend()
+plt.grid()
+plt.show()

@@ -60,17 +60,17 @@ kneeCommandAngles = []
 
 timeSteps = []
 
-globalStartTime = time.millis()
+globalStartTime = time.time()
 
 while True:
         while not offsetCalibration: ### & other
                 hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                 time.sleep(sleepTime)
                 ### IDEA: Add position calibration
-                #globalStartTime = time.millis()
+                #globalStartTime = time.time()
 
         # MAIN CONTROL LOOP
-        startTime = time.millis()
+        startTime = time.time()
         elapsedTime = startTime - globalStartTime
         timeSteps.append(elapsedTime)
 
@@ -128,7 +128,7 @@ while True:
 
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
-        loopTime = startTime - time.millis()
+        loopTime = startTime - time.time()
         print(f"Loop Time: {loopTime}\n")
 
 # Plotting

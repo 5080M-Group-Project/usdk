@@ -49,7 +49,7 @@ offsetCalibration = False
 sleepTime = 0.002
 
 crouching = False
-crouchStart = False
+crouchHeightDesiredPrev = 0.33
 
 while True:
         while not offsetCalibration: ### & other
@@ -83,11 +83,10 @@ while True:
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
-        crouchHeightDesiredPrev = 0.33
+
         # Crouch Control
         crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
         #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
-        crouchThreshold = 0.01  # m
 
         #xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
         #crouchHeightCurrent = abs(yWheelCurrent)
@@ -117,6 +116,7 @@ while True:
                 hipOutputAngleDesired = hipCrouchAngleDesired
                 kneeOutputAngleDesired = kneeCrouchAngleDesired
                 crouching = False
+                crouchHeightDesiredNew = crouchHeightDesiredPrev
                 # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
         else:
                 hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired

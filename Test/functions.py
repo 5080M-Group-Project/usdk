@@ -232,32 +232,3 @@ def startCrouchPhase(crouchHeightDesired, thetaHipCurrent, thetaKneeCurrent, dt,
     thetaKneeVector = np.linspace(thetaKneeCurrent, thetaKneeDesired, num=N)
 
     return thetaHipVector, thetaKneeVector
-
-
-
-
-def crouchingMotion2(crouchHeightDesired, hipOutputAngleCurrent, kneeOutputAngleCurrent, dt, T):
-    """Controls the crouching motion and selects the appropriate angles."""
-    global crouching
-
-    crouchThreshold = 0.01  # m
-
-    xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
-    crouchHeightCurrent = abs(yWheelCurrent)
-    crouchHeightError = abs(crouchHeightDesired - crouchHeightCurrent)
-
-    if crouchHeightError > crouchThreshold:
-        ### IDEA: use moving leg kp and kd for crouching motion??
-        if not crouching:
-            startCrouchPhase(crouchHeightDesired, hipOutputAngleCurrent, kneeOutputAngleCurrent, dt,
-                             T)  # Initialize crouch phase
-        hipOutputAngleDesired, kneeOutputAngleDesired = getCrouchAnglesDeg()
-        # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
-    else:
-        ### IDEA: use fixed leg kp and kd for suspension??
-        hipOutputAngleDesired, kneeOutputAngleDesired = hipOutputAngleCurrent, kneeOutputAngleCurrent
-        print("\n")
-        print("Correct crouch height. Legs Fixed")
-
-    print(f"\nCrouch Error {crouchHeightError:.3f}\n")
-    return hipOutputAngleDesired, kneeOutputAngleDesired

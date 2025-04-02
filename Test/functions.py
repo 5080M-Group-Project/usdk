@@ -87,13 +87,12 @@ def getOffset(motorID, modelledInitialAngle):
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
-    time.sleep(0.002)  # 200 us
+    #time.sleep(0.002)  # 200 us
     return offset, rawInitialAngle
 
 def calibrateJointReadings():
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
     hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
-
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
 
 

@@ -51,6 +51,8 @@ sleepTime = 0.02
 crouching = False
 crouchHeightDesiredPrev = 0.33
 
+globalStartTime = time.time()
+
 # Data storage for plotting
 hipOutputAngles = []
 kneeOutputAngles = []
@@ -143,7 +145,7 @@ while True:
         fig.canvas.draw()
         fig.canvas.flush_events()
         plt.pause(0.01)
-        
+
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
         loopTime = startTime - time.time()
         print(f"Loop Time: {loopTime}\n")

@@ -70,8 +70,6 @@ line4, = ax.plot([], [], label='Knee Command Angle')
 ax.legend()
 ax.grid()
 
-globalStartTime = time.time()
-
 while True:
         while not offsetCalibration: ### & other
                 hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
@@ -142,9 +140,23 @@ while True:
         line4.set_data(timeSteps, kneeCommandAngles)
         ax.relim()
         ax.autoscale_view()
-        plt.pause(sleepTime)
-
+        fig.canvas.draw()
+        fig.canvas.flush_events()
+        plt.pause(0.01)
+        
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
         loopTime = startTime - time.time()
         print(f"Loop Time: {loopTime}\n")
 
+# Plotting
+plt.figure()
+plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+plt.xlabel('Time (s)')
+plt.ylabel('Angle (deg)')
+plt.title('Hip and Knee Angles Over Time')
+plt.legend()
+plt.grid()
+plt.show()

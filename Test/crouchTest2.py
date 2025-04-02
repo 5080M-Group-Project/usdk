@@ -132,16 +132,18 @@ try:
                 print(f"Loop Time: {loopTime}\n")
 
 except KeyboardInterrupt:
-# Plotting
-plt.figure()
-plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
-plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
-plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
-plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
-plt.xlabel('Time (s)')
-plt.ylabel('Angle (deg)')
-plt.title('Hip and Knee Angles Over Time')
-plt.legend()
-plt.grid()
-plt.show()
-plt.savefig("AnglesPlot.png", dpi=300)  # Save as a high-resolution PNG
+        print("\nLoop stopped by user. Saving figure...")
+
+        # Plotting
+        plt.figure()
+        plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+        plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+        plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+        plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+        plt.xlabel('Time (s)')
+        plt.ylabel('Angle (deg)')
+        plt.title('Hip and Knee Angles Over Time')
+        plt.legend()
+        plt.grid()
+        plt.show()
+        plt.savefig("AnglesPlot.png", dpi=300)  # Save as a high-resolution PNG

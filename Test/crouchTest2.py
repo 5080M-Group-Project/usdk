@@ -46,7 +46,7 @@ hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 hipOffset, kneeOffset = 0.0, 0.0
 
 offsetCalibration = False
-sleepTime = 0.02
+sleepTime = 0.05
 
 crouching = False
 crouchHeightDesiredPrev = 0.33
@@ -163,10 +163,11 @@ except KeyboardInterrupt:
                 plt.grid()
 
                 # Save the figure before exiting
-                plt.savefig("hip_knee_angles.png", dpi=300)
-                print("Figure saved as hip_knee_angles.png")
+                plt.savefig("JointAnglesOverTime.png", dpi=300)
+                print("Figure saved as JointAngleOverTime.png")
 
-                plt.show()
+                # Close the plot
+                plt.close()
 
         except Exception as e:
                 print(f"Error encountered while saving figure: {e}")

@@ -106,14 +106,14 @@ while True:
                 count = 0
                 crouching = True  # Enable crouching phase
 
-        if crouching and count <= len(thetaHipVector):
+        if crouching and count < len(thetaHipVector):
                 hipOutputAngleDesired = thetaHipVector[count]
                 kneeOutputAngleDesired = thetaKneeVector[count]
                 count += 1  # Increment step
                 print(f"\nCount: {(count)}\n")
                 # print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesired:.3f}")
 
-        elif crouching and count > len(thetaHipVector):
+        elif crouching and count >= len(thetaHipVector):
                 hipOutputAngleDesired = hipCrouchAngleDesired
                 kneeOutputAngleDesired = kneeCrouchAngleDesired
                 crouching = False

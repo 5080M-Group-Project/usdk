@@ -244,7 +244,7 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     plt.xlabel('Time (s)')
     plt.ylabel('Angle (deg)')
     plt.title('Hip and Knee Angles Over Time')
-    plt.legend()
+    plt.legend(loc='upper center')
     plt.grid()
 
     # Save the figure before exiting

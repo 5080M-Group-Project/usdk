@@ -95,8 +95,13 @@ try:
                 data.motorType = MotorType.A1
                 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
-                cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
-
+                #cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+                cmd.id = id.hip
+                cmd.kp = kpRotorHip  # proportional or position term. i.e. stiffness
+                cmd.kd = kdRotorHip  # derivative or velocity term, i.e damping
+                cmd.q = hipRotorAngleDesired  # angle, radians
+                cmd.dq = 0.0  # angular velocity, radians/s
+                cmd.tau = hipTau  # rotor feedforward torque
                 serial.sendRecv(cmd, data)
 
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
@@ -113,8 +118,13 @@ try:
                 data.motorType = MotorType.A1
                 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
-                cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
-
+                #cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+                cmd.id = id.knee
+                cmd.kp = kpRotorKnee # proportional or position term. i.e. stiffness
+                cmd.kd = kdRotorKnee  # derivative or velocity term, i.e damping
+                cmd.q = kneeRotorAngleDesired  # angle, radians
+                cmd.dq = 0.0  # angular velocity, radians/s
+                cmd.tau = kneeTau  # rotor feedforward torque
                 serial.sendRecv(cmd, data)
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??

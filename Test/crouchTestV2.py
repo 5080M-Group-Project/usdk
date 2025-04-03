@@ -58,6 +58,8 @@ wheelOutputAngularVelocityDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0
 hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 hipOffset, kneeOffset = 0.0, 0.0
 
+hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
+
 offsetCalibration = False
 sleepTime = 0.1
 

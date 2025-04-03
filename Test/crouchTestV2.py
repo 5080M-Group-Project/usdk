@@ -110,7 +110,9 @@ try:
 
                 hipOutputAngles.append(hipOutputAngleCurrent)
                 hipCommandAngles.append(hipOutputAngleDesired)
-                #time.sleep(sleepTime)
+
+
+                time.sleep(sleepTime/10.0)
 
 
                 # Knee Motor Control

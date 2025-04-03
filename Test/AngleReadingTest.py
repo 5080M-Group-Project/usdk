@@ -93,7 +93,7 @@ except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:
             # Ensure all lists have the same length
-            min_length = min(len(timeSteps), len(hipOutputAnglesDeg), len(kneeOutputAnglesDeg))
+            min_length = min(len(timeSteps), len(hipOutputAnglesDeg))#, len(kneeOutputAnglesDeg))
 
             if min_length == 0:
                 print("No data collected. Exiting without saving.")
@@ -101,12 +101,12 @@ except KeyboardInterrupt:
 
             timeSteps = timeSteps[:min_length]
             hipOutputAngles = hipOutputAnglesDeg[:min_length]
-            kneeOutputAngles = kneeOutputAnglesDeg[:min_length]
+            #kneeOutputAngles = kneeOutputAnglesDeg[:min_length]
 
             # Plotting
             plt.figure()
             plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
-            plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+            #plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
 
             plt.xlabel('Time (s)')
             plt.ylabel('Angle (deg)')

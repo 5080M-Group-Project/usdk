@@ -215,3 +215,37 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
 
+def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles):
+    # Ensure all lists have the same length
+    min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
+                     len(kneeCommandAngles))
+
+    if min_length == 0:
+        print("No data collected. Exiting without saving.")
+        sys.exit(0)  # Exit safely if no data
+
+    timeSteps = timeSteps[:min_length]
+    hipOutputAngles = hipOutputAngles[:min_length]
+    kneeOutputAngles = kneeOutputAngles[:min_length]
+    hipCommandAngles = hipCommandAngles[:min_length]
+    kneeCommandAngles = kneeCommandAngles[:min_length]
+
+    # Plotting
+    plt.figure()
+    plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+    plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+    plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+    plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Angle (deg)')
+    plt.title('Hip and Knee Angles Over Time')
+    plt.legend()
+    plt.grid()
+
+    # Save the figure before exiting
+    plt.savefig("JointAnglesOverTime.png", dpi=300)
+    print("Figure saved as JointAngleOverTime.png")
+
+    # Close the plot
+    plt.close()

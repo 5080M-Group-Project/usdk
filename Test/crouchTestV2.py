@@ -22,21 +22,34 @@ gearRatio = queryGearRatio(MotorType.A1)
 # Initialize Hip Motor
 kpOutHip, kdOutHip = 10.0, 0.2 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
 
-
+serial.sendRecv(cmd, data)
 # Initialize Knee Motor
 kpOutKnee, kdOutKnee = 10.0, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 
-
+serial.sendRecv(cmd, data)
+'''
 # Initialize Wheel Motor
 kpOutWheel, kdOutWheel = 0.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
+
 cmdActuator(id.wheel,0.0,0.0,0.0,0.0,0.0)
 
 #wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
+'''
 
 #Initialize Loop Variables
 torque = 0.0

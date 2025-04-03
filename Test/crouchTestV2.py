@@ -64,7 +64,7 @@ globalStartTime = time.time()
 
 try:
         while True:
-                while not offsetCalibration: ### & other
+                if not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                         time.sleep(sleepTime)
                         ### IDEA: Add position calibration

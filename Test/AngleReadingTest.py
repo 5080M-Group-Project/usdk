@@ -93,8 +93,7 @@ except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:
             # Ensure all lists have the same length
-            min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
-                             len(kneeCommandAngles))
+            min_length = min(len(timeSteps), len(hipOutputAnglesDeg), len(kneeOutputAnglesDeg))
 
             if min_length == 0:
                 print("No data collected. Exiting without saving.")

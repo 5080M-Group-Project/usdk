@@ -1,7 +1,7 @@
 import time
 import sys
 from typing import Any
-
+import matplotlib.pyplot as plt
 import numpy as np
 
 from functions import *
@@ -20,13 +20,13 @@ gearRatio = queryGearRatio(MotorType.A1)
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
 
 # Initialize Hip Motor
-kpOutHip, kdOutHip = 2.5, 0.2 ### IDEA: Modify throughout the loop i.e. when locking legs
+kpOutHip, kdOutHip = 5.0, 0.2 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
 
 
 # Initialize Knee Motor
-kpOutKnee, kdOutKnee = 2.5, 0.2
+kpOutKnee, kdOutKnee = 5.0, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 
@@ -46,50 +46,37 @@ hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
 hipOffset, kneeOffset = 0.0, 0.0
 
 offsetCalibration = False
-loopTime = 0.0002
+sleepTime = 0.002
 
 while True:
         while not offsetCalibration: ### & other
                 hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
-                time.sleep(loopTime)
+                time.sleep(sleepTime)
                 ### IDEA: Add position calibration
 
         # MAIN CONTROL LOOP
-        if hipOutputAngleDesired < 0:
-                hipOutputAngleDesired = (hipOutputAngleDesired + 360)
-        elif kneeOutputAngleDesired < 0:
-                kneeOutputAngleDesired = (kneeOutputAngleDesired + 360)
 
         hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
         # Hip Motor Control
+
         cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
         hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
-        print(f"\nHip Angle (Deg) NO OFFSET: {(data.q/gearRatio)*(180 / np.pi)}\n")
-        print(f"\nHip Angle (Deg) COMMAND: {hipOutputAngleDesired}\n")
+        time.sleep(sleepTime)
+
 
         # Knee Motor Control
         cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
         kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
-        print(f"\nKnee Angle (Deg) NO OFFSET: {(data.q / gearRatio) * (180 / np.pi)}\n")
-        print(f"\nKnee Angle (Deg) COMMAND: {kneeOutputAngleDesired}\n")
 
 
         # Crouch Control
-        #crouchHeightDesired = 0.33  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
-        #crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
+        crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
 
-        '''
-        # Wheel Motor Control
-        ######DETERMINING DESIRED ANGULAR VELOCITY FROM: POSITION, STEERING, AND BALANCE CONTROLLERS#######
-        cmdActuator(id.wheel, 0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau)
-        wheelTorque = calculateOutputTorque(0.0, kdRotorWheel, 0.0, wheelRotorAngularVelocityDesired, wheelTau, data.q, data.dq) #kpRotor or kpOutput??
-        outputData(id.wheel, data.q, data.dq, torque, data.temp, data.merror)
-        #### When reading angle, can do q/2pi and remainder gives angle, then apply offset?
-        '''
 
-        time.sleep(loopTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+        time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism

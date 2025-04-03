@@ -1,6 +1,7 @@
 import time
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
@@ -10,6 +11,12 @@ cmd = MotorCmd()
 data = MotorData()
 
 gearRatio = queryGearRatio(MotorType.A1)
+
+# Global variables for crouching state
+crouching = False
+count = 0
+thetaHipVector = []
+thetaKneeVector = []
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
     # Static variables (class variables)
@@ -58,9 +65,11 @@ def getRotorAngleRad(outputAngle):
 
 # Function to send actuator commands
 def cmdActuator(id, kp, kd, q, dq, tau):
+    '''
     cmd.motorType = MotorType.A1
     data.motorType = MotorType.A1
     cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+    '''
     cmd.id = id
     cmd.kp = kp  # proportional or position term. i.e. stiffness
     cmd.kd = kd  # derivative or velocity term, i.e damping
@@ -68,14 +77,19 @@ def cmdActuator(id, kp, kd, q, dq, tau):
     cmd.dq = dq  # angular velocity, radians/s
     cmd.tau = tau  # rotor feedforward torque
 
+    #serial.sendRecv(cmd, data)
+
+def getOffset(motorID, modelledInitialAngle):
+    """Calibrate a motor and return its offset and initial raw angle."""
+    cmd.motorType = MotorType.A1
+    data.motorType = MotorType.A1
+    cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+    cmd.id = motorID
     serial.sendRecv(cmd, data)
 
-def getOffset(motorId, modelledInitialAngle):
-    """Calibrate a motor and return its offset and initial raw angle."""
-    cmdActuator(motorId, 0.0, 0.0, 0.0, 0.0, 0.0)
-    time.sleep(0.002)
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
+    #time.sleep(0.002)  # 200 us
     return offset, rawInitialAngle
 
 def calibrateJointReadings():
@@ -83,8 +97,9 @@ def calibrateJointReadings():
     hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
     kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
 
+
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 17 > hipAngleInitialRaw > 16
+    hipCalibration = 17 > hipAngleInitialRaw > 15
     kneeCalibration = 27 > kneeAngleInitialRaw > 26
     offsetCalibration = hipCalibration + kneeCalibration
 
@@ -103,8 +118,16 @@ def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent)
     return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
 
 # Function to output motor data
-def outputData(MotorID, qDeg, dqRads, torqueNm, temp, merror):
-        motorLabel = id.getName(MotorID)
+def outputData(motorID, qDeg, dqRads, torqueNm, temp, merror):
+        '''
+        cmd.motorType = MotorType.A1
+        data.motorType = MotorType.A1
+        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+        cmd.id = motorID
+        serial.sendRecv(cmd, data)
+        '''
+
+        motorLabel = id.getName(motorID)
 
         print("\n")
         print(f"{motorLabel} Motor")
@@ -152,7 +175,6 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
         thetaHip = (gamma + alpha) * (180.0 / np.pi)
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)
 
-
     # Return angles as a tuple
     return thetaHip, thetaKnee
 
@@ -173,7 +195,7 @@ def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
     # Return the updated angles
     return thetaHipNew, thetaKneeNew
 
-def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent):
+def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent):
     crouchThreshold = 0.001  # m
 
     xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
@@ -194,4 +216,41 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
         print("Correct crouch height. Legs Fixed")
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
+
+
+
+def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles):
+    # Ensure all lists have the same length
+    min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
+                     len(kneeCommandAngles))
+
+    if min_length == 0:
+        print("No data collected. Exiting without saving.")
+        sys.exit(0)  # Exit safely if no data
+
+    timeSteps = timeSteps[:min_length]
+    hipOutputAngles = hipOutputAngles[:min_length]
+    kneeOutputAngles = kneeOutputAngles[:min_length]
+    hipCommandAngles = hipCommandAngles[:min_length]
+    kneeCommandAngles = kneeCommandAngles[:min_length]
+
+    # Plotting
+    plt.figure()
+    plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
+    plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+    plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
+    plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Angle (deg)')
+    plt.title('Hip and Knee Angles Over Time')
+    plt.legend(loc='best')
+    plt.grid()
+
+    # Save the figure before exiting
+    plt.savefig("JointAnglesOverTime.png", dpi=300)
+    print("Figure saved as JointAngleOverTime.png")
+
+    # Close the plot
+    plt.close()
 

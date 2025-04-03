@@ -102,7 +102,6 @@ try:
                 crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
                 #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 
-
                 if (crouchHeightDesiredNew != crouchHeightDesiredPrev) and not crouching:
                         N = int(2.0 / sleepTime)  # Ensure N is an integer
                         # Get current and desired joint angles
@@ -127,10 +126,9 @@ try:
                         crouchHeightDesiredPrev = crouchHeightDesiredNew
                         print("\nCorrect crouch height. Legs Fixed\n")
 
-
-                time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
+                time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")

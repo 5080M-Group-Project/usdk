@@ -193,7 +193,7 @@ def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
     # Return the updated angles
     return thetaHipNew, thetaKneeNew
 
-def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent):
+def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent):
     crouchThreshold = 0.001  # m
 
     xWheelCurrent, yWheelCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
@@ -214,6 +214,8 @@ def crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCur
         print("Correct crouch height. Legs Fixed")
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
+
+
 
 def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles):
     # Ensure all lists have the same length
@@ -249,3 +251,4 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
 
     # Close the plot
     plt.close()
+

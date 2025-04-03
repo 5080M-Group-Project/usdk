@@ -76,7 +76,7 @@ while True:
 
         # Crouch Control
         crouchHeightDesired = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
-        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
+        hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent)
 
 
         time.sleep(sleepTime) # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism

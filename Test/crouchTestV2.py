@@ -83,6 +83,7 @@ try:
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                         time.sleep(sleepTime)
                         hipOutputAngleCurrent = hipOutputAngleDesired
+                        kneeOutputAngleCurrent = kneeOutputAngleDesired
                         ### IDEA: Add position calibration
                         #globalStartTime = time.time()
 
@@ -133,10 +134,13 @@ try:
                 cmd.q = kneeRotorAngleDesired  # angle, radians
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
-                serial.sendRecv(cmd, data)
+                if serial.sendRecv(cmd, data):
+                        kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+                else:
+                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response!")
+                        kneeOutputAngleCurrent = kneeOutputAngleCurrent
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
-                kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
                 kneeOutputAngles.append(kneeOutputAngleCurrent)

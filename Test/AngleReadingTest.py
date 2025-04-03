@@ -67,7 +67,7 @@ try:
             print('\n')
 
             time.sleep(0.02)  # 200 us
-
+            '''
             data.motorType = MotorType.A1
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -88,7 +88,7 @@ try:
             print(f"ISSUE? {data.merror}")
             print('\n')
             time.sleep(0.02)  # 200 us
-
+            '''
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:

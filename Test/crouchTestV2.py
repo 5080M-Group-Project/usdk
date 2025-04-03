@@ -82,7 +82,7 @@ try:
                 while not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                         time.sleep(sleepTime)
-                        hipOutputAngleCurrent = hipOutputAngleCurrent
+                        hipOutputAngleCurrent = hipOutputAngleDesired
                         ### IDEA: Add position calibration
                         #globalStartTime = time.time()
 

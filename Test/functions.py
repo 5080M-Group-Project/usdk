@@ -65,9 +65,11 @@ def getRotorAngleRad(outputAngle):
 
 # Function to send actuator commands
 def cmdActuator(id, kp, kd, q, dq, tau):
+    '''
     cmd.motorType = MotorType.A1
     data.motorType = MotorType.A1
     cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+    '''
     cmd.id = id
     cmd.kp = kp  # proportional or position term. i.e. stiffness
     cmd.kd = kd  # derivative or velocity term, i.e damping
@@ -75,7 +77,7 @@ def cmdActuator(id, kp, kd, q, dq, tau):
     cmd.dq = dq  # angular velocity, radians/s
     cmd.tau = tau  # rotor feedforward torque
 
-    serial.sendRecv(cmd, data)
+    #serial.sendRecv(cmd, data)
 
 def getOffset(motorID, modelledInitialAngle):
     """Calibrate a motor and return its offset and initial raw angle."""

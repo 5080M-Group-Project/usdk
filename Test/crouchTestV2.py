@@ -64,7 +64,7 @@ globalStartTime = time.time()
 
 try:
         while True:
-                if not offsetCalibration: ### & other
+                while not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                         time.sleep(sleepTime)
                         ### IDEA: Add position calibration
@@ -72,14 +72,20 @@ try:
 
                 # MAIN CONTROL LOOP
                 startTime = time.time()
-
                 elapsedTime = startTime - globalStartTime
                 timeSteps.append(elapsedTime)
 
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
                 # Hip Motor Control
+                cmd.motorType = MotorType.A1
+                data.motorType = MotorType.A1
+                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
                 cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+
+                serial.sendRecv(cmd, data)
+
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
@@ -90,7 +96,14 @@ try:
 
 
                 # Knee Motor Control
+                cmd.motorType = MotorType.A1
+                data.motorType = MotorType.A1
+                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
                 cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+
+                serial.sendRecv(cmd, data)
+
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)

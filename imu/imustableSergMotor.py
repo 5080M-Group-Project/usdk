@@ -21,6 +21,11 @@ gearRatio = queryGearRatio(MotorType.A1)
 i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
 
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
+
 
 # Initialize serial communication with the motor
   # Adjust as needed
@@ -57,5 +62,6 @@ while True:
     # Send the motor command to stabilize the head
     cmd.q = pitch_error  # Desired motor position (could be an angle adjustment)
     serial.sendRecv(cmd, data)  # Send the command to the motor and get feedback
+
 
     time.sleep(0.001)

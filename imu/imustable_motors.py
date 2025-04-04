@@ -17,9 +17,9 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 
 # Initialize serial communication with the motor
-serial_port = '/dev/ttyUSB0'  # Adjust as needed
+  # Adjust as needed
 baud_rate = 115200
-ser = serial.Serial(serial_port, baud_rate, timeout=1)
+
 cmd = MotorCmd()
 data = MotorData()
 # PID Controller for position control

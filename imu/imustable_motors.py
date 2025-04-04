@@ -1,58 +1,73 @@
 import time
 import math
-import serial
 import numpy as np
+import serial
 from simple_pid import PID
-from adafruit_bno055 import BNO055
 import board
 import busio
+from adafruit_bno055 import BNO055
 
-# Initialize I2C for the BNO055 IMU
+from unitree_actuator_sdk import *
+from functions import getRotorGains, getRotorAngleRad, getOutputAngleDeg, calculateOutputTorque, cmdActuator, outputData
+
+### === Init IMU === ###
 i2c = busio.I2C(board.SCL, board.SDA)
 imu = BNO055(i2c)
 
-# Initialize serial communication with the motor
-serial_port = '/dev/ttyUSB0'  # Adjust as needed
-baud_rate = 115200
-ser = serial.Serial(serial_port, baud_rate, timeout=1)
+### === Init Motor === ###
+serial = SerialPort('/dev/ttyUSB0')  # Make sure ttyUSB0 is correct
+cmd = MotorCmd()
+data = MotorData()
 
-# PID Controller for position control
-kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
-pid = PID(kp, ki, kd, setpoint=0)
-pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
+motor_id = 0  # Replace with actual motor ID, e.g., id.hip
+
+### === PID Controller === ###
+kp, ki, kd = 3.0, 0.0, 0.3
+pid = PID(kp, ki, kd, setpoint=0.0)  # Target pitch = 0 degrees
+pid.output_limits = (-10, 10)  # Output in degrees
+
+### === Gains for Motor Position Control === ###
+kpOut, kdOut = 10.0, 0.2
+kpRotor, kdRotor = getRotorGains(kpOut, kdOut)
+
+### === Helper === ###
 def get_pitch():
-    """Returns the current pitch angle from the IMU in degrees."""
-    pitch = imu.euler[1]  # BNO055 euler[1] gives pitch
+    pitch = imu.euler[1]
     return pitch if pitch is not None else 0.0
 
-def send_motor_command(position):
-    """Sends position command to the motor."""
-    # Construct the command packet according to Unitree's communication protocol
-    # This is a placeholder; refer to Unitree's SDK documentation for exact packet structure
-    command = f"#{position}\n"
-    ser.write(command.encode())
-
+### === Balance Loop === ###
 def balance_motor():
-    """Continuously adjusts motor position to maintain zero pitch."""
     while True:
-        # Read current pitch angle
-        pitch = get_pitch()
+        pitch = get_pitch()  # In degrees
+        desired_angle_deg = pid(pitch)  # PID output in degrees
 
-        # Compute PID control output (desired position adjustment)
-        position_adjustment = pid(pitch)
+        desired_angle_rad = getRotorAngleRad(desired_angle_deg)  # Convert to rotor space (radians)
 
-        # Send position command to motor
-        send_motor_command(position_adjustment)
+        # Send command
+        cmd.id = motor_id
+        cmd.kp = kpRotor
+        cmd.kd = kdRotor
+        cmd.q = desired_angle_rad
+        cmd.dq = 0.0
+        cmd.tau = 0.0
 
-        # Debugging output
-        print(f"Pitch: {pitch:.2f} deg, Position Adjustment: {math.degrees(position_adjustment):.2f} deg")
+        if serial.sendRecv(cmd, data):
+            actual_output_angle = getOutputAngleDeg(data.q)
+        else:
+            print("[WARNING] No motor response.")
+            continue
 
-        time.sleep(0.01)  # 10ms loop time
+        print(f"Pitch: {pitch:.2f}°, Command: {desired_angle_deg:.2f}°, Actual: {actual_output_angle:.2f}°")
+        time.sleep(0.01)
 
+### === Main === ###
 if __name__ == "__main__":
     try:
         balance_motor()
     except KeyboardInterrupt:
-        print("\nStopping motor...")
-        send_motor_command(0)  # Send neutral command to stop motor safely
+        print("Stopping...")
+        cmdActuator(motor_id, 0, 0, 0, 0, 0)

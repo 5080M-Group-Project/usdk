@@ -27,7 +27,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-cmd.id = 0  # Make sure this is correct for your setup
+cmd.id = 0  
 
 # Rotor control gains (convert from output gains)
 kpOutWheel, kdOutWheel = 0.0, 0.0
@@ -38,7 +38,7 @@ kp, ki, kd = 3.0, 0.1, 0.5
 pid = PID(kp, ki, kd, setpoint=0.0)  # Desired pitch is 0°
 pid.output_limits = (-math.radians(10), math.radians(10))  # ±10° in radians
 
-sleepTime = 0.01  # 10 ms loop
+sleepTime = 1  # seconds
 
 print("🟢 Starting pitch stabilization loop...")
 
@@ -78,4 +78,4 @@ try:
         time.sleep(sleepTime)
 
 except KeyboardInterrupt:
-    print("\n🛑 Program interrupted by user. Exiting...")
+    print("\n🛑 YOU KNOW WHO I AM...")

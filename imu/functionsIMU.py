@@ -259,10 +259,3 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
 
     # Close the plot
     plt.close()
-
-def get_pitch():
-    """Returns the current pitch angle from the IMU in degrees."""
-    pitch = imu.euler[1]  # BNO055 euler[1] gives pitch
-    return pitch if pitch is not None else 0.0
-
-#aa

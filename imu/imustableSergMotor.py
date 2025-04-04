@@ -47,14 +47,9 @@ cmd.id = 0
 motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle in degrees
 
 
-def get_pitch():
-    """Returns the current pitch angle from the IMU in degrees."""
-    pitch = imu.euler[1]  # BNO055 euler[1] gives pitch
-    return pitch if pitch is not None else 0.0
-
 while True:
     # Get current pitch angle from the IMU
-    current_pitch = get_pitch(imu)  # Assuming this function returns the pitch in degrees
+    current_pitch = imu.euler[1]  # Assuming this function returns the pitch in degrees
 
     # Calculate the error (difference between desired and current pitch)
     pitch_error = pid(current_pitch)  # PID calculates the control effort

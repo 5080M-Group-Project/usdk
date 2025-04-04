@@ -47,7 +47,7 @@ tau = 0.0
 sleepTime = 0.1
 pid = PID(kp, ki, kd, setpoint=0)
 pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
-cmd.id = 1
+cmd.id = 0
 
 motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle in degrees
 
@@ -55,6 +55,12 @@ motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle i
 while True:
     # Get current pitch angle from the IMU
     current_pitch = imu.euler[1]  # Assuming this function returns the pitch in degrees
+    current_pitch = imu.euler[1]
+    if current_pitch is None:
+      print("⚠️ IMU data not available. Skipping this loop iteration.")
+      time.sleep(0.01)
+      continue
+    print(f"IMU euler output:" {imu.euler}) 
 
     # Calculate the error (difference between desired and current pitch)
     pitch_error = pid(current_pitch)  # PID calculates the control effort

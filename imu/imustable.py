@@ -27,4 +27,4 @@ while True:
 
     print()
 
-    time.sleep(1)
+    #ime.sleep(1)

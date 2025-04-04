@@ -26,7 +26,7 @@ data = MotorData()
 kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
 pid = PID(kp, ki, kd, setpoint=0)
 pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
-
+cmd.id = 0
 def get_pitch():
     """Returns the current pitch angle from the IMU in degrees."""
     pitch = imu.euler[1]  # BNO055 euler[1] gives pitch

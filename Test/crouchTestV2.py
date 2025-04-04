@@ -23,6 +23,11 @@ gearRatio = queryGearRatio(MotorType.A1)
 kpOutHip, kdOutHip = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 
+# Initialize Knee Motor
+kpOutKnee, kdOutKnee = 10.0, 3.0
+kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
+
+
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -30,9 +35,8 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
 
 serial.sendRecv(cmd, data)
-# Initialize Knee Motor
-kpOutKnee, kdOutKnee = 10.0, 3.0
-kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
+
+
 
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
@@ -65,6 +69,7 @@ sleepTime = 0.1
 
 crouching = False
 crouchHeightDesiredPrev = 0.33
+crouchTime = 1.0
 
 # Data storage for plotting
 hipOutputAngles = []
@@ -151,7 +156,7 @@ try:
                 #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 
                 if (crouchHeightDesiredNew != crouchHeightDesiredPrev) and not crouching:
-                        N = int(0.50 / sleepTime)  # Ensure N is an integer
+                        N = int(crouchTime / sleepTime)  # Ensure N is an integer
                         # Get current and desired joint angles
                         hipCrouchAngleDesired, kneeCrouchAngleDesired = inverseKinematicsDeg(0.0, -crouchHeightDesiredNew, 'front')
                         # Generate interpolation vectors
@@ -182,7 +187,7 @@ try:
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:
-                plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kpOutHip, kdOutHip)
+                plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchTime, kpOutHip, kdOutHip)
         except Exception as e:
                 print(f"Error encountered while saving figure: {e}")
         finally:

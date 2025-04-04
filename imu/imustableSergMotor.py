@@ -53,6 +53,38 @@ motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle i
 
 
 while True:
+    euler = imu.euler
+    print(f"IMU Euler: {euler}")
+
+    current_pitch = euler[1]
+    if current_pitch is None:
+        print("⚠️ IMU data not available. Skipping iteration.")
+        time.sleep(0.01)
+        continue
+
+    # Run PID
+    pitch_error = pid(current_pitch)
+
+    # Read motor angle
+    if serial.sendRecv(cmd, data):
+        motor_current_deg = getOutputAngleDeg(data.q)
+        motor_target_deg = motor_current_deg + math.degrees(pitch_error)
+        motor_target_rad = math.radians(motor_target_deg)
+
+        cmd.q = motor_target_rad
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.dq = 0.0
+        cmd.tau = 0.0
+
+        serial.sendRecv(cmd, data)
+    else:
+        print("[WARNING] Motor not responding")
+
+    time.sleep(0.01)
+
+'''''
+while True:
     # Get current pitch angle from the IMU
     print(f"IMU euler output: {imu.euler}")
     current_pitch = imu.euler[1]  # Assuming this function returns the pitch in degrees
@@ -72,3 +104,4 @@ while True:
 
 
     time.sleep(0.001)
+    '''

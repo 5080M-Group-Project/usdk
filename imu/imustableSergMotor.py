@@ -42,7 +42,7 @@ sleepTime = 1  # seconds
 
 print("🟢 Starting pitch stabilization loop...")
 
-# Set FOC mode
+# Set FOC mode p
 cmd.q = math.radians(30)
 cmd.dq = 0.0
 cmd.tau = 0.0

@@ -51,7 +51,7 @@ def balance_motor():
 
         # Send position command to motor
         send_motor_command(position_adjustment)
-        mangle = str(data.q)
+        mangle = float(data.q)
         # Debugging output
         print(f"Pitch: {pitch:.2f} deg, Position Adjustment: {math.degrees(position_adjustment):.2f} deg")
         print(f"Motor angle: {mangle:.2f} deg,")

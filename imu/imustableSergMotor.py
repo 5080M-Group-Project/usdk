@@ -49,7 +49,7 @@ motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle i
 
 while True:
     # Get current pitch angle from the IMU
-    current_pitch = get_pitch()  # Assuming this function returns the pitch in degrees
+    current_pitch = get_pitch(imu)  # Assuming this function returns the pitch in degrees
 
     # Calculate the error (difference between desired and current pitch)
     pitch_error = pid(current_pitch)  # PID calculates the control effort

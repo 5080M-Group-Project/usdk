@@ -30,7 +30,7 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 cmd.id = 0  
 
 # Rotor control gains (convert from output gains)
-kpOutWheel, kdOutWheel = 0.0, 0.0
+kpOutWheel, kdOutWheel = 7.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # PID Controller for stabilizing pitch
@@ -41,6 +41,15 @@ pid.output_limits = (-math.radians(10), math.radians(10))  # ±10° in radians
 sleepTime = 1  # seconds
 
 print("🟢 Starting pitch stabilization loop...")
+
+# Set FOC mode
+cmd.q = math.radians(30)
+cmd.dq = 0.0
+cmd.tau = 0.0
+cmd.kp = 0.0
+cmd.kd = 0.0
+serial.sendRecv(cmd, data)
+time.sleep(0.1)
 
 try:
     while True:

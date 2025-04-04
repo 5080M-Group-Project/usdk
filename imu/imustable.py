@@ -22,7 +22,7 @@ last_val = 0xFFFF
 while True:
 
 
-    print("Gyroscope (rad/sec): {}".format(sensor.gyro))
+    print("Gyroscope (rad/sec): {}".format(sensor.gyro[1]))
     print("pitch angle: {}".format(sensor.euler[1]))
 
     print()

@@ -31,8 +31,9 @@ baud_rate = 115200
 kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
 angleDesired = 0.0
 kpOutWheel, kdOutWheel = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
-kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutHip, kdOutHip)
 
+wheelOutputAngleCurrent = 0.0
 
 #Initialize Loop Variables
 torque = 0.0
@@ -43,6 +44,18 @@ pid = PID(kp, ki, kd, setpoint=0)
 pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
 cmd.id = 0
 
+motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle in degrees
+
 
 while True:
-    WheelOutputAngleCurrent = getOutputAngleDeg()
+    # Get current pitch angle from the IMU
+    current_pitch = get_pitch()  # Assuming this function returns the pitch in degrees
+
+    # Calculate the error (difference between desired and current pitch)
+    pitch_error = pid(current_pitch)  # PID calculates the control effort
+
+    # Send the motor command to stabilize the head
+    cmd.q = pitch_error  # Desired motor position (could be an angle adjustment)
+    serial.sendRecv(cmd, data)  # Send the command to the motor and get feedback
+
+    time.sleep(0.001)

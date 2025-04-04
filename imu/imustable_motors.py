@@ -8,8 +8,9 @@ import board
 import busio
 
 # Initialize I2C for the BNO055 IMU
-i2c = busio.I2C(board.SCL, board.SDA)
-imu = BNO055(i2c)
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
+
 
 # Initialize serial communication with the motor
 serial_port = '/dev/ttyUSB0'  # Adjust as needed

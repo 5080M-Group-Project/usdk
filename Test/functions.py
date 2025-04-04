@@ -248,7 +248,7 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     plt.grid()
 
     # Save the figure before exiting
-    plt.savefig(f"JointAngleOverTime_crouch_Time_{T:.3f}_kp_{kp:.3f}_kd_{kd:.3f}.png", dpi=300)
+    plt.savefig(f"JointAngleOverTime_crouch_Time_{T:.1f}_kp_{kp:.1f}_kd_{kd:.1f}.png", dpi=300)
 
     print("Figure saved as I am the Pennys-Man.png")
 

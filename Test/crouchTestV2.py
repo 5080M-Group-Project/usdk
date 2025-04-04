@@ -88,6 +88,7 @@ try:
         while True:
                 while not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
+                        #hipOffset, kneeOffset, None, None, False
                         time.sleep(sleepTime)
                         hipOutputAngleCurrent = hipOutputAngleDesired
                         kneeOutputAngleCurrent = kneeOutputAngleDesired

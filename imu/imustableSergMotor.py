@@ -31,7 +31,7 @@ baud_rate = 115200
 kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
 angleDesired = 0.0
 kpOutWheel, kdOutWheel = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
-kpRotorWheel, kdRotorWheel = getRotorGains(kpOutHip, kdOutHip)
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 wheelOutputAngleCurrent = 0.0
 

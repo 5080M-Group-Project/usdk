@@ -7,101 +7,75 @@ import adafruit_bno055
 import board
 import busio
 import sys
+
+# Add Unitree SDK path
 sys.path.append('../lib') 
 from unitree_actuator_sdk import *
-from functionsIMU import *
+from functionsIMU import *  # Make sure this exists and is correctly implemented
 
-
-
+# Initialize motor serial communication
 serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 gearRatio = queryGearRatio(MotorType.A1)
-# Initialize I2C for the BNO055 IMU
+
+# Initialize IMU
 i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
 
+# Motor Setup
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+cmd.id = 0  # Make sure this is correct for your setup
 
-
-
-# Initialize serial communication with the motor
-  # Adjust as needed
-baud_rate = 115200
-
-# PID Controller for position control
-# Initialize wheel Motor
-kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
-angleDesired = 0.0
-kpOutWheel, kdOutWheel = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
+# Rotor control gains (convert from output gains)
+kpOutWheel, kdOutWheel = 0.0, 0.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
-wheelOutputAngleCurrent = 0.0
+# PID Controller for stabilizing pitch
+kp, ki, kd = 3.0, 0.1, 0.5
+pid = PID(kp, ki, kd, setpoint=0.0)  # Desired pitch is 0°
+pid.output_limits = (-math.radians(10), math.radians(10))  # ±10° in radians
 
-#Initialize Loop Variables
-torque = 0.0
-wheelOutputAngularVelocityDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0
-tau = 0.0
-sleepTime = 0.1
-pid = PID(kp, ki, kd, setpoint=0)
-pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
-cmd.id = 0
+sleepTime = 0.01  # 10 ms loop
 
-motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle in degrees
+print("🟢 Starting pitch stabilization loop...")
 
+try:
+    while True:
+        # Read pitch angle from IMU
+        euler = imu.euler
+        current_pitch = euler[1] if euler else None  # Pitch in degrees
 
-while True:
-    euler = imu.euler
-    print(f"IMU Euler: {euler}")
+        if current_pitch is None:
+            print("⚠️ IMU data not available. Skipping this loop iteration.")
+            time.sleep(sleepTime)
+            continue
 
-    current_pitch = euler[1]
-    if current_pitch is None:
-        print("⚠️ IMU data not available. Skipping iteration.")
-        time.sleep(0.01)
-        continue
+        # Compute PID correction (output is in radians)
+        correction_rad = pid(current_pitch)
 
-    # Run PID
-    pitch_error = pid(current_pitch)
+        # Read current motor position
+        if serial.sendRecv(cmd, data):
+            motor_angle_deg = getOutputAngleDeg(data.q)
+            motor_target_deg = motor_angle_deg + math.degrees(correction_rad)
+            motor_target_rad = math.radians(motor_target_deg)
 
-    # Read motor angle
-    if serial.sendRecv(cmd, data):
-        motor_current_deg = getOutputAngleDeg(data.q)
-        motor_target_deg = motor_current_deg + math.degrees(pitch_error)
-        motor_target_rad = math.radians(motor_target_deg)
+            # Send corrected motor angle
+            cmd.q = motor_target_rad
+            cmd.kp = kpRotorWheel
+            cmd.kd = kdRotorWheel
+            cmd.dq = 0.0
+            cmd.tau = 0.0
 
-        cmd.q = motor_target_rad
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
-        cmd.dq = 0.0
-        cmd.tau = 0.0
+            serial.sendRecv(cmd, data)
 
-        serial.sendRecv(cmd, data)
-    else:
-        print("[WARNING] Motor not responding")
+            print(f"Pitch: {current_pitch:.2f}°, Motor: {motor_angle_deg:.2f}° → Target: {motor_target_deg:.2f}°")
+        else:
+            print("❌ Motor not responding")
 
-    time.sleep(0.01)
+        time.sleep(sleepTime)
 
-'''''
-while True:
-    # Get current pitch angle from the IMU
-    print(f"IMU euler output: {imu.euler}")
-    current_pitch = imu.euler[1]  # Assuming this function returns the pitch in degrees
-    current_pitch = imu.euler[1]
-    if current_pitch is None:
-      print("⚠️ IMU data not available. Skipping this loop iteration.")
-      time.sleep(0.01)
-      continue
-    
-
-    # Calculate the error (difference between desired and current pitch)
-    pitch_error = pid(current_pitch)  # PID calculates the control effort
-
-    # Send the motor command to stabilize the head
-    cmd.q = pitch_error  # Desired motor position (could be an angle adjustment)
-    serial.sendRecv(cmd, data)  # Send the command to the motor and get feedback
-
-
-    time.sleep(0.001)
-    '''
+except KeyboardInterrupt:
+    print("\n🛑 Program interrupted by user. Exiting...")

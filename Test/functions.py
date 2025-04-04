@@ -219,7 +219,7 @@ def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleC
 
 
 
-def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles):
+def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
     # Ensure all lists have the same length
     min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
                      len(kneeCommandAngles))
@@ -248,8 +248,8 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     plt.grid()
 
     # Save the figure before exiting
-    plt.savefig("JointAnglesOverTime.png", dpi=300)
-    print("Figure saved as JointAngleOverTime.png")
+    plt.savefig(f"JointAngleOverTime - crouch Time: {T:.3f}, kp: {kp:.3f}, kd: {kd:.3f}", dpi=300)
+    print("Figure saved as I am the Pennys-Man.png")
 
     # Close the plot
     plt.close()

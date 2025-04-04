@@ -20,7 +20,7 @@ gearRatio = queryGearRatio(MotorType.A1)
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
 
 # Initialize Hip Motor
-kpOutHip, kdOutHip = 10.0, 0.2 ### IDEA: Modify throughout the loop i.e. when locking legs
+kpOutHip, kdOutHip = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 
 cmd.motorType = MotorType.A1
@@ -31,7 +31,7 @@ cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
 
 serial.sendRecv(cmd, data)
 # Initialize Knee Motor
-kpOutKnee, kdOutKnee = 10.0, 0.2
+kpOutKnee, kdOutKnee = 10.0, 3.0
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 
 cmd.motorType = MotorType.A1
@@ -151,7 +151,7 @@ try:
                 #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 
                 if (crouchHeightDesiredNew != crouchHeightDesiredPrev) and not crouching:
-                        N = int(2.0 / sleepTime)  # Ensure N is an integer
+                        N = int(0.50 / sleepTime)  # Ensure N is an integer
                         # Get current and desired joint angles
                         hipCrouchAngleDesired, kneeCrouchAngleDesired = inverseKinematicsDeg(0.0, -crouchHeightDesiredNew, 'front')
                         # Generate interpolation vectors
@@ -176,12 +176,13 @@ try:
 
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
-                time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+                time.sleep(max(0.0, sleepTime - loopTime))
+                #time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:
-                plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles)
+                plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kpOutHip, kdOutHip)
         except Exception as e:
                 print(f"Error encountered while saving figure: {e}")
         finally:

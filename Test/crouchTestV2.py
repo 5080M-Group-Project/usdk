@@ -69,7 +69,7 @@ sleepTime = 0.1
 
 crouching = False
 crouchHeightDesiredPrev = 0.33
-crouchTime = 1.0
+crouchTime = 2.0
 
 # Data storage for plotting
 hipOutputAngles = []

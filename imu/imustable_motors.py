@@ -15,7 +15,8 @@ imu = BNO055(i2c)
 serial_port = '/dev/ttyUSB0'  # Adjust as needed
 baud_rate = 115200
 ser = serial.Serial(serial_port, baud_rate, timeout=1)
-
+cmd = MotorCmd()
+data = MotorData()
 # PID Controller for position control
 kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
 pid = PID(kp, ki, kd, setpoint=0)
@@ -31,7 +32,8 @@ def send_motor_command(position):
     # Construct the command packet according to Unitree's communication protocol
     # This is a placeholder; refer to Unitree's SDK documentation for exact packet structure
     command = f"#{position}\n"
-    ser.write(command.encode())
+    cmd.q = position
+    serial.sendRecv(cmd, data)
 
 def balance_motor():
     """Continuously adjusts motor position to maintain zero pitch."""
@@ -44,10 +46,10 @@ def balance_motor():
 
         # Send position command to motor
         send_motor_command(position_adjustment)
-
+        mangle = str(data.q)
         # Debugging output
         print(f"Pitch: {pitch:.2f} deg, Position Adjustment: {math.degrees(position_adjustment):.2f} deg")
-
+        print(f"Motor angle: {mangle:.2f} deg,")
         time.sleep(0.01)  # 10ms loop time
 
 if __name__ == "__main__":

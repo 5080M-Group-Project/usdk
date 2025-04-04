@@ -6,7 +6,7 @@ from simple_pid import PID
 from adafruit_bno055 import BNO055
 import board
 import busio
-
+from unitree_actuator_sdk import *
 # Initialize I2C for the BNO055 IMU
 i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)

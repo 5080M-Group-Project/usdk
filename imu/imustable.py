@@ -23,7 +23,7 @@ while True:
 
 
     print("Gyroscope (rad/sec): {}".format(sensor.gyro))
-    print("pitch angle: {}".format(sensor.euler))
+    print("pitch angle: {}".format(sensor.euler(1)))
 
     print()
 

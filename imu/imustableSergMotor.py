@@ -47,7 +47,7 @@ tau = 0.0
 sleepTime = 0.1
 pid = PID(kp, ki, kd, setpoint=0)
 pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
-cmd.id = 0
+cmd.id = 1
 
 motor_angle_initial_deg = getOutputAngleDeg(data.q)  # Get current motor angle in degrees
 

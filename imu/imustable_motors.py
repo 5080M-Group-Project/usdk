@@ -3,7 +3,7 @@ import math
 import serial
 import numpy as np
 from simple_pid import PID
-from adafruit_bno055 import BNO055
+import adafruit_bno055
 import board
 import busio
 import sys

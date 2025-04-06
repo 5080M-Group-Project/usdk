@@ -41,7 +41,7 @@ cmd.kd = 0.0
 serial.sendRecv(cmd, data)
 time.sleep(0.1)
 
-print("🟢 Pitch stabilization running... yk bro")
+print("🟢 Pitch stabilization running...")
 
 try:
     current_motor_q = 0.0  # We accumulate changes to q here
@@ -62,7 +62,7 @@ try:
 
         # Send motor command
         cmd.q = current_motor_q
-        cmd.dq = 0.0
+        cmd.dq = 1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel

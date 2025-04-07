@@ -52,7 +52,7 @@ try:
 
         if pitch is None:
             print("⚠️ IMU is blid or mute")
-            time.sleep(0.01)
+            time.sleep(0.001)
             continue
 
         correction = pid(pitch)  # PID returns delta q in radians
@@ -62,7 +62,7 @@ try:
 
         # Send motor command
         cmd.q = current_motor_q
-        cmd.dq = 1.0 #speed motor, maybe we can control this too
+        cmd.dq = 0.01 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
@@ -73,7 +73,7 @@ try:
         else:
             print("❌ Motor pooooooooo.")
 
-        time.sleep(0.01)
+        time.sleep(0.001)
 
 except KeyboardInterrupt:
     print("\n🛑 Watch behind you")

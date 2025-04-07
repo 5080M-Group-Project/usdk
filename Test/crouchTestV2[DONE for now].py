@@ -27,7 +27,7 @@ kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 kpOutKnee, kdOutKnee = 10.0, 3.0
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 
-'''
+
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -45,7 +45,7 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 
 serial.sendRecv(cmd, data)
-'''
+
 
 '''
 # Initialize Wheel Motor
@@ -109,6 +109,7 @@ try:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
                 # Hip Motor Control
+
                 cmd.motorType = MotorType.A1
                 data.motorType = MotorType.A1
                 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)

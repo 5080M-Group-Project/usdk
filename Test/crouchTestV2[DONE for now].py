@@ -27,44 +27,18 @@ kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 kpOutKnee, kdOutKnee = 10.0, 3.0
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 
-
-cmd.motorType = MotorType.A1
-data.motorType = MotorType.A1
-cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
-cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
-
-serial.sendRecv(cmd, data)
-
-
-
-cmd.motorType = MotorType.A1
-data.motorType = MotorType.A1
-cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
-cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
-
-serial.sendRecv(cmd, data)
-
-
 '''
 # Initialize Wheel Motor
 kpOutWheel, kdOutWheel = 0.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
-
-cmdActuator(id.wheel,0.0,0.0,0.0,0.0,0.0)
-
-#wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
 '''
 
 #Initialize Loop Variables
-torque = 0.0
-hipOutputAngleDesired, kneeOutputAngleDesired = 0.0, 0.0
-wheelOutputAngularVelocityDesired, wheelRotorAngularVelocityDesired = 0.0, 0.0
-hipTau, kneeTau, wheelTau = 0.0, 0.0, 0.0
-hipOffset, kneeOffset = 0.0, 0.0
+hipOutputAngleDesired,hipOutputAngleCurrent, hipTau, hipOffset  = 0.0, 0.0, 0.0, 0.0
+kneeOutputAngleDesired, kneeOutputAngleCurrent, kneeTau, kneeOffset = 0.0, 0.0, 0.0, 0.0
 
-hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
+wheelOutputAngularVelocityDesired, wheelRotorAngularVelocityDesired, wheelTau = 0.0, 0.0, 0.0
+
 
 offsetCalibration = False
 sleepTime = 0.1
@@ -73,22 +47,17 @@ crouching = False
 crouchHeightDesiredPrev = 0.33
 crouchTime = 2.0
 
-hipCommsSuccess = 0
-hipCommsFail = 0
-kneeCommsSuccess = 0
-kneeCommsFail = 0
 
+hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail = 0, 0, 0, 0
 
 # Data storage for plotting
-hipOutputAngles = []
-kneeOutputAngles = []
-
-hipCommandAngles = []
-kneeCommandAngles = []
-
-timeSteps = []
+hipOutputAngles, hipCommandAngles, kneeOutputAngles, kneeCommandAngles, timeSteps = [], [], [], [], []
 
 globalStartTime = time.time()
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 try:
         while True:
@@ -100,6 +69,8 @@ try:
                         kneeOutputAngleCurrent = kneeOutputAngleDesired
                         ### IDEA: Add position calibration
                         #globalStartTime = time.time()
+
+                        # wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
 
                 # MAIN CONTROL LOOP
                 startTime = time.time()

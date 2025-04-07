@@ -154,6 +154,7 @@ try:
                 kneeOutputAngles.append(kneeOutputAngleCurrent)
                 kneeCommandAngles.append(kneeOutputAngleDesired)
 
+                crouchTimingBegin = time.time()
                 # Crouch Control
                 crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
                 #hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
@@ -184,8 +185,9 @@ try:
 
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
-                time.sleep(max(0.0, sleepTime - loopTime))
-                #time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+
+
+
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")

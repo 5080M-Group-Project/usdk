@@ -111,10 +111,11 @@ try:
 
 
                 # Knee Motor Control
+                '''
                 cmd.motorType = MotorType.A1
                 data.motorType = MotorType.A1
                 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
+                '''
                 #cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
                 cmd.id = id.knee
                 cmd.kp = kpRotorKnee # proportional or position term. i.e. stiffness

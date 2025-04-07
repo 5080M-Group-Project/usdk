@@ -126,7 +126,7 @@ try:
                 else:
                         hipOutputAngleCurrent = hipOutputAngleCurrent
                         hipCommsFail =+ 1
-                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times! "  f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
+                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times out of {hipCommsFail+hipCommsSuccess}! "  f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
 
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
@@ -156,7 +156,7 @@ try:
                 else:
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
                         kneeCommsFail += 1
-                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
+                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times out of {kneeCommsFail+kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)

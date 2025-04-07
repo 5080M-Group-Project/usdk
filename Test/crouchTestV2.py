@@ -186,6 +186,13 @@ try:
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
 
+                crouchTimingLength = time.time() - crouchTimingBegin
+                print(f"Crouch Time: {crouchTimingLength}\n")
+
+                preCrouchTimingLength = crouchTimingBegin - startTime
+                print(f"Pre Crouch Time: {preCrouchTimingLength}\n")
+
+                time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 
 
 

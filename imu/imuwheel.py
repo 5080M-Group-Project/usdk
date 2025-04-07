@@ -19,7 +19,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 7.0, 2
+kpOutWheel, kdOutWheel = 0, 1
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -53,14 +53,18 @@ try:
 
 
         # Send updated position command
-
-        cmd.dq = 0.05*pitch
+        speed = 0.05*pitch
+        cmd.dq = speed
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         success = serial.sendRecv(cmd, data)
 
-       
+        if success:
+            print(
+                f"Pitch: {pitch:.2f}°, dq: {speed:+.2f}°")
+        else:
+            print("❌ Motor communication error.")
 
         #time.sleep(0.01)
 

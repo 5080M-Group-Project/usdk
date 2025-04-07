@@ -27,7 +27,7 @@ kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
 kpOutKnee, kdOutKnee = 10.0, 3.0
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
 
-'''
+
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -45,7 +45,7 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
 
 serial.sendRecv(cmd, data)
-'''
+
 
 '''
 # Initialize Wheel Motor
@@ -116,9 +116,12 @@ try:
                 cmd.tau = hipTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+                        hipCommsSuccess =+ 1
                 else:
-                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response!")
                         hipOutputAngleCurrent = hipOutputAngleCurrent
+                        hipCommsFail =+ 1
+                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times! {hipCommsFail/(hipCommsFail+hipCommsSuccess)}% of attempts.")
+
 
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
@@ -127,7 +130,7 @@ try:
                 hipCommandAngles.append(hipOutputAngleDesired)
 
 
-                time.sleep(sleepTime/100.0)
+                #time.sleep(sleepTime/100.0)
 
 
                 # Knee Motor Control
@@ -144,9 +147,13 @@ try:
                 cmd.tau = kneeTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+                        kneeCommsSuccess =+ 1
+
                 else:
-                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response!")
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
+                        kneeCommsFail = + 1
+                        print(f"[WARNING] Hip Motor (ID {id.knee}) lost response {kneeCommsFail} times! {kneeCommsFail/(kneeCommsFail+kneeCommsSuccess)}% of attempts.")
+
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)

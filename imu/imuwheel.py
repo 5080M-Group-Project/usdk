@@ -53,7 +53,7 @@ try:
 
 
         # Send updated position command
-        speed = 0.5*pitch
+        speed = 3*pitch
         cmd.dq = speed
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel

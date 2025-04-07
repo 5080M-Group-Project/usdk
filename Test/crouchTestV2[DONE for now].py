@@ -14,6 +14,10 @@ serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 gearRatio = queryGearRatio(MotorType.A1)
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 ############################
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
@@ -55,10 +59,6 @@ hipOutputAngles, hipCommandAngles, kneeOutputAngles, kneeCommandAngles, timeStep
 
 globalStartTime = time.time()
 
-cmd.motorType = MotorType.A1
-data.motorType = MotorType.A1
-cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
 try:
         while True:
                 while not offsetCalibration: ### & other
@@ -80,10 +80,6 @@ try:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
 
                 # Hip Motor Control
-
-                cmd.motorType = MotorType.A1
-                data.motorType = MotorType.A1
-                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
                 #cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
                 cmd.id = id.hip
@@ -111,11 +107,6 @@ try:
 
 
                 # Knee Motor Control
-                '''
-                cmd.motorType = MotorType.A1
-                data.motorType = MotorType.A1
-                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-                '''
                 #cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
                 cmd.id = id.knee
                 cmd.kp = kpRotorKnee # proportional or position term. i.e. stiffness

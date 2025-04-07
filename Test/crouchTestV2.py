@@ -122,11 +122,11 @@ try:
                 cmd.tau = hipTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
-                        hipCommsSuccess =+ 1
+                        hipCommsSuccess += 1
                 else:
                         hipOutputAngleCurrent = hipOutputAngleCurrent
-                        hipCommsFail =+ 1
-                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times out of {hipCommsFail+hipCommsSuccess}! "  f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
+                        hipCommsFail += 1
+                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! " f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
 
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)

@@ -28,10 +28,10 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Initial motor setup ---
 cmd.q = 0.0
-cmd.dq = 1.0  # Speed control, can be adjusted
+cmd.dq = 0.0
 cmd.tau = 0.0
-cmd.kp = kpRotorWheel
-cmd.kd = kdRotorWheel
+cmd.kp = 0.0
+cmd.kd = 0.0
 serial.sendRecv(cmd, data)
 time.sleep(0.1)
 
@@ -55,6 +55,10 @@ try:
 
         # Send updated position command
         cmd.q = current_motor_q
+        cmd.dq = 1.0  # 1.0 #speed motor, maybe we can control this too
+        cmd.tau = 0.0
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
         success = serial.sendRecv(cmd, data)
 
         if success:

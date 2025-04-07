@@ -20,7 +20,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 1.0, 3.0
+kpOutWheel, kdOutWheel = 2.0, 0.50
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -29,7 +29,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Setup PID ---
 #1.5,0,0.5
-pid = PID(0.5, 0.0, 0.5, setpoint=0.0)  # Tune these later
+pid = PID(.5, 0.0, 0.5, setpoint=0.0)  # Tune these later
 pid.sample_time = 0.01
 pid.output_limits = (-math.radians(20), math.radians(20))  # motor command in radians
 

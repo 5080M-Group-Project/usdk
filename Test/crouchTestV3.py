@@ -86,6 +86,7 @@ startCrouching = False
 stopCrouching = True
 crouchHeightDesiredPrev = 0.33
 crouchDuration = 2.0
+crouchStartTime = 0.0
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0
 
@@ -187,7 +188,7 @@ try:
                 crouchThreshold = (0.1 / 100) * 0.33
 
                 startCrouching = (crouchHeightDesiredNew != crouchHeightDesiredPrev)
-                stopCrouching = abs(crouchHeightDesiredNew - crouchHeightCurrent) < crouchThreshold
+                stopCrouching = (time.time() - crouchStartTime) >= crouchDuration
 
                 # hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 

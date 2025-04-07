@@ -181,7 +181,8 @@ try:
 
                 crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
                 xWheel, crouchHeightCurrent = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
-                crouchThreshold = (5 / 100) * 0.33
+                crouchThreshold = (20 / 100) * 0.33
+
                 startCrouching = (crouchHeightDesiredNew != crouchHeightDesiredPrev)
                 stopCrouching = abs(crouchHeightDesiredNew - crouchHeightCurrent) < crouchThreshold
 

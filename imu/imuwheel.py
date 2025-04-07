@@ -53,7 +53,7 @@ try:
 
 
         # Send updated position command
-        speed = 0.05*pitch
+        speed = 0.5*pitch
         cmd.dq = speed
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
@@ -62,7 +62,7 @@ try:
 
         if success:
             print(
-                f"Pitch: {pitch:.2f}°, dq: {speed:+.2f}°")
+                f"Pitch: {pitch:.2f}°, dq: {speed:+.2f}")
         else:
             print("❌ Motor communication error.")
 

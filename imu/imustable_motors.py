@@ -28,7 +28,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Initial motor setup ---
 cmd.q = 0.0
-cmd.dq = 3.0  # Speed control, can be adjusted
+cmd.dq = 1.0  # Speed control, can be adjusted
 cmd.tau = 0.0
 cmd.kp = kpRotorWheel
 cmd.kd = kdRotorWheel
@@ -38,6 +38,8 @@ time.sleep(0.1)
 print("🟢 Pitch stabilization running...")
 
 try:
+    current_motor_q = 0.0  # Track motor position
+
     while True:
         euler = imu.euler
         pitch = euler[1] if euler else None  # Pitch in degrees
@@ -47,17 +49,21 @@ try:
             time.sleep(0.01)
             continue
 
-        # Directly use the negative pitch angle as motor position command
-        cmd.q = -math.radians(pitch)  # Convert degrees to radians
+        # Compute relative correction
+        correction = -math.radians(pitch)  # Convert degrees to radians
+        current_motor_q += correction  # Increment motor position
 
-        # Send motor command
+        # Send updated position command
+        cmd.q = current_motor_q
         success = serial.sendRecv(cmd, data)
+
         if success:
-            print(f"Pitch: {pitch:.2f}°, Motor q: {math.degrees(cmd.q):.2f}°")
+            print(
+                f"Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
         else:
             print("❌ Motor communication error.")
 
-        #time.sleep(0.01)
+        time.sleep(0.01)
 
 except KeyboardInterrupt:
     print("\n🛑 Stopping stabilization.")

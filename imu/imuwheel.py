@@ -53,6 +53,9 @@ try:
 
 
         # Send updated position command
+        cmd.motorType = MotorType.A1
+        data.motorType = MotorType.A1
+        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
         speed = 3*pitch
         cmd.dq = speed
         cmd.tau = 0.0

@@ -20,7 +20,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 2.0, 10.50
+kpOutWheel, kdOutWheel = 10.0, 10.50
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---

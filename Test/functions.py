@@ -218,6 +218,10 @@ def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleC
     return hipOutputAngleDesired, kneeOutputAngleDesired
 
 
+def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
+        currentAngle = desiredAngle*t/T + startAngle(1 - t/T)
+        return currentAngle
+
 
 def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
     # Ensure all lists have the same length

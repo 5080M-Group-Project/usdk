@@ -209,6 +209,7 @@ try:
 
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
+
                 crouchTimingLength = time.time() - crouchTimingBegin
                 print(f"Crouch Time: {crouchTimingLength}\n")
 

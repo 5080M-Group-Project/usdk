@@ -198,6 +198,9 @@ try:
                         crouching = True  # Enable crouching phase
                         stopCrouching = False  # NEEDED?
 
+                        kpRotorHip, kdRotorHip = kpRotorHipMoving, kdRotorHipMoving
+                        kpRotorKnee, kdRotorKnee = kpRotorKneeMoving, kdRotorKneeMoving
+
                 elif crouching and not stopCrouching:
                         hipOutputAngleDesired = getLinearInterpolationAngle(hipCrouchAngleStart, hipCrouchAngleDesired, crouchDuration, crouchStartTime - time.time())
                         kneeOutputAngleDesired = getLinearInterpolationAngle(kneeCrouchAngleStart, kneeCrouchAngleDesired, crouchDuration, crouchStartTime - time.time())

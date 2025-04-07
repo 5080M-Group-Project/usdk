@@ -84,6 +84,11 @@ crouching = False
 crouchHeightDesiredPrev = 0.33
 crouchDuration = 2.0
 
+hipCommsSuccess = 0
+hipCommsFail = 0
+kneeCommsSuccess = 0
+kneeCommsFail = 0
+
 # Data storage for plotting
 hipOutputAngles = []
 kneeOutputAngles = []
@@ -127,9 +132,11 @@ try:
                 cmd.tau = hipTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+                        hipCommsSuccess = + 1
                 else:
-                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response!")
                         hipOutputAngleCurrent = hipOutputAngleCurrent
+                        hipCommsFail = + 1
+                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times! {hipCommsFail / (hipCommsFail + hipCommsSuccess)}% of attempts.")
 
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
@@ -154,9 +161,11 @@ try:
                 cmd.tau = kneeTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+                        kneeCommsSuccess += 1
                 else:
-                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response!")
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
+                        kneeCommsFail += 1
+                        print(f"[WARNING] Hip Motor (ID {id.knee}) lost response {kneeCommsFail} times! {kneeCommsFail / (kneeCommsFail + kneeCommsSuccess)}% of attempts.")
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
@@ -218,6 +227,7 @@ try:
 
                 time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 except KeyboardInterrupt:
+        ### Command everything to 0
         print("\nLoop stopped by user. Saving figure...")
         try:
                 plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchDuration, kpOutHipMoving, kdOutHipMoving)

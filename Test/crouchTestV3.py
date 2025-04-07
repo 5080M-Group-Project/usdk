@@ -202,8 +202,8 @@ try:
                         kpRotorKnee, kdRotorKnee = kpRotorKneeMoving, kdRotorKneeMoving
 
                 elif crouching and not stopCrouching:
-                        hipOutputAngleDesired = getLinearInterpolationAngle(hipCrouchAngleStart, hipCrouchAngleDesired, crouchDuration, crouchStartTime - time.time())
-                        kneeOutputAngleDesired = getLinearInterpolationAngle(kneeCrouchAngleStart, kneeCrouchAngleDesired, crouchDuration, crouchStartTime - time.time())
+                        hipOutputAngleDesired = getLinearInterpolationAngle(hipCrouchAngleStart, hipCrouchAngleDesired, crouchDuration, time.time() - crouchStartTime)
+                        kneeOutputAngleDesired = getLinearInterpolationAngle(kneeCrouchAngleStart, kneeCrouchAngleDesired, crouchDuration, time.time() - crouchStartTime)
 
                         #####
                         kpRotorHip, kdRotorHip = kpRotorHipMoving, kdRotorHipMoving

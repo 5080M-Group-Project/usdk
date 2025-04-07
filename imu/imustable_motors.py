@@ -1,65 +1,63 @@
 import time
 import math
-import serial
-import numpy as np
-from simple_pid import PID
-import adafruit_bno055
+import sys
 import board
 import busio
-import sys
-sys.path.append('../lib') 
-from unitree_actuator_sdk import *
+import adafruit_bno055
 
+sys.path.append('../lib')
+from unitree_actuator_sdk import *
+from functionsIMU import *  # Should include getOutputAngleDeg()
+
+# --- Setup motor ---
 serial = SerialPort('/dev/ttyUSB0')
-# Initialize I2C for the BNO055 IMU
+cmd = MotorCmd()
+data = MotorData()
+cmd.id = 0
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
+# Gain tuning
+kpOutWheel, kdOutWheel = 7.0, 2.0
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
+
+# --- Setup IMU ---
 i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
 
+# --- Initial motor setup ---
+cmd.q = 0.0
+cmd.dq = 1.0  # Speed control, can be adjusted
+cmd.tau = 0.0
+cmd.kp = kpRotorWheel
+cmd.kd = kdRotorWheel
+serial.sendRecv(cmd, data)
+time.sleep(0.1)
 
-# Initialize serial communication with the motor
-  # Adjust as needed
-baud_rate = 115200
+print("🟢 Pitch stabilization running...")
 
-cmd = MotorCmd()
-data = MotorData()
-# PID Controller for position control
-kp, ki, kd = 3.0, 0.1, 0.5  # Tune these gains as needed
-pid = PID(kp, ki, kd, setpoint=0)
-pid.output_limits = (-math.radians(10), math.radians(10))  # Limit output to ±10 degrees
-cmd.id = 0
-def get_pitch():
-    """Returns the current pitch angle from the IMU in degrees."""
-    pitch = imu.euler[1]  # BNO055 euler[1] gives pitch
-    return pitch if pitch is not None else 0.0
-
-def send_motor_command(position):
-    """Sends position command to the motor."""
-    # Construct the command packet according to Unitree's communication protocol
-    # This is a placeholder; refer to Unitree's SDK documentation for exact packet structure
-    command = f"#{position}\n"
-    cmd.q = position
-    serial.sendRecv(cmd, data)
-
-def balance_motor():
-    """Continuously adjusts motor position to maintain zero pitch."""
+try:
     while True:
-        # Read current pitch angle
-        pitch = get_pitch()
+        euler = imu.euler
+        pitch = euler[1] if euler else None  # Pitch in degrees
 
-        # Compute PID control output (desired position adjustment)
-        position_adjustment = pid(pitch)
+        if pitch is None:
+            print("⚠️ IMU is not responding")
+            time.sleep(0.01)
+            continue
 
-        # Send position command to motor
-        send_motor_command(position_adjustment)
-        mangle = float(data.q)
-        # Debugging output
-        print(f"Pitch: {pitch:.2f} deg, Position Adjustment: {math.degrees(position_adjustment):.2f} deg")
-        print(f"Motor angle: {mangle:.2f} deg,")
-        time.sleep(0.01)  # 10ms loop time
+        # Directly use the negative pitch angle as motor position command
+        cmd.q = -math.radians(pitch)  # Convert degrees to radians
 
-if __name__ == "__main__":
-    try:
-        balance_motor()
-    except KeyboardInterrupt:
-        print("\nStopping motor...")
-        send_motor_command(0)  # Send neutral command to stop motor safely
+        # Send motor command
+        success = serial.sendRecv(cmd, data)
+        if success:
+            print(f"Pitch: {pitch:.2f}°, Motor q: {math.degrees(cmd.q):.2f}°")
+        else:
+            print("❌ Motor communication error.")
+
+        time.sleep(0.01)
+
+except KeyboardInterrupt:
+    print("\n🛑 Stopping stabilization.")

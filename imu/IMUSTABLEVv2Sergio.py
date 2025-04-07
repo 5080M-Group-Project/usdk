@@ -20,7 +20,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 7.0, 2.0
+kpOutWheel, kdOutWheel = 5.0, 1.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -28,9 +28,10 @@ i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Setup PID ---
+#1.5,0,0.5
 pid = PID(1.5, 0.0, 0.5, setpoint=0.0)  # Tune these later
 pid.sample_time = 0.01
-pid.output_limits = (-math.radians(15), math.radians(15))  # motor command in radians
+pid.output_limits = (-math.radians(20), math.radians(20))  # motor command in radians
 
 # --- Initial motor setup ---
 cmd.q = 0.0
@@ -52,7 +53,7 @@ try:
 
         if pitch is None:
             print("⚠️ IMU is blid or mute")
-            time.sleep(0.001)
+            time.sleep(0.01)
             continue
 
         correction = pid(pitch)  # PID returns delta q in radians
@@ -62,7 +63,7 @@ try:
 
         # Send motor command
         cmd.q = current_motor_q
-        cmd.dq = 0.01 #speed motor, maybe we can control this too
+        cmd.dq = 3.0 #1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
@@ -73,7 +74,7 @@ try:
         else:
             print("❌ Motor pooooooooo.")
 
-        time.sleep(0.001)
+        #time.sleep(0.01)
 
 except KeyboardInterrupt:
     print("\n🛑 Watch behind you")

@@ -25,14 +25,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 kpOutHipFixed, kdOutHipFixed = 20.0, 0.5 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
 
-kpOutHipMoving, kdOutHipMoving = 15.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
+kpOutHipMoving, kdOutHipMoving = 10.0, 5.0 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
 
 # KNEE
 kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
 kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
 
-kpOutKneeMoving, kdOutKneeMoving = 15.0, 3.0
+kpOutKneeMoving, kdOutKneeMoving = 10.0, 5.0
 kpRotorKneeMoving, kdRotorKneeMoving = getRotorGains(kpOutKneeMoving, kdOutKneeMoving)
 
 '''

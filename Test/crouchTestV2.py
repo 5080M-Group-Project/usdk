@@ -73,6 +73,13 @@ crouching = False
 crouchHeightDesiredPrev = 0.33
 crouchTime = 2.0
 
+
+hipCommsSuccess = 0
+hipCommsFail = 0
+kneeCommsSuccess = 0
+kneeComsFail = 0
+
+
 # Data storage for plotting
 hipOutputAngles = []
 kneeOutputAngles = []

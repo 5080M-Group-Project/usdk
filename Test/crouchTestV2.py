@@ -73,11 +73,10 @@ crouching = False
 crouchHeightDesiredPrev = 0.33
 crouchTime = 2.0
 
-
 hipCommsSuccess = 0
 hipCommsFail = 0
 kneeCommsSuccess = 0
-kneeComsFail = 0
+kneeCommsFail = 0
 
 
 # Data storage for plotting
@@ -154,11 +153,10 @@ try:
                 cmd.tau = kneeTau  # rotor feedforward torque
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
-                        kneeCommsSuccess =+ 1
-
+                        kneeCommsSuccess += 1
                 else:
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
-                        kneeCommsFail = + 1
+                        kneeCommsFail += 1
                         print(f"[WARNING] Hip Motor (ID {id.knee}) lost response {kneeCommsFail} times! {kneeCommsFail/(kneeCommsFail+kneeCommsSuccess)}% of attempts.")
 
 
@@ -211,6 +209,7 @@ try:
 
 
 except KeyboardInterrupt:
+        ### Command everything to zero
         print("\nLoop stopped by user. Saving figure...")
         try:
                 plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchTime, kpOutHip, kdOutHip)

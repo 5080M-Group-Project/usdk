@@ -51,7 +51,7 @@ try:
 
 
 
-        
+
         # Send updated position command
 
         cmd.dq = 0.05*pitch
@@ -60,11 +60,7 @@ try:
         cmd.kd = kdRotorWheel
         success = serial.sendRecv(cmd, data)
 
-        if success:
-            print(
-                f"Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
-        else:
-            print("❌ Motor communication error.")
+       
 
         #time.sleep(0.01)
 

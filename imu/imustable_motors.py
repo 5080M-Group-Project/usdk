@@ -28,7 +28,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Initial motor setup ---
 cmd.q = 0.0
-cmd.dq = 1.0  # Speed control, can be adjusted
+cmd.dq = 3.0  # Speed control, can be adjusted
 cmd.tau = 0.0
 cmd.kp = kpRotorWheel
 cmd.kd = kdRotorWheel
@@ -57,7 +57,7 @@ try:
         else:
             print("❌ Motor communication error.")
 
-        time.sleep(0.01)
+        #time.sleep(0.01)
 
 except KeyboardInterrupt:
     print("\n🛑 Stopping stabilization.")

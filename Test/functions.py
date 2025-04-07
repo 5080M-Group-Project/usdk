@@ -219,7 +219,8 @@ def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleC
 
 
 def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
-        currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
+        currentAngle = (desiredAngle - startAngle) * t/T + startAngle
+        #currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
         return currentAngle
 
 

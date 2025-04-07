@@ -22,14 +22,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 # Initialize Motor Gains - add to .h file or equivalent
 
 # HIP
-kpOutHipFixed, kdOutHipFixed = 20.0, 0.5 ### IDEA: Modify throughout the loop i.e. when locking legs
+kpOutHipFixed, kdOutHipFixed = 10.0, 3.0 ### kp = 20, kd = 0.5
 kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
 
-kpOutHipMoving, kdOutHipMoving = 10.0, 3.0 ### IDEA: Modify throughout the loop i.e. when locking legs
+kpOutHipMoving, kdOutHipMoving = 10.0, 3.0 ### kp = 10, kd = 3.0
 kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
 
 # KNEE
-kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
+kpOutKneeFixed, kdOutKneeFixed = 10.0, 3.0
 kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
 
 kpOutKneeMoving, kdOutKneeMoving = 10.0, 3.0
@@ -188,7 +188,10 @@ try:
                 crouchThreshold = (0.1 / 100) * 0.33
 
                 startCrouching = (crouchHeightDesiredNew != crouchHeightDesiredPrev)
-                stopCrouching = (time.time() - crouchStartTime) >= crouchDuration
+                stopCrouching = (time.time() - crouchStartTime) >= crouchDuration #stops based on command
+        
+                #changeParameters = abs(crouchHeightCurrent - crouchHeightDesiredNew) < crouchThreshold
+
 
                 # hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
 

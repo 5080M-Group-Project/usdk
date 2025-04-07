@@ -51,8 +51,7 @@ try:
 
 
 
-        current_motor_q += correction  # Increment motor position
-
+        
         # Send updated position command
 
         cmd.dq = 0.05*pitch

@@ -51,6 +51,11 @@ try:
 
         # Compute relative correction
         correction = -math.radians(pitch)  # Convert degrees to radians
+        if correction > 20:
+            correction = 20
+        elif correction < -20:
+            correction = -20
+         
         current_motor_q += correction  # Increment motor position
 
         # Send updated position command

@@ -78,7 +78,7 @@ hipOffset, kneeOffset = 0.0, 0.0
 hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
 
 offsetCalibration = False
-sleepTime = 0.3
+sleepTime = 0.1
 
 
 crouching = False
@@ -172,8 +172,9 @@ try:
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
 
-                kneeCommandLength = kneeCommandEndTiming - kneeTimingBegin
                 kneeCommandEndTiming = time.time()
+                kneeCommandLength = kneeCommandEndTiming - kneeTimingBegin
+
                 serial.sendRecv(cmd, data)
                 '''
                 if serial.sendRecv(cmd, data):

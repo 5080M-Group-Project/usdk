@@ -25,14 +25,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 kpOutHipFixed, kdOutHipFixed = 20.0, 0.5 ### kp = 20, kd = 0.5
 kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
 
-kpOutHipMoving, kdOutHipMoving = 10.0, 3.0 ### kp = 10, kd = 3.0
+kpOutHipMoving, kdOutHipMoving = 15.0, 2.0 ### kp = 10, kd = 3.0
 kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
 
 # KNEE
 kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
 kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
 
-kpOutKneeMoving, kdOutKneeMoving = 10.0, 3.0
+kpOutKneeMoving, kdOutKneeMoving = 15.0, 2.0
 kpRotorKneeMoving, kdRotorKneeMoving = getRotorGains(kpOutKneeMoving, kdOutKneeMoving)
 
 '''

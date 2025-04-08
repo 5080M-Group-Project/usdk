@@ -113,10 +113,10 @@ try:
         # Print joystick values
         print(
             f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | kd: {kdOutWheel:.1f}, kp: {kpOutWheel:.1f}")
-        if current_motor_q ==0:
-            # Send updated position command
-            current_motor_q += correction  # Increment motor position
-            cmd.q = current_motor_q
+
+        # Send updated position command
+        current_motor_q += correction  # Increment motor position
+        cmd.q = current_motor_q
         #cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)

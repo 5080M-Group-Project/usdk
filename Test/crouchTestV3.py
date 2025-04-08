@@ -85,7 +85,7 @@ crouching = False
 startCrouching = False
 stopCrouching = True
 crouchHeightDesiredPrev = 0.33
-crouchDuration = 3.0
+crouchDuration = 3.0 #### scale by the distance required
 crouchStartTime = 0.0
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0
@@ -182,7 +182,7 @@ try:
                 # Crouch Control
                 crouchTimingBegin = time.time()
 
-                crouchHeightDesiredNew = 0.2  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+                crouchHeightDesiredNew = 0.25  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
                 xWheel,yWheel = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
                 crouchHeightCurrent = abs(yWheel)
                 crouchThreshold = (0.1 / 100) * 0.33

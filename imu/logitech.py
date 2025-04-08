@@ -18,8 +18,8 @@ joystick.init()
 print(f"Connected to: {joystick.get_name()}")
 
 # Tracking button states
-prev_button0 = 0
-prev_button1 = 0
+prev_axis1 = 0
+#prev_button1 = 0
 kd = 1.0  # Example starting value
 
 while True:
@@ -34,18 +34,18 @@ while True:
     button1 = joystick.get_button(1)
 
     # Detect single press event for button0 (increment kd)
-    if button0 == 1 and prev_button0 == 0:
+    if axis_1 == 1 and prev_axis1 == 0:
         kd += 0.1
-        print(f"Button0 pressed, kd increased to {kd:.1f}")
+        print(f"dpad up pressed, kd increased to {kd:.1f}")
 
     # Detect single press event for button1 (decrement kd)
-    if button1 == 1 and prev_button1 == 0:
+    if axis_1 == -1 and prev_axis1 == 0:
         kd -= 0.1
-        print(f"Button1 pressed, kd decreased to {kd:.1f}")
+        print(f"dpad down pressed, kd decreased to {kd:.1f}")
 
     # Update previous button states
-    prev_button0 = button0
-    prev_button1 = button1
+    prev_axis1 = axis_1
+    #prev_button1 = button1
 
     # Print joystick values
     print(

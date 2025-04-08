@@ -171,6 +171,10 @@ try:
                 cmd.q = kneeRotorAngleDesired  # angle, radians
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
+
+                kneeCommandTiming = time.time() - kneeTimingBegin
+                kneeCommandLength = kneeCommandTiming - kneeTimingBegin
+
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                         kneeCommsSuccess += 1
@@ -179,10 +183,14 @@ try:
                         kneeCommsFail += 1
                         print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
 
+                kneeSendRcvLength = time.time() - kneeCommandTiming
+
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)
 
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired)
+
+                kneeCalcValuesLength = time.time() - kneeSendRcvLength
 
                 # Crouch Control
                 crouchTimingBegin = time.time()
@@ -250,6 +258,10 @@ try:
 
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
                 print(f"Knee Time: {kneeTimingLength}\n")
+
+                print(f"Knee Command Timing: {kneeCommandLength}\n")
+                print(f"Knee Send & Recieve Timing: {kneeSendRcvLength}\n")
+                print(f"Knee Calcs Timing: {kneeCalcValuesLength}\n")
 
                 crouchTimingLength = time.time() - crouchTimingBegin
                 print(f"Crouch Time: {crouchTimingLength}\n")

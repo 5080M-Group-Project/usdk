@@ -54,6 +54,7 @@ while True:
         print(f"dpad down pressed, kd decreased to {kp:.1f}")
     # Update previous button states
     prev_axis1 = axis_1
+    prev_axis0 = axis_0
     #prev_button1 = button1
 
     # Print joystick values

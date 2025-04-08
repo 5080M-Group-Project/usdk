@@ -109,6 +109,10 @@ globalStartTime = time.time()
 
 try:
         while True:
+                startTime = time.time()
+                elapsedTime = startTime - globalStartTime
+                timeSteps.append(elapsedTime)
+
                 while not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
                         #hipOffset, kneeOffset, None, None, False
@@ -119,11 +123,11 @@ try:
                         #globalStartTime = time.time()
 
                 # MAIN CONTROL LOOP
-                startTime = time.time()
-                elapsedTime = startTime - globalStartTime
-                timeSteps.append(elapsedTime)
+
 
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
+
+                hipTimingBegin = time.time()
 
                 # Hip Motor Control
                 cmd.motorType = MotorType.A1
@@ -234,17 +238,20 @@ try:
 
                         print("\nCorrect crouch height. Legs Fixed\n")
 
-                loopTime = time.time() - startTime
-                print(f"Loop Time: {loopTime}\n")
-
                 crouchTimingLength = time.time() - crouchTimingBegin
                 print(f"Crouch Time: {crouchTimingLength}\n")
 
-                hipTimingLength =  kneeTimingBegin - startTime
+                loopTime = time.time() - startTime
+                print(f"Loop Time: {loopTime}\n")
+
+                hipTimingLength =  kneeTimingBegin - hipTimingBegin
                 print(f"Hip Time: {hipTimingLength}\n")
 
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
                 print(f"Knee Time: {kneeTimingLength}\n")
+
+                calibrationCheckTimingLength = hipTimingBegin - kneeTimingBegin
+                print(f"Calibration Check Time: {kneeTimingLength}\n")
 
                 time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 except KeyboardInterrupt:

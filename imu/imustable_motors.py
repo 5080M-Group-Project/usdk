@@ -41,7 +41,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 15.0, 1
+kpOutWheel, kdOutWheel = 15.0, 1 #22.4, 1.5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 
@@ -79,7 +79,7 @@ try:
         elif correction < math.radians(-20):
             correction = math.radians(-20)
 
-        current_motor_q += correction  # Increment motor position
+        #current_motor_q += correction  # Increment motor position
         pygame.event.pump()  # Process events
 
         # Read joystick inputs
@@ -113,9 +113,10 @@ try:
         # Print joystick values
         print(
             f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | kd: {kdOutWheel:.1f}, kp: {kpOutWheel:.1f}")
-
-        # Send updated position command
-        cmd.q = current_motor_q
+        if current_motor_q ==0:
+            # Send updated position command
+            current_motor_q += correction  # Increment motor position
+            cmd.q = current_motor_q
         #cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)

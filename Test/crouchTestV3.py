@@ -151,9 +151,10 @@ try:
                 hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired)
 
 
-                time.sleep(sleepTime/100.0)
+                #time.sleep(sleepTime/100.0)
 
                 kneeTimingBegin = time.time()
+                
                 # Knee Motor Control
                 cmd.motorType = MotorType.A1
                 data.motorType = MotorType.A1
@@ -239,8 +240,11 @@ try:
                 crouchTimingLength = time.time() - crouchTimingBegin
                 print(f"Crouch Time: {crouchTimingLength}\n")
 
+                hipTimingLength =  kneeTimingBegin - startTime
+                print(f"Knee Time: {kneeTimingLength}\n")
+
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
-                print(f"Pre Crouch Time: {kneeTimingLength}\n")
+                print(f"Knee Time: {kneeTimingLength}\n")
 
                 time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 except KeyboardInterrupt:

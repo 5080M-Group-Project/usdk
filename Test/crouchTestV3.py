@@ -253,7 +253,7 @@ try:
                 calibrationCheckTimingLength = hipTimingBegin - kneeTimingBegin
                 print(f"Calibration Check Time: {kneeTimingLength}\n")
 
-                time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+                #time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 except KeyboardInterrupt:
         ### Command everything to 0
         print("\nLoop stopped by user. Saving figure...")

@@ -172,7 +172,7 @@ try:
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
 
-                kneeCommandTiming = time.time() - kneeTimingBegin
+                kneeCommandTiming = time.time()
                 kneeCommandLength = kneeCommandTiming - kneeTimingBegin
 
                 if serial.sendRecv(cmd, data):
@@ -190,7 +190,7 @@ try:
 
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired)
 
-                kneeCalcValuesLength = time.time() - kneeSendRcvLength
+                kneeCalcValuesLength = time.time() - kneeSendRcvLength - kneeCommandTiming
 
                 # Crouch Control
                 crouchTimingBegin = time.time()

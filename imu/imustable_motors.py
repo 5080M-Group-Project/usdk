@@ -60,7 +60,7 @@ try:
 
         # Send updated position command
         cmd.q = current_motor_q
-        cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
+        #cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel

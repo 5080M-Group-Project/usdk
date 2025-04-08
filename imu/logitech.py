@@ -18,7 +18,7 @@ joystick.init()
 print(f"Connected to: {joystick.get_name()}")
 
 # Tracking button states
-prev_axis1 = 0
+prev_axis1 = -0.00
 #prev_button1 = 0
 kd = 1.0  # Example starting value
 

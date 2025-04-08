@@ -14,6 +14,10 @@ serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 gearRatio = queryGearRatio(MotorType.A1)
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 ############################
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
@@ -34,26 +38,6 @@ kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixe
 
 kpOutKneeMoving, kdOutKneeMoving = 15.0, 2.0
 kpRotorKneeMoving, kdRotorKneeMoving = getRotorGains(kpOutKneeMoving, kdOutKneeMoving)
-
-'''
-cmd.motorType = MotorType.A1
-data.motorType = MotorType.A1
-cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
-cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
-
-serial.sendRecv(cmd, data)
-
-
-
-cmd.motorType = MotorType.A1
-data.motorType = MotorType.A1
-cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
-cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
-
-serial.sendRecv(cmd, data)
-'''
 
 '''
 # Initialize Wheel Motor
@@ -81,9 +65,7 @@ offsetCalibration = False
 sleepTime = 0.1
 
 
-crouching = False
-startCrouching = False
-stopCrouching = True
+crouching, startCrouching, stopCrouching = False, False, True
 crouchHeightDesiredPrev = 0.33
 crouchDuration = 3.0 #### scale by the distance required
 crouchStartTime = 0.0
@@ -130,10 +112,6 @@ try:
                 hipTimingBegin = time.time()
 
                 # Hip Motor Control
-                cmd.motorType = MotorType.A1
-                data.motorType = MotorType.A1
-                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
                 #cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
                 cmd.id = id.hip
                 cmd.kp = kpRotorHip  # proportional or position term. i.e. stiffness
@@ -154,16 +132,12 @@ try:
 
                 hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired)
 
-
                 #time.sleep(sleepTime/100.0)
+
 
                 kneeTimingBegin = time.time()
 
                 # Knee Motor Control
-                cmd.motorType = MotorType.A1
-                data.motorType = MotorType.A1
-                cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-
                 #cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
                 cmd.id = id.knee
                 cmd.kp = kpRotorKnee # proportional or position term. i.e. stiffness
@@ -176,7 +150,6 @@ try:
                 kneeCommandLength = kneeCommandEndTiming - kneeTimingBegin
 
                 serial.sendRecv(cmd, data)
-                '''
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                         kneeCommsSuccess += 1
@@ -184,7 +157,7 @@ try:
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
                         kneeCommsFail += 1
                         print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
-                '''
+
                 kneeSendRcvLength = time.time() - kneeCommandEndTiming
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??

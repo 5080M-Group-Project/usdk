@@ -235,7 +235,9 @@ try:
                 print(f"Knee Time: {kneeTimingLength}\n")
 
                 print(f"Knee Command Timing: {kneeCommandLength}\n")
-                print(f"Knee Send & Recieve Timing: {kneeSendRcvLength}\n")
+
+                print(f"Knee Send & Recieve Timing: {kneeSendRcvLength}\n") # >>> TAKES THE MOST TIME
+
                 print(f"Knee Calcs Timing: {kneeCalcValuesLength}\n")
 
                 crouchTimingLength = time.time() - crouchTimingBegin

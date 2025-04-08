@@ -49,5 +49,5 @@ while True:
 
     # Print joystick values
     print(
-        f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | Right Stick: ({axis_2:.2f}, {axis_3:.2f}) | Button0: {button0}, Button1: {button1}")
+        f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | Right Stick: ({axis_2:.2f}, {axis_3:.2f}) | Button0: {button0}, Button1: {button1} | kd: {kd}")
 

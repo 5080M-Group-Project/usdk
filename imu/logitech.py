@@ -34,12 +34,12 @@ while True:
     button1 = joystick.get_button(1)
 
     # Detect single press event for button0 (increment kd)
-    if axis_1 == 1 and prev_axis1 == 0:
+    if axis_1 == -1 and prev_axis1 == -0.00:
         kd += 0.1
         print(f"dpad up pressed, kd increased to {kd:.1f}")
 
     # Detect single press event for button1 (decrement kd)
-    if axis_1 == -1 and prev_axis1 == 0:
+    if axis_1 == 1 and prev_axis1 == -0.00:
         kd -= 0.1
         print(f"dpad down pressed, kd decreased to {kd:.1f}")
 

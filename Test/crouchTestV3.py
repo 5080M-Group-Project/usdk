@@ -154,7 +154,7 @@ try:
                 #time.sleep(sleepTime/100.0)
 
                 kneeTimingBegin = time.time()
-                
+
                 # Knee Motor Control
                 cmd.motorType = MotorType.A1
                 data.motorType = MotorType.A1
@@ -241,7 +241,7 @@ try:
                 print(f"Crouch Time: {crouchTimingLength}\n")
 
                 hipTimingLength =  kneeTimingBegin - startTime
-                print(f"Knee Time: {kneeTimingLength}\n")
+                print(f"Hip Time: {kneeTimingLength}\n")
 
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
                 print(f"Knee Time: {kneeTimingLength}\n")

@@ -241,7 +241,7 @@ try:
                 print(f"Crouch Time: {crouchTimingLength}\n")
 
                 hipTimingLength =  kneeTimingBegin - startTime
-                print(f"Hip Time: {kneeTimingLength}\n")
+                print(f"Hip Time: {hipTimingLength}\n")
 
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
                 print(f"Knee Time: {kneeTimingLength}\n")

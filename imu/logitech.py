@@ -45,12 +45,12 @@ while True:
         print(f"dpad down pressed, kd decreased to {kd:.1f}")
 
     if axis_0 == -1.00 and prev_axis0 == -0.00:
-        kp += 0.1
+        kp -= 0.1
         print(f"dpad up pressed, kd increased to {kp:.1f}")
 
         # Detect single press event for button1 (decrement kd)
     if axis_0 == 1.00 and prev_axis0 == -0.00:
-        kp -= 0.1
+        kp += 0.1
         print(f"dpad down pressed, kd decreased to {kp:.1f}")
     # Update previous button states
     prev_axis1 = axis_1

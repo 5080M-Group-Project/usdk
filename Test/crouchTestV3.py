@@ -238,11 +238,12 @@ try:
 
                         print("\nCorrect crouch height. Legs Fixed\n")
 
-                crouchTimingLength = time.time() - crouchTimingBegin
-                print(f"Crouch Time: {crouchTimingLength}\n")
 
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")
+
+                calibrationCheckTimingLength = hipTimingBegin - startTime
+                print(f"Calibration Check Time: {calibrationCheckTimingLength}\n")
 
                 hipTimingLength =  kneeTimingBegin - hipTimingBegin
                 print(f"Hip Time: {hipTimingLength}\n")
@@ -250,8 +251,10 @@ try:
                 kneeTimingLength = crouchTimingBegin - kneeTimingBegin
                 print(f"Knee Time: {kneeTimingLength}\n")
 
-                calibrationCheckTimingLength = hipTimingBegin - startTime
-                print(f"Calibration Check Time: {calibrationCheckTimingLength}\n")
+                crouchTimingLength = time.time() - crouchTimingBegin
+                print(f"Crouch Time: {crouchTimingLength}\n")
+
+
 
                 #time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
 except KeyboardInterrupt:

@@ -22,14 +22,14 @@ gearRatio = queryGearRatio(MotorType.A1)
 # Initialize Motor Gains - add to .h file or equivalent
 
 # HIP
-kpOutHipFixed, kdOutHipFixed = 10.0, 3.0 ### kp = 20, kd = 0.5
+kpOutHipFixed, kdOutHipFixed = 20.0, 0.5 ### kp = 20, kd = 0.5
 kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
 
 kpOutHipMoving, kdOutHipMoving = 10.0, 3.0 ### kp = 10, kd = 3.0
 kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
 
 # KNEE
-kpOutKneeFixed, kdOutKneeFixed = 10.0, 3.0
+kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
 kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
 
 kpOutKneeMoving, kdOutKneeMoving = 10.0, 3.0
@@ -189,7 +189,7 @@ try:
 
                 startCrouching = (crouchHeightDesiredNew != crouchHeightDesiredPrev)
                 stopCrouching = (time.time() - crouchStartTime) >= crouchDuration #stops based on command
-        
+
                 #changeParameters = abs(crouchHeightCurrent - crouchHeightDesiredNew) < crouchThreshold
 
 

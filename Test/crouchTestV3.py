@@ -78,7 +78,7 @@ hipOffset, kneeOffset = 0.0, 0.0
 hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
 
 offsetCalibration = False
-sleepTime = 0.12
+sleepTime = 0.15
 
 
 crouching = False

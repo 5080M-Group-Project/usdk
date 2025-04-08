@@ -19,10 +19,10 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-#kpOutWheel, kdOutWheel = 15.0, 1
-#kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
-kp = 15
-kd = 1
+kpOutWheel, kdOutWheel = 15.0, 1
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
+#kp = 15
+#kd = 1
 
 # --- Setup IMU ---
 i2c = board.I2C()
@@ -64,8 +64,8 @@ try:
         cmd.q = current_motor_q
         #cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
-        cmd.kp = kp
-        cmd.kd = kd
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
         success = serial.sendRecv(cmd, data)
 
         if success:

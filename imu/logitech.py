@@ -23,5 +23,5 @@ while True:
     axis_1 = joystick.get_axis(1)  # Left stick Y-axis
     axis_2 = joystick.get_axis(2)  # Right stick X-axis
     axis_3 = joystick.get_axis(3)  # Right stick Y-axis
-
-    print(f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | Right Stick: ({axis_2:.2f}, {axis_3:.2f})")
+    button0 = joystick.get_button(0)
+    print(f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | Right Stick: ({axis_2:.2f}, {axis_3:.2f}) Button0: {button0:.2f} ")

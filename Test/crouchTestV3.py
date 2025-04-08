@@ -192,7 +192,7 @@ try:
 
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired)
 
-                kneeCalcValuesLength = time.time() - kneeSendRcvLength - kneeCommandTiming
+                kneeCalcValuesLength = time.time() - kneeSendRcvLength - kneeCommandEndTiming
 
                 # Crouch Control
                 crouchTimingBegin = time.time()

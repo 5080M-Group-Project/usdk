@@ -85,7 +85,7 @@ crouching = False
 startCrouching = False
 stopCrouching = True
 crouchHeightDesiredPrev = 0.33
-crouchDuration = 2.0
+crouchDuration = 3.0
 crouchStartTime = 0.0
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0

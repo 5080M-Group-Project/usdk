@@ -172,9 +172,10 @@ try:
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
 
-                kneeCommandTiming = time.time()
-                kneeCommandLength = kneeCommandTiming - kneeTimingBegin
-
+                kneeCommandLength = kneeCommandEndTiming - kneeTimingBegin
+                kneeCommandEndTiming = time.time()
+                serial.sendRecv(cmd, data)
+                '''
                 if serial.sendRecv(cmd, data):
                         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                         kneeCommsSuccess += 1
@@ -182,8 +183,8 @@ try:
                         kneeOutputAngleCurrent = kneeOutputAngleCurrent
                         kneeCommsFail += 1
                         print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
-
-                kneeSendRcvLength = time.time() - kneeCommandTiming
+                '''
+                kneeSendRcvLength = time.time() - kneeCommandEndTiming
 
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)

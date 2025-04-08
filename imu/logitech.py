@@ -27,7 +27,7 @@ while True:
 
     # Read joystick inputs
     axis_0 = joystick.get_axis(0)  # Left stick X-axis
-    axis_1 = joystick.get_axis(1)  # Left stick Y-axis
+    axis_1 = round(joystick.get_axis(1),2)  # Left stick Y-axis
     axis_2 = joystick.get_axis(2)  # Right stick X-axis
     axis_3 = joystick.get_axis(3)  # Right stick Y-axis
     button0 = joystick.get_button(0)

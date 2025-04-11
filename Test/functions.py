@@ -2,6 +2,11 @@ import time
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import evdev
+import board
+import busio
+import adafruit_bno055
+import pygame
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
@@ -260,3 +265,12 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     # Close the plot
     plt.close()
 
+def find_f710():
+    """Find the Logitech F710 controller device."""
+    devices = [evdev.InputDevice(path) for path in evdev.list_devices()]
+    for device in devices:
+        if "Logitech Gamepad F710" in device.name:
+            print(f"Found Logitech F710 at {device.path}")
+            return evdev.InputDevice(device.path)
+    print("Logitech F710 not found. Ensure it is connected and in DirectInput mode.")
+    exit()

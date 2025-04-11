@@ -1,8 +1,13 @@
 import time
 import sys
 from typing import Any
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
+import evdev
+import board
+import busio
+import adafruit_bno055
+import pygame
 
 from functions import *
 
@@ -64,28 +69,19 @@ hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
 offsetCalibration = False
 sleepTime = 0.1
 
-
 crouching, startCrouching, stopCrouching = False, False, True
-crouchHeightDesiredPrev = 0.33
+crouchHeightMax = 0.33
+crouchIncrement = 0.1*crouchHeightMax
+crouchHeightDesiredPrev = crouchHeightMax
 crouchDuration = 3.0 #### scale by the distance required
 crouchStartTime = 0.0
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0
 
-
-hipCommsSuccess = 0
-hipCommsFail = 0
-kneeCommsSuccess = 0
-kneeCommsFail = 0
+hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail = 0, 0, 0, 0
 
 # Data storage for plotting
-hipOutputAngles = []
-kneeOutputAngles = []
-
-hipCommandAngles = []
-kneeCommandAngles = []
-
-timeSteps = []
+hipOutputAngles, hipCommandAngles, kneeOutputAngles, kneeCommandAngles, timeSteps = [], [], [], [], []
 
 globalStartTime = time.time()
 
@@ -132,9 +128,6 @@ try:
 
                 hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired)
 
-                #time.sleep(sleepTime/100.0)
-
-
                 kneeTimingBegin = time.time()
 
                 # Knee Motor Control
@@ -170,7 +163,18 @@ try:
                 # Crouch Control
                 crouchTimingBegin = time.time()
 
-                crouchHeightDesiredNew = 0.25  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+                events = pygame.event.get()
+                for event in events:
+                        if event.type == pygame.KEYDOWN:
+                                if event.key == pygame.K_UP:
+                                        crouchHeightDesiredNew += crouchIncrement
+                                if event.key == pygame.K_DOWN:
+                                        crouchHeightDesiredNew -= crouchIncrement
+
+                crouchHeightDesiredNew = max(0.1*crouchHeightMax, min(crouchHeightMax, crouchHeightDesiredNew))
+
+                #crouchHeightDesiredNew = 0.25  ## max = 0.33 / ### IDEA: in future, read signal from RC controller to change
+
                 xWheel,yWheel = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
                 crouchHeightCurrent = abs(yWheel)
                 crouchThreshold = (0.1 / 100) * 0.33

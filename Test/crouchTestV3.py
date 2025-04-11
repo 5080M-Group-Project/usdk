@@ -19,6 +19,8 @@ gearRatio = queryGearRatio(MotorType.A1)
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
+pygame.init()
 ############################
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########

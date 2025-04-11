@@ -61,7 +61,7 @@ time.sleep(0.1)
 print("🟢 Pitch stabilization running...")
 
 # Open CSV file for logging
-log_filename = "imu_motor_log2.csv"
+log_filename = f"imu_motor_log{kpOutWheel:.2f},{kdOutWheel:.2f}.csv"
 with open(log_filename, mode="w", newline="") as log_file:
     log_writer = csv.writer(log_file)
     log_writer.writerow(["Time (s)", "Pitch (deg)", "kp", "kd", "Correction (deg)"])

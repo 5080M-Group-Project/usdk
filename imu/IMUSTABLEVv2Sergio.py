@@ -42,6 +42,13 @@ cmd.kd = 0.0
 serial.sendRecv(cmd, data)
 time.sleep(0.1)
 
+# Logging setup
+log_filename = f"pitch_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+log_file = open(log_filename, "w", newline="")
+csv_writer = csv.writer(log_file)
+csv_writer.writerow(["Time (s)", "Pitch (deg)", "PID Correction (deg)", "Motor Position q (deg)"])
+
+
 print("🟢 Pitch stabilization running...")
 
 try:
@@ -63,14 +70,24 @@ try:
 
         # Send motor command
         cmd.q = current_motor_q
-        cmd.dq = 3.0 #1.0 #speed motor, maybe we can control this too
+        cmd.dq = 0.0 #1.0 #speed motor, maybe we can control this too
         cmd.tau = 0.0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
 
         success = serial.sendRecv(cmd, data)
         if success:
-            print(f"Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
+            elapsed_time = time.time() - start_time
+            print(f"[{elapsed_time:.2f}s] Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
+
+            #print(f"Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
+        # Log data
+            csv_writer.writerow([
+                elapsed_time,
+                pitch,
+                math.degrees(correction),
+                math.degrees(current_motor_q)
+            ])
         else:
             print("❌ Motor pooooooooo.")
 
@@ -78,3 +95,4 @@ try:
 
 except KeyboardInterrupt:
     print("\n🛑 Watch behind you")
+    log_file.close()

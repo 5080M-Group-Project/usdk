@@ -5,6 +5,7 @@ import board
 import busio
 import adafruit_bno055
 import pygame
+import csv
 
 # Initialize pygame
 pygame.init()
@@ -41,9 +42,8 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 25.4, 2.3 #22.4, 1.5
+kpOutWheel, kdOutWheel = 25.4, 2.3
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
-
 
 # --- Setup IMU ---
 i2c = board.I2C()
@@ -60,77 +60,76 @@ time.sleep(0.1)
 
 print("🟢 Pitch stabilization running...")
 
-try:
-    current_motor_q = 0.0  # Track motor position
+# Open CSV file for logging
+log_filename = "imu_motor_log.csv"
+with open(log_filename, mode="w", newline="") as log_file:
+    log_writer = csv.writer(log_file)
+    log_writer.writerow(["Time (s)", "Pitch (deg)", "kp", "kd", "Correction (deg)"])
 
-    while True:
-        euler = imu.euler
-        pitch = euler[1] if euler else None  # Pitch in degrees
+    try:
+        start_time = time.time()
+        current_motor_q = 0.0  # Track motor position
 
-        if pitch is None:
-            print("⚠️ IMU is not responding")
+        while True:
+            euler = imu.euler
+            pitch = euler[1] if euler else None  # Pitch in degrees
+
+            if pitch is None:
+                print("⚠️ IMU is not responding")
+                time.sleep(0.01)
+                continue
+
+            # Compute relative correction
+            correction = -math.radians(pitch)  # Convert degrees to radians
+            correction = max(min(correction, math.radians(20)), math.radians(-20))  # Limit correction
+
+            # Process joystick events
+            pygame.event.pump()
+
+            # Read joystick inputs
+            axis_0 = round(joystick.get_axis(0), 2)  # Left stick X-axis
+            axis_1 = round(joystick.get_axis(1), 2)  # Left stick Y-axis
+
+            # Adjust kd with dpad up/down
+            if axis_1 == -1.00 and prev_axis1 == -0.00:
+                kdOutWheel += 0.1
+                print(f"dpad up pressed, kd increased to {kdOutWheel:.1f}")
+
+            if axis_1 == 1.00 and prev_axis1 == -0.00:
+                kdOutWheel -= 0.1
+                print(f"dpad down pressed, kd decreased to {kdOutWheel:.1f}")
+
+            # Adjust kp with dpad left/right
+            if axis_0 == -1.00 and prev_axis0 == -0.00:
+                kpOutWheel -= 0.1
+                print(f"dpad left pressed, kp decreased to {kpOutWheel:.1f}")
+
+            if axis_0 == 1.00 and prev_axis0 == -0.00:
+                kpOutWheel += 0.1
+                print(f"dpad right pressed, kp increased to {kpOutWheel:.1f}")
+
+            # Update previous joystick states
+            prev_axis1 = axis_1
+            prev_axis0 = axis_0
+
+            # Update motor position and gains
+            current_motor_q += correction  # Increment motor position
+            cmd.q = current_motor_q
+            cmd.tau = 0.0
+            kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
+            cmd.kp = kpRotorWheel
+            cmd.kd = kdRotorWheel
+            success = serial.sendRecv(cmd, data)
+
+            # Log data
+            elapsed_time = time.time() - start_time
+            log_writer.writerow([elapsed_time, pitch, kpOutWheel, kdOutWheel, math.degrees(correction)])
+            log_file.flush()  # Ensure data is written to the file
+
+            # Print debug info
+            print(f"Time: {elapsed_time:.2f}s | Pitch: {pitch:.2f}° | kp: {kpOutWheel:.1f} | kd: {kdOutWheel:.1f} | Correction: {math.degrees(correction):+.2f}°")
+
             time.sleep(0.01)
-            continue
 
-        # Compute relative correction
-        correction = -math.radians(pitch)  # Convert degrees to radians
-        if correction > math.radians(20):
-            correction = math.radians(20)
-        elif correction < math.radians(-20):
-            correction = math.radians(-20)
-
-        #current_motor_q += correction  # Increment motor position
-        pygame.event.pump()  # Process events
-
-        # Read joystick inputs
-        axis_0 = round(joystick.get_axis(0), 2)  # Left stick X-axis
-        axis_1 = round(joystick.get_axis(1), 2)  # Left stick Y-axis
-
-
-        # Detect single press event for button0 (increment kd)
-        if axis_1 == -1.00 and prev_axis1 == -0.00:
-            kdOutWheel += 0.1
-            print(f"dpad up pressed, kd increased to {kdOutWheel:.1f}")
-
-        # Detect single press event for button1 (decrement kd)
-        if axis_1 == 1.00 and prev_axis1 == -0.00:
-            kdOutWheel -= 0.1
-            print(f"dpad down pressed, kd decreased to {kdOutWheel:.1f}")
-
-        if axis_0 == -1.00 and prev_axis0 == -0.00:
-            kpOutWheel -= 0.1
-            print(f"dpad up pressed, kd increased to {kpOutWheel:.1f}")
-
-            # Detect single press event for button1 (decrement kd)
-        if axis_0 == 1.00 and prev_axis0 == -0.00:
-            kpOutWheel += 0.1
-            print(f"dpad down pressed, kd decreased to {kpOutWheel:.1f}")
-        # Update previous button states
-        prev_axis1 = axis_1
-        prev_axis0 = axis_0
-        # prev_button1 = button1
-
-        # Print joystick values
-        print(
-            f"Left Stick: ({axis_0:.2f}, {axis_1:.2f}) | kd: {kdOutWheel:.1f}, kp: {kpOutWheel:.1f}")
-
-        # Send updated position command
-        current_motor_q += correction  # Increment motor position
-        cmd.q = current_motor_q
-        #cmd.dq = 5  # 1.0 #speed motor, maybe we can control this too
-        cmd.tau = 0.0
-        kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
-        success = serial.sendRecv(cmd, data)
-
-       # if success:
-            #print(
-               # f"Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, Motor q: {math.degrees(current_motor_q):.2f}°")
-        #else:
-             #print("❌ Motor communication error.")
-
-        #time.sleep(0.01)
-
-except KeyboardInterrupt:
-    print("\n🛑 Stopping stabilization.")
+    except KeyboardInterrupt:
+        print("\n🛑 Stopping stabilization.")

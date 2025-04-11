@@ -42,7 +42,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 25.4, 2.3
+kpOutWheel, kdOutWheel = 35.4, 3.3
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -73,7 +73,6 @@ with open(log_filename, mode="w", newline="") as log_file:
         while True:
             euler = imu.euler
             pitch = euler[1] if euler else None  # Pitch in degrees
-
             if pitch is None:
                 print("⚠️ IMU is not responding")
                 time.sleep(0.01)

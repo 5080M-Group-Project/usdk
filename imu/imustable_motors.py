@@ -41,7 +41,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 15.0, 1 #22.4, 1.5
+kpOutWheel, kdOutWheel = 25.4, 2.3 #22.4, 1.5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 

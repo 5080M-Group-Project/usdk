@@ -73,7 +73,7 @@ crouchHeightMax = 0.33
 crouchIncrement = 0.1*crouchHeightMax
 crouchHeightDesiredPrev = crouchHeightMax
 crouchHeightDesiredNew = 0.5*crouchHeightMax
-crouchDuration = 3.0 #### scale by the distance required
+crouchDuration = 1.0 #### scale by the distance required
 crouchStartTime = 0.0
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0

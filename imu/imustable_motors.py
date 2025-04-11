@@ -35,7 +35,7 @@ from functionsIMU import *  # Should include getOutputAngleDeg()
 serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
-cmd.id = 0
+cmd.id = 2
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)

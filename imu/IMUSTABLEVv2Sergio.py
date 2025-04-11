@@ -52,7 +52,7 @@ csv_writer.writerow(["Time (s)", "Pitch (deg)", "PID Correction (deg)", "Motor P
 
 
 print("🟢 Pitch stabilization running...")
-
+start_time = time.time()
 try:
     current_motor_q = 0.0  # We accumulate changes to q here
 

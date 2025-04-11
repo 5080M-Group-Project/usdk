@@ -10,6 +10,37 @@ import board
 import busio
 import sys
 
+
+def plotPitchFigure(timeSteps, pitchAngles, pidCorrections, motorPositions, kp, ki, kd):
+    min_length = min(len(timeSteps), len(pitchAngles), len(pidCorrections), len(motorPositions))
+
+    if min_length == 0:
+        print("No data collected. Exiting without saving.")
+        sys.exit(0)
+
+    # Trim all to same length
+    timeSteps = timeSteps[:min_length]
+    pitchAngles = pitchAngles[:min_length]
+    pidCorrections = pidCorrections[:min_length]
+    motorPositions = motorPositions[:min_length]
+
+    plt.figure()
+    plt.plot(timeSteps, pitchAngles, label='IMU Pitch (deg)', color='blue')
+    plt.plot(timeSteps, pidCorrections, label='PID Correction (deg)', color='orange')
+    plt.plot(timeSteps, motorPositions, label='Motor Position q (deg)', color='green')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Angle (deg)')
+    plt.title(f'Pitch Stabilization - PID Kp={kp}, Ki={ki}, Kd={kd}')
+    plt.legend(loc='best')
+    plt.grid()
+
+    plt.savefig(f"PitchStabilization_Kp_{kp}_Ki_{ki}_Kd_{kd}.png", dpi=300)
+    print("📈 Figure saved successfully!")
+
+    plt.close()
+
+
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 

@@ -2,10 +2,6 @@ import time
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import evdev
-import board
-import busio
-import adafruit_bno055
 import pygame
 
 sys.path.append('../lib')

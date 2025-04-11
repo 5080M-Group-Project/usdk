@@ -4,6 +4,7 @@ import sys
 import board
 import busio
 import adafruit_bno055
+import datetime
 from simple_pid import PID
 
 sys.path.append('../lib') 

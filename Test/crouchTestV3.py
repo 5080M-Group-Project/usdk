@@ -21,6 +21,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 pygame.init()
+screen = pygame.display.set_mode((400, 300))
 ############################
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########

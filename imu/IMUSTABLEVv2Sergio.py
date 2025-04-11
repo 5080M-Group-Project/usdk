@@ -31,7 +31,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Setup PID ---
 #1.5,0,0.5
-pid = PID(1, 0.0, 0.5, setpoint=0.0)  # Tune these later
+pid = PID(3, 0.0, 0.5, setpoint=0.0)  # Tune these later
 pid.sample_time = 0.01
 pid.output_limits = (-math.radians(20), math.radians(20))  # motor command in radians
 

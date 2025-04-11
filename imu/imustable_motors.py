@@ -42,7 +42,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 35.4, 5.3
+kpOutWheel, kdOutWheel = 25.4, 2.3
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -81,7 +81,7 @@ with open(log_filename, mode="w", newline="") as log_file:
 
             # Compute relative correction
             correction = -math.radians(pitch)  # Convert degrees to radians
-            correction = max(min(correction, math.radians(20)), math.radians(-20))  # Limit correction
+            correction = max(min(correction, math.radians(45)), math.radians(-45))  # Limit correction
 
             # Process joystick events
             pygame.event.pump()

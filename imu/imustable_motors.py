@@ -80,7 +80,7 @@ with open(log_filename, mode="w", newline="") as log_file:
 
             # Compute relative correction
             correction = -math.radians(pitch)  # Convert degrees to radians
-            correction = max(min(correction, math.radians(45)), math.radians(-45))  # Limit correction
+            correction = max(min(correction, math.radians(90)), math.radians(-90))  # Limit correction
 
             # Process joystick events
             pygame.event.pump()

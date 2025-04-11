@@ -65,7 +65,7 @@ try:
             time.sleep(0.01)
             continue
 
-        correction = pid(pitch)  # PID returns delta q in radians
+        correction = pid(math.radians(pitch))  # PID returns delta q in radians
 
         # Apply correction to target position
         current_motor_q += correction  # This accumulates q over time

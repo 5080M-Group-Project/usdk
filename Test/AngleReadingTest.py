@@ -87,7 +87,7 @@ try:
             print("Raw Output Angle (Knee) deg: " + str(Angle))
             print(f"ISSUE? {data.merror}")
             print('\n')
-            time.sleep(0.02)  # 200 us
+            time.sleep(0.2)  # 200 us
 
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")

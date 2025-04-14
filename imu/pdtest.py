@@ -80,7 +80,7 @@ with open(log_filename, mode="w", newline="") as log_file:
         while True:
             euler = imu.euler
             pitch = euler[1] if euler else None  # Pitch in degrees
-            #pid = PID(Kp, Ki, Kd, setpoint=0.0)
+            pid = PID(Kp, Ki, Kd, setpoint=0.0)
             if pitch is None:
                 print("⚠️ IMU error")
                 time.sleep(0.01)

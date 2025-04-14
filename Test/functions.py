@@ -101,8 +101,8 @@ def getOffset(motorID, serial, modelledInitialAngle):
     data.motorType = MotorType.A1
     cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
     cmd.id = motorID
-    serial.sendRecv(cmd, data)
-
+    while not serial.sendRecv(cmd, data)
+        print('/nWaiting for motor response...')
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here

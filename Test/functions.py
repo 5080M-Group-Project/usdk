@@ -293,7 +293,7 @@ def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDe
             print(f"\nAdjusting Crouch Height - Current: {heightCurrent:.3f}, Desired: {heightDesiredNew:.3f}")
 
     else:
-        hipAngleNew, kneeAngleNew = hipCrouchAngleDesired, kneeCrouchAngleDesired
+        hipAngleNew, kneeAngleNew = hipAngleEnd, kneeAngleEnd
         heightDesiredPrev = heightDesiredNew
         print("\nCrouch Height Fixed\n")
 

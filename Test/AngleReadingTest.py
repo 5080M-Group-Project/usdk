@@ -29,7 +29,7 @@ cmd.id   = 0
 serial.sendRecv(cmd, data)
 hipInitial = ((data.q /queryGearRatio(MotorType.A1)) * (180 / np.pi))
 offsetHip  = -90.0 - hipInitial
-output_angle_c0 = (data.q / gearRatio) * (180 / PI)
+output_angle_c0 = hipInitial
 
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1
@@ -38,7 +38,7 @@ cmd.id   = 1
 serial.sendRecv(cmd, data)
 kneeInitial = ((data.q /queryGearRatio(MotorType.A1)) * (180 / np.pi))
 offsetKnee  = 0.0 - kneeInitial
-output_angle_c1 = (data.q / gearRatio) * (180 / PI)
+output_angle_c1 = kneeInitial
 calibration = False
 
 # Data storage for plotting
@@ -57,10 +57,10 @@ sin_counter = 0.0
 try:
     while True:
             sin_counter += 0.001
-            output_angle_d0 = output_angle_c0 + 20 * np.sin(2 * PI * sin_counter)
+            output_angle_d0 = output_angle_c0 + 10 * np.sin(2 * PI * sin_counter)
             rotor_angle_d0 = (output_angle_d0 * (PI / 180)) * gearRatio
 
-            output_angle_d1 = output_angle_c1 + 20 * np.sin(2 * PI * sin_counter)
+            output_angle_d1 = output_angle_c1 + 10 * np.sin(2 * PI * sin_counter)
             rotor_angle_d1 = (output_angle_d1 * (PI / 180)) * gearRatio
 
             startTime = time.time()

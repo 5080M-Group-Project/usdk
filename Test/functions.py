@@ -13,8 +13,27 @@ data = MotorData()
 
 gearRatio = queryGearRatio(MotorType.A1)
 
-# Global variables for crouching state
-crouching = False
+# Function to convert output gains to rotor gains
+def getRotorGains(kpOutput, kdOutput):
+    kpRotor = (kpOutput / (gearRatio * gearRatio)) / 26.07
+    kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
+    return np.array([kpRotor, kdRotor])
+
+# HIP
+kpOutHipFixed, kdOutHipFixed = 20.0, 0.5  ### kp = 20, kd = 0.5
+kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
+
+kpOutHipMoving, kdOutHipMoving = 15.0, 2.0  ### kp = 10, kd = 3.0
+kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
+
+# KNEE
+kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
+kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
+
+kpOutKneeMoving, kdOutKneeMoving = 15.0, 2.0
+kpRotorKneeMoving, kdRotorKneeMoving = getRotorGains(kpOutKneeMoving, kdOutKneeMoving)
+
+
 count = 0
 thetaHipVector = []
 thetaKneeVector = []
@@ -49,12 +68,6 @@ class id: # e.g. id.hip = 0, id.get('Hip') = 0
             return 'Wheel'
         else:
             return None
-
-# Function to convert output gains to rotor gains
-def getRotorGains(kpOutput, kdOutput):
-    kpRotor = (kpOutput / (gearRatio * gearRatio)) / 26.07
-    kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
-    return np.array([kpRotor, kdRotor])
 
 # Function to get the current motor output angle in DEGREES from rotor in RAD
 def getOutputAngleDeg(rotorAngle):
@@ -180,7 +193,7 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
     return thetaHip, thetaKnee
 
 
-
+'''
 def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
     # Define step size (dt) inside the function
     dt = 0.00001  # Fraction of the distance to move per iteration (LERP step size)
@@ -217,12 +230,83 @@ def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleC
         print("Correct crouch height. Legs Fixed")
 
     return hipOutputAngleDesired, kneeOutputAngleDesired
+'''
+
+
+# Global variables for crouching state
+crouchHeightMax = 0.33
+crouchIncrement = 0.1*crouchHeightMax
+
+hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
+startCrouching, stopCrouching = False, True
+
+crouchDuration = 1.0 #### scale by the distance required?
+crouchStartTime = 0.0
+
+def getNewCrouchHeight(events,crouchHeightDesiredNew,crouchIncrement):
+    global crouchHeightMax
+    for event in events:
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                crouchHeightDesiredNew += crouchIncrement
+            if event.key == pygame.K_DOWN:
+                crouchHeightDesiredNew -= crouchIncrement
+
+    crouchHeightDesiredNew = max(0.0 + crouchIncrement, min(crouchHeightMax, crouchHeightDesiredNew))
+    return crouchHeightDesiredNew
 
 
 def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
         currentAngle = (desiredAngle - startAngle) * t/T + startAngle
         #currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
         return currentAngle
+
+def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouching):
+
+    global hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd
+    global startCrouching, stopCrouching
+    global crouchDuration   #### scale by the distance required?
+    global crouchStartTime
+
+    # Estimate current crouch height from FK
+    xWheel, yWheel = forwardKinematicsDeg(hipAngleCurrent, kneeAngleCurrent)
+    heightCurrent = abs(yWheel)
+
+    startCrouching = (heightDesiredNew != heightDesiredPrev)
+
+    if startCrouching and not crouching:
+        hipAngleEnd, kneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, 'front')
+        hipAngleStart, kneeAngleStart = hipAngleCurrent, kneeAngleCurrent
+        crouchStartTime = time.time()
+        crouching = True
+        stopCrouching = False
+    elif crouching:
+        dt = time.time() - crouchStartTime
+        if dt >= crouchDuration:
+            hipAngleNew, kneeAngleNew = hipAngleEnd, kneeCrouchAngleEnd
+            crouching = False
+            heightDesiredPrev = heightDesiredNew
+        else:
+            hipAngleNew = getLinearInterpolationAngle(hipAngleStart, hipAngleEnd, crouchDuration, dt)
+            kneeAngleNew = getLinearInterpolationAngle(kneeAngleStart, kneeAngleEnd, crouchDuration, dt)
+            print(f"\nAdjusting Crouch Height - Current: {heightCurrent:.3f}, Desired: {heightDesiredNew:.3f}")
+
+    else:
+        hipAngleNew, kneeAngleNew = hipCrouchAngleDesired, kneeCrouchAngleDesired
+        heightDesiredPrev = heightDesiredNew
+        print("\nCrouch Height Fixed\n")
+
+    return hipAngleNew, kneeAngleNew, heightDesiredPrev, crouching
+
+
+def chooseRotorGains(crouching):
+
+    if crouching:
+        # Return moving gains if crouching
+        return kpRotorHipMoving, kdRotorHipMoving, kpRotorKneeMoving, kdRotorKneeMoving
+    else:
+        # Return fixed gains if not crouching
+        return kpRotorHipFixed, kdRotorHipFixed, kpRotorKneeFixed, kdRotorKneeFixed
 
 
 def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):

@@ -120,39 +120,9 @@ try:
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired)
 
                 # Crouch Control
-                crouchHeightDesiredNew = getNewCrouchHeight(pygame.event.get(),crouchHeightDesiredNew,crouchIncrement)
+                crouchHeightDesiredNew = getNewCrouchHeight(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
+                hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching = crouchControl(hipOutputAngleCurrent,kneeOutputAngleCurrent,crouchHeightDesiredPrev,crouchHeightDesiredNew,crouchDuration,crouching)
 
-                hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching = crouchControl(hipOutputAngleCurrent,kneeOutputAngleCurrent,crouchHeightDesiredPrev,crouchHeightDesiredNew,crouching)
-                '''
-                xWheel,yWheel = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)
-                crouchHeightCurrent = abs(yWheel)
-                #crouchThreshold = (0.1 / 100) * 0.33
-                startCrouching = (crouchHeightDesiredNew != crouchHeightDesiredPrev)
-                #changeParameters = abs(crouchHeightCurrent - crouchHeightDesiredNew) < crouchThreshold
-                # hipOutputAngleDesired, kneeOutputAngleDesired = crouchingMotion2(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleCurrent,sleepTime*2, 2.0)
-
-                if startCrouching and not crouching:
-                        hipCrouchAngleDesired, kneeCrouchAngleDesired  = inverseKinematicsDeg(0.0, -crouchHeightDesiredNew, 'front')
-                        hipCrouchAngleStart, kneeCrouchAngleStart = hipOutputAngleCurrent, kneeOutputAngleCurrent
-                        crouchStartTime = time.time()
-                        crouching = True
-                        stopCrouching = False
-                elif crouching:
-                        dt = time.time() - crouchStartTime
-                        stopCrouching = dt >= crouchDuration
-                        if stopCrouching:
-                                hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
-                                crouching = False
-                                crouchHeightDesiredPrev = crouchHeightDesiredNew
-                        else:
-                                hipOutputAngleDesired = getLinearInterpolationAngle(hipCrouchAngleStart, hipCrouchAngleDesired, crouchDuration, dt)
-                                kneeOutputAngleDesired = getLinearInterpolationAngle(kneeCrouchAngleStart, kneeCrouchAngleDesired, crouchDuration, dt)
-                                print(f"\nAdjusting Crouch Height - Current: {crouchHeightCurrent:.3f}, Desired: {crouchHeightDesiredNew:.3f}")
-                else:
-                        hipOutputAngleDesired, kneeOutputAngleDesired = hipCrouchAngleDesired, kneeCrouchAngleDesired
-                        crouchHeightDesiredPrev = crouchHeightDesiredNew
-                        print("\nCrouch Height Fixed\n")
-                '''
 
                 loopTime = time.time() - startTime
                 print(f"Loop Time: {loopTime}\n")

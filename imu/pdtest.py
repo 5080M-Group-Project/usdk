@@ -80,7 +80,7 @@ with open(log_filename, mode="w", newline="") as log_file:
         while True:
             euler = imu.euler
             pitch = euler[1] if euler else None  # Pitch in degrees
-            #pid = PID(Kp, Ki, Kd, setpoint=0.0)
+
             if pitch is None:
                 print("⚠️ IMU error")
                 time.sleep(0.01)
@@ -114,6 +114,8 @@ with open(log_filename, mode="w", newline="") as log_file:
             if axis_0 == 1.00 and prev_axis0 == -0.00:
                 Kd += 0.1
                 print(f"dpad right pressed, kd increased to {Kd:.1f}")
+            #update gains
+            pid.tunings = (Kp, Ki, Kd)
 
             # Update previous joystick states
             prev_axis1 = axis_1

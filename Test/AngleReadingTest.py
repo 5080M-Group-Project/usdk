@@ -49,7 +49,7 @@ try:
             data.motorType = MotorType.A1
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-            cmd.id = 2
+            cmd.id = 0
             cmd.q = 0.0
             cmd.dq = 0.0  # 6.28*queryGearRatio(MotorType.A1)
             cmd.kp = 0.0
@@ -67,7 +67,7 @@ try:
             print('\n')
 
             time.sleep(0.02)  # 200 us
-            '''
+
             data.motorType = MotorType.A1
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -87,8 +87,8 @@ try:
             print("Raw Output Angle (Knee) deg: " + str(Angle))
             print(f"ISSUE? {data.merror}")
             print('\n')
-            time.sleep(0.02)  # 200 us
-            '''
+            time.sleep(0.2)  # 200 us
+
 except KeyboardInterrupt:
         print("\nLoop stopped by user. Saving figure...")
         try:

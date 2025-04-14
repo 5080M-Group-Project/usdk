@@ -35,6 +35,7 @@ calibration = False
 hipOutputAnglesDeg = []
 kneeOutputAnglesDeg = []
 
+HipAngle = 0
 
 timeSteps = []
 

@@ -122,7 +122,7 @@ try:
 
                 # Crouch Control
                 crouchHeightDesiredNew = getNewCrouchHeight(pygame.event.get(),crouchHeightDesiredNew,crouchIncrement)
-                
+
                 hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching = crouchControl(hipOutputAngleCurrent,kneeOutputAngleCurrent,crouchHeightDesiredPrev,crouchHeightDesiredNew,crouching)
                 '''
                 xWheel,yWheel = forwardKinematicsDeg(hipOutputAngleCurrent, kneeOutputAngleCurrent)

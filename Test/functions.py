@@ -283,7 +283,7 @@ def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDe
     elif crouching:
         dt = time.time() - crouchStartTime
         if dt >= crouchDuration:
-            hipAngleNew, kneeAngleNew = hipAngleEnd, kneeCrouchAngleEnd
+            hipAngleNew, kneeAngleNew = hipAngleEnd, kneeAngleEnd
             crouching = False
             heightDesiredPrev = heightDesiredNew
         else:

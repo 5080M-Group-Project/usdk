@@ -2,6 +2,8 @@ import time
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+import os
+import csv
 from functions import *
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
@@ -139,11 +141,24 @@ except KeyboardInterrupt:
             plt.legend(loc='best')
             plt.grid()
 
-            # Save the figure before exiting
-            plt.savefig("JointAnglesOverTime.png", dpi=300)
-            print("Figure saved as JointAngleOverTime.png")
+            # Base name for figure and CSV
+            base_name = "JointAnglesOverTime"
 
-            # Close the plot
+            # Save the figure
+            figure_filename = f"{base_name}.png"
+            plt.savefig(figure_filename, dpi=300)
+            print(f"Figure saved as {figure_filename}")
+
+            # Save the data as CSV
+            csv_filename = f"{base_name}.csv"
+            with open(csv_filename, 'w', newline='') as csvfile:
+                writer = csv.writer(csvfile)
+                writer.writerow(['Time (s)', 'Hip Angle (deg)', 'Knee Angle (deg)'])
+                for t, hip, knee in zip(timeSteps, hipOutputAngles, kneeOutputAngles):
+                    writer.writerow([t, hip, knee])
+
+            print(f"Data saved as {csv_filename}")
+
             plt.close()
         except Exception as e:
                 print(f"Error encountered while saving figure: {e}")

@@ -78,7 +78,9 @@ try:
             cmd.kp = 0.0
             cmd.kd = 0.0
             cmd.tau = 0.0
-            serial.sendRecv(cmd, data)
+            while not serial.sendRecv(cmd, data):
+                print('Waiting for Hip motor to respond')
+
 
             Angle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
             kneeOutputAnglesDeg.append(Angle)
@@ -102,12 +104,12 @@ except KeyboardInterrupt:
 
             timeSteps = timeSteps[:min_length]
             hipOutputAngles = hipOutputAnglesDeg[:min_length]
-            #kneeOutputAngles = kneeOutputAnglesDeg[:min_length]
+            kneeOutputAngles = kneeOutputAnglesDeg[:min_length]
 
             # Plotting
             plt.figure()
             plt.plot(timeSteps, hipOutputAngles, label='Hip Output Angles')
-            #plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
+            plt.plot(timeSteps, kneeOutputAngles, label='Knee Output Angles')
 
             plt.xlabel('Time (s)')
             plt.ylabel('Angle (deg)')

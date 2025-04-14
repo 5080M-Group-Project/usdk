@@ -2,6 +2,7 @@ import time
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
+from functions import *
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 

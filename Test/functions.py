@@ -93,7 +93,7 @@ def cmdActuator(id, kp, kd, q, dq, tau):
 
     #serial.sendRecv(cmd, data)
 
-def getOffset(motorID, modelledInitialAngle):
+def getOffset(motorID, serial, modelledInitialAngle):
     """Calibrate a motor and return its offset and initial raw angle."""
     cmd.motorType = MotorType.A1
     data.motorType = MotorType.A1
@@ -101,19 +101,20 @@ def getOffset(motorID, modelledInitialAngle):
     cmd.id = motorID
     serial.sendRecv(cmd, data)
 
+
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
     #time.sleep(0.002)  # 200 us
     return offset, rawInitialAngle
 
-def calibrateJointReadings():
+def calibrateJointReadings(serial):
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
-    hipOffset, hipAngleInitialRaw = getOffset(id.hip, -90)
-    kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, 0.0)
+    hipOffset, hipAngleInitialRaw = getOffset(id.hip, serial, -90)
+    kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, serial, 0.0)
 
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 17.5 > hipAngleInitialRaw > 16.5 
+    hipCalibration = 17.5 > hipAngleInitialRaw > 16.5
     kneeCalibration = 27 > kneeAngleInitialRaw > 26
     offsetCalibration = hipCalibration + kneeCalibration
 

@@ -59,7 +59,7 @@ globalStartTime = time.time()
 try:
         while True:
                 while not offsetCalibration: ### & other
-                        hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings()
+                        hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings(serial)
                         time.sleep(sleepTime)
                         hipOutputAngleCurrent = hipOutputAngleDesired
                         kneeOutputAngleCurrent = kneeOutputAngleDesired
@@ -84,6 +84,10 @@ try:
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = hipTau  # rotor feedforward torque
                 hipRcvStart = time.time()
+                while not serial.sendRecv(cmd, data):
+                        print('Waiting for Hip motor to respond')
+                hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+                '''
                 if serial.sendRecv(cmd, data):
                         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
                         hipCommsSuccess += 1
@@ -91,6 +95,7 @@ try:
                         hipOutputAngleCurrent = hipOutputAngleCurrent
                         hipCommsFail += 1
                         print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! " f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
+                '''
                 hipSendRcvLength = time.time() - hipRcvStart
                 hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.hip,hipOutputAngleCurrent,data.dq,hipTorque,data.temp,data.merror)

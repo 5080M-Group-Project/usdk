@@ -235,12 +235,10 @@ def crouchingMotionV1(crouchHeightDesired,hipOutputAngleCurrent,kneeOutputAngleC
 
 # Global variables for crouching state
 crouchHeightMax = 0.33
-crouchIncrement = 0.1*crouchHeightMax
+
 
 hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
 startCrouching, stopCrouching = False, True
-
-crouchDuration = 1.0 #### scale by the distance required?
 crouchStartTime = 0.0
 
 def getNewCrouchHeight(events,crouchHeightDesiredNew,crouchIncrement):
@@ -261,11 +259,10 @@ def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
         #currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
         return currentAngle
 
-def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouching):
+def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouchDuration, crouching):
 
     global hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd
     global startCrouching, stopCrouching
-    global crouchDuration   #### scale by the distance required?
     global crouchStartTime
 
     # Estimate current crouch height from FK

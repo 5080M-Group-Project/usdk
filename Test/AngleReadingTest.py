@@ -61,8 +61,6 @@ try:
             else:
                 HipAngle = HipAngle
                 print('Waiting for Hip motor to respond')
-
-            HipAngle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
             hipOutputAnglesDeg.append(HipAngle)
 
             print('\n')

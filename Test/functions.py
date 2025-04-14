@@ -1,5 +1,7 @@
 import time
 import sys
+import os
+import csv
 import numpy as np
 import matplotlib.pyplot as plt
 import pygame
@@ -99,8 +101,8 @@ def getOffset(motorID, serial, modelledInitialAngle):
     data.motorType = MotorType.A1
     cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
     cmd.id = motorID
-    serial.sendRecv(cmd, data)
-
+    while not serial.sendRecv(cmd, data):
+        print('\nWaiting for motor response...')
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
@@ -267,7 +269,7 @@ def chooseRotorGains(crouching):
         return kpRotorHipFixed, kdRotorHipFixed, kpRotorKneeFixed, kdRotorKneeFixed
 
 
-def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
+def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
     # Ensure all lists have the same length
     min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
                      len(kneeCommandAngles))
@@ -295,10 +297,23 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     plt.legend(loc='best')
     plt.grid()
 
-    # Save the figure before exiting
-    plt.savefig(f"JointAngleOverTime_crouch_Time_{T:.1f}_kp_{kp:.1f}_kd_{kd:.1f}.png", dpi=300)
+    # Base name for figure and CSV
+    base_name = f"JointAngleOverTime_crouch_Time_{T:.1f}_kp_{kp:.1f}_kd_{kd:.1f}"
 
-    print("Figure saved as I am the Pennys-Man.png")
+    # Save the figure
+    figure_filename = f"{base_name}.png"
+    plt.savefig(figure_filename, dpi=300)
+    print(f"Figure saved as {figure_filename}")
+
+    # Save the data as CSV
+    csv_filename = f"{base_name}.csv"
+    with open(csv_filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Time (s)', 'Hip Output Angle (deg)', 'Hip Command Angle (deg)','Knee Output Angle (deg)', 'Knee Command Angle (deg)'])
+        for t, hip, knee in zip(timeSteps, hipOutputAngles, hipCommandAngles, kneeOutputAngles, kneeCommandAngles):
+            writer.writerow([t, hipOut, hipCmd,  kneeOut, kneeCmd])
+
+    print(f"Data saved as {csv_filename}")
 
     # Close the plot
     plt.close()

@@ -269,7 +269,7 @@ def chooseRotorGains(crouching):
         return kpRotorHipFixed, kdRotorHipFixed, kpRotorKneeFixed, kdRotorKneeFixed
 
 
-def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
+def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
     # Ensure all lists have the same length
     min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
                      len(kneeCommandAngles))
@@ -296,6 +296,24 @@ def plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeC
     plt.title('Hip and Knee Angles Over Time')
     plt.legend(loc='best')
     plt.grid()
+
+    # Base name for figure and CSV
+    base_name = "JointAnglesOverTime"
+
+    # Save the figure
+    figure_filename = f"{base_name}.png"
+    plt.savefig(figure_filename, dpi=300)
+    print(f"Figure saved as {figure_filename}")
+
+    # Save the data as CSV
+    csv_filename = f"{base_name}.csv"
+    with open(csv_filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Time (s)', 'Hip Angle (deg)', 'Knee Angle (deg)'])
+        for t, hip, knee in zip(timeSteps, hipOutputAngles, kneeOutputAngles):
+            writer.writerow([t, hip, knee])
+
+    print(f"Data saved as {csv_filename}")
 
     # Save the figure before exiting
     plt.savefig(f"JointAngleOverTime_crouch_Time_{T:.1f}_kp_{kp:.1f}_kd_{kd:.1f}.png", dpi=300)

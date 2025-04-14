@@ -85,8 +85,10 @@ try:
                 cmd.tau = hipTau  # rotor feedforward torque
                 hipRcvStart = time.time()
                 while not serial.sendRecv(cmd, data):
-                        print('Waiting for Hip motor to respond')
+                        print(f'Waiting for Hip motor to respond. Response lost {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! " f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate."')
+                        hipCommsFail += 1
                 hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+                hipCommsSuccess += 1
                 '''
                 if serial.sendRecv(cmd, data):
                         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
@@ -112,13 +114,12 @@ try:
                 cmd.tau = kneeTau  # rotor feedforward torque
                 kneeRcvStart = time.time()
                 serial.sendRecv(cmd, data)
-                if serial.sendRecv(cmd, data):
-                        kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
-                        kneeCommsSuccess += 1
-                else:
-                        kneeOutputAngleCurrent = kneeOutputAngleCurrent
+                while not serial.sendRecv(cmd, data):
                         kneeCommsFail += 1
-                        print(f"[WARNING] Knee Motor (ID {id.knee}) lost response {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate.")
+                        print(f'Waiting for Knee motor to respond. Response lost {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate."')
+                kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
+                kneeCommsSuccess += 1
+
                 kneeSendRcvLength = time.time() - kneeRcvStart
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
                 outputData(id.knee, kneeOutputAngleCurrent, data.dq, kneeTorque, data.temp, data.merror)
@@ -138,7 +139,7 @@ except KeyboardInterrupt:
         ### Command everything to 0
         print("\nLoop stopped by user. Saving figure...")
         try:
-                plotFigure(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchDuration, kpOutHipMoving, kdOutHipMoving)
+                plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchDuration, kpOutHipMoving, kdOutHipMoving)
                 print(f"Error encountered while saving figure: {e}")
         finally:
                 sys.exit(0)  # Ensure clean exit

@@ -16,6 +16,13 @@ data = MotorData()
 
 gearRatio = queryGearRatio(MotorType.A1)
 
+output_kp = 25
+output_kd = 0.6
+rotor_kp = 0
+rotor_kd = 0
+
+rotor_kp = (output_kp / (gearRatio * gearRatio)) / 26.07
+rotor_kd = (output_kd / (gearRatio * gearRatio)) * 100.0
 
 data.motorType = MotorType.A1
 cmd.motorType = MotorType.A1
@@ -47,8 +54,17 @@ timeSteps = []
 globalStartTime = time.time()
 
 
+sin_counter = 0.0
+
 try:
     while True:
+            sin_counter += 0.01
+            output_angle_d0 = output_angle_c0 + 10 * np.sin(2 * PI * sin_counter)
+            rotor_angle_d0 = (output_angle_d0 * (PI / 180)) * gearRatio
+
+            output_angle_d1 = output_angle_c1 + 10 * np.sin(2 * PI * sin_counter)
+            rotor_angle_d1 = (output_angle_d1 * (PI / 180)) * gearRatio
+
             startTime = time.time()
             elapsedTime = startTime - globalStartTime
             timeSteps.append(elapsedTime)
@@ -57,10 +73,10 @@ try:
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
             cmd.id = 0
-            cmd.q = 0.0
+            cmd.q = rotor_angle_d0
             cmd.dq = 0.0  # 6.28*queryGearRatio(MotorType.A1)
-            cmd.kp = 0.0
-            cmd.kd = 0.0
+            cmd.kp = rotor_kp
+            cmd.kd = rotor_kd
             cmd.tau = 0.0
             if serial.sendRecv(cmd, data):
                 HipAngle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
@@ -81,10 +97,10 @@ try:
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
             cmd.id = 1
-            cmd.q = 0
+            cmd.q = rotor_angle_d1
             cmd.dq = 0.0  # 6.28*queryGearRatio(MotorType.A1)
-            cmd.kp = 0.0
-            cmd.kd = 0.0
+            cmd.kp = rotor_kp
+            cmd.kd = rotor_kd
             cmd.tau = 0.0
             while not serial.sendRecv(cmd, data):
                 print('Waiting for Knee motor to respond')
@@ -126,7 +142,7 @@ except KeyboardInterrupt:
             plt.grid()
 
             # Base name for figure and CSV
-            base_name = "JointAnglesOverTime"
+            base_name = "JointAnglesOverTimeMoving"
 
             # Save the figure
             figure_filename = f"{base_name}.png"

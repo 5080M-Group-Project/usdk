@@ -1,12 +1,16 @@
 import time
 import sys
+import numpy as np
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 
+PI = np.pi
 
 serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
+
+
 
 while True:
     data.motorType = MotorType.A1

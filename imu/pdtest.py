@@ -44,7 +44,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 5, 1
+kpOutWheel, kdOutWheel = 2, 0.5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # --- Setup IMU ---
@@ -80,7 +80,7 @@ with open(log_filename, mode="w", newline="") as log_file:
         while True:
             euler = imu.euler
             pitch = euler[1] if euler else None  # Pitch in degrees
-            pid = PID(Kp, Ki, Kd, setpoint=0.0)
+            #pid = PID(Kp, Ki, Kd, setpoint=0.0)
             if pitch is None:
                 print("⚠️ IMU error")
                 time.sleep(0.01)
@@ -126,7 +126,10 @@ with open(log_filename, mode="w", newline="") as log_file:
             cmd.kd = kdRotorWheel
 
             serial.sendRecv(cmd, data)
-
+            # Log data
+            elapsed_time = time.time() - start_time
+            log_writer.writerow([elapsed_time, pitch, Kp, Ki, Kd, math.degrees(correction)])
+            log_file.flush()  # Ensure data is written to the file
             print(f"[{elapsed_time:.2f}s] Pitch: {pitch:.2f}°, Correction: {math.degrees(correction):+.2f}°, kp: {Kp:.2f}, ki: {Ki:.2f}, kd: {Kd:.2f}, Motor q: {math.degrees(current_motor_q):.2f}°")
 
 

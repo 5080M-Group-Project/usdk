@@ -56,14 +56,18 @@ try:
             cmd.kp = 0.0
             cmd.kd = 0.0
             cmd.tau = 0.0
-            serial.sendRecv(cmd, data)
+            if serial.sendRecv(cmd, data):
+                HipAngle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
+            else:
+                HipAngle = HipAngle
+                print('Waiting for Hip motor to respond')
 
-            Angle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
-            hipOutputAnglesDeg.append(Angle)
+            HipAngle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
+            hipOutputAnglesDeg.append(HipAngle)
 
             print('\n')
             print("Raw Output Angle (Hip) rad: " + str((data.q / queryGearRatio(MotorType.A1))))
-            print("Raw Output Angle (Hip) deg: " + str(Angle))
+            print("Raw Output Angle (Hip) deg: " + str(HipAngle))
             print(f"ISSUE? {data.merror}")
             print('\n')
 
@@ -79,7 +83,7 @@ try:
             cmd.kd = 0.0
             cmd.tau = 0.0
             while not serial.sendRecv(cmd, data):
-                print('Waiting for Hip motor to respond')
+                print('Waiting for Knee motor to respond')
 
 
             Angle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))

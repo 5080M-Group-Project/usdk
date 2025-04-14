@@ -277,6 +277,7 @@ def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDe
     if startCrouching and not crouching:
         hipAngleEnd, kneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, 'front')
         hipAngleStart, kneeAngleStart = hipAngleCurrent, kneeAngleCurrent
+        hipAngleNew, kneeAngleNew = hipAngleStart, kneeAngleStart
         crouchStartTime = time.time()
         crouching = True
         stopCrouching = False

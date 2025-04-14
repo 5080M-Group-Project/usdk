@@ -72,7 +72,7 @@ with open(log_filename, mode="w", newline="") as log_file:
 
         while True:
             gyro = imu.gyro
-            pitchrate = gyro[1] if euler else None  # Pitch in degrees
+            pitchrate = gyro[1] if gyro else None  # Pitch in degrees
             if pitchrate is None:
                 print("⚠️ IMU is not responding")
                 time.sleep(0.01)

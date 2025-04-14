@@ -56,7 +56,7 @@ sin_counter = 0.0
 
 try:
     while True:
-            sin_counter += 0.001
+            sin_counter += 0.01
             output_angle_d0 = output_angle_c0 + 10 * np.sin(2 * PI * sin_counter)
             rotor_angle_d0 = (output_angle_d0 * (PI / 180)) * gearRatio
 

@@ -45,7 +45,7 @@ sleepTime = 0.1
 
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.5*crouchHeightMax
+crouchHeightDesiredNew = 0.7*crouchHeightMax
 
 
 hipCrouchAngleStart, hipCrouchAngleDesired, kneeCrouchAngleStart, kneeCrouchAngleDesired = 0.0, 0.0, 0.0, 0.0

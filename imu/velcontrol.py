@@ -122,7 +122,7 @@ with open(log_filename, mode="w", newline="") as log_file:
 
             # Log data
             elapsed_time = time.time() - start_time
-            log_writer.writerow([elapsed_time, pitch, kpOutWheel, kdOutWheel, math.degrees(correction)])
+            log_writer.writerow([elapsed_time, pitchrate, kpOutWheel, kdOutWheel, math.degrees(correction)])
             log_file.flush()  # Ensure data is written to the file
 
             # Print debug info

@@ -11,13 +11,14 @@ from unitree_actuator_sdk import *
 PI = np.pi
 
 serial = SerialPort('/dev/ttyUSB0')
+serial2 = SerialPort('/dev/ttyUSB1')
 cmd = MotorCmd()
 data = MotorData()
 
 gearRatio = queryGearRatio(MotorType.A1)
 
-output_kp = 30
-output_kd = 4.8
+output_kp = 0.0
+output_kd = 2.0
 rotor_kp = 0
 rotor_kd = 0
 
@@ -57,11 +58,11 @@ try:
                 kneeInitial = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
                 output_angle_c1 = kneeInitial
 
-
+            '''
             output_angle_d1 = output_angle_c1 + 90
             rotor_angle_d1 = (output_angle_d1 * (PI / 180)) * gearRatio
             kneeCommandAngles.append(output_angle_d1)
-
+            '''
 
             startTime = time.time()
             elapsedTime = startTime - globalStartTime
@@ -71,12 +72,14 @@ try:
             cmd.motorType = MotorType.A1
             cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
             cmd.id = 2
-            cmd.q = rotor_angle_d1
-            cmd.dq = 0.0  # 6.28*queryGearRatio(MotorType.A1)
+            cmd.q = 0.0 #rotor_angle_d1
+            cmd.dq =  6.28*queryGearRatio(MotorType.A1)
             cmd.kp = rotor_kp
             cmd.kd = rotor_kd
             cmd.tau = 0.0
             while not serial.sendRecv(cmd, data):
+                print('Waiting for Knee motor to respond')
+            while not serial2.sendRecv(cmd, data):
                 print('Waiting for Knee motor to respond')
             Angle = ((data.q / queryGearRatio(MotorType.A1)) * (180 / np.pi))
             kneeOutputAnglesDeg.append(Angle)

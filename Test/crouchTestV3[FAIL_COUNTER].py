@@ -48,7 +48,7 @@ offsetCalibration = False
 #Crouching Initialisation
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.75*crouchHeightMax
+crouchHeightDesiredNew = 0.6*crouchHeightMax
 crouchDuration = 1.0 #### scale by the distance required?
 crouchIncrement = 0.25*crouchHeightMax
 
@@ -126,7 +126,7 @@ except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
         try:
-                plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, hipOutputTorque, kneeOutputTorque, crouchDuration)
+                plotAndSaveLegData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, hipOutputTorque, kneeOutputTorque, crouchDuration)
                 print(f"Error encountered while saving figure: {e}")
         finally:
                 sys.exit(0)  # Ensure clean exit

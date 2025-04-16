@@ -86,7 +86,7 @@ def getRotorGains(kpOutput, kdOutput):
     return kpRotor, kdRotor
 
 kpOutputMoving, kdOutputMoving = 15.0, 2.0
-kpOutputFixed, kdOutputFixed = 20.0, 0.6
+kpOutputFixed, kdOutputFixed = 20.0, 0.8
 
 class rotorGains:
 

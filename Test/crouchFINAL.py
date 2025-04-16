@@ -26,7 +26,7 @@ offsetCalibration = False
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
 crouchHeightDesiredNew = 0.75*crouchHeightMax
-crouchDuration = 0.5 #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
+crouchDuration = 0.625 #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
 crouchIncrement = 0.15*crouchHeightMax
 
 try:

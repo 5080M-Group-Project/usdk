@@ -38,7 +38,7 @@ try:
                 while not offsetCalibration:  ### & other
                         leftHipOffset, leftKneeOffset, leftHipOutputAngleDesired, leftKneeOutputAngleDesired, leftOffsetCalibration = calibrateJointReadings(leftLeg)
                         rightHipOffset, rightKneeOffset, rightHipOutputAngleDesired, rightKneeOutputAngleDesired, rightOffsetCalibration = calibrateJointReadings(rightLeg)
-                        offsetCalibration = leftOffsetCalibration and rightOffsetCalibration
+                        offsetCalibration = (leftOffsetCalibration and rightOffsetCalibration)
                         time.sleep(0.01)
                         leftHipOutputAngleCurrent, leftKneeOutputAngleCurrent = leftHipOutputAngleDesired, leftKneeOutputAngleDesired
                         rightHipOutputAngleCurrent, rightKneeOutputAngleCurrent = rightHipOutputAngleDesired, rightKneeOutputAngleDesired
@@ -55,30 +55,30 @@ try:
                 kpRotorHip, kdRotorHip, kpRotorKnee, kdRotorKnee = chooseRotorGains(crouching)
 
                 ###<<< LEFT HIP >>>###
-                dataL = sendCmdRcvData(leftLeg, id.hip, kpRotorHip, kdRotorHip, leftHipRotorAngleDesired, 0.0, hipTau)
-                leftHipOutputAngleCurrent = getOutputAngleDeg(dataL.q) + leftHipOffset
-                hipTorque = calculateOutputTorque(kpRotorHip, leftHipRotorAngleDesired, dataL.q, kdRotorHip, 0.0, dataL.dq, hipTau)
-                outputData(leftLeg, id.hip, dataL.q, leftHipOffset, dataL.dq, hipTorque, dataL.temp, dataL.merror,hipTau)
+                data = sendCmdRcvData(leftLeg, id.hip, kpRotorHip, kdRotorHip, leftHipRotorAngleDesired, 0.0, hipTau)
+                leftHipOutputAngleCurrent = getOutputAngleDeg(data.q) + leftHipOffset
+                hipTorque = calculateOutputTorque(kpRotorHip, leftHipRotorAngleDesired, data.q, kdRotorHip, 0.0, data.dq, hipTau)
+                outputData(leftLeg, id.hip, data.q, leftHipOffset, data.dq, hipTorque, data.temp, data.merror,hipTau)
                 leftHipOutputAngles.append(leftHipOutputAngleCurrent), leftHipCommandAngles.append(leftHipOutputAngleDesired), leftHipOutputTorque.append(hipTorque)
 
                 ###<<< RIGHT HIP >>>###
-                dataR = sendCmdRcvData(rightLeg, id.hip, kpRotorHip, kdRotorHip, rightHipRotorAngleDesired, 0.0, hipTau)
-                rightHipOutputAngleCurrent = getOutputAngleDeg(dataR.q) + rightHipOffset
-                hipTorque = calculateOutputTorque(kpRotorHip, rightHipRotorAngleDesired, dataR.q, kdRotorHip, 0.0, dataR.dq, hipTau), outputData(rightLeg, id.hip, dataR.q, rightHipOffset, dataR.dq, hipTorque, dataR.temp, dataR.merror, hipTau)
+                data = sendCmdRcvData(rightLeg, id.hip, kpRotorHip, kdRotorHip, rightHipRotorAngleDesired, 0.0, hipTau)
+                rightHipOutputAngleCurrent = getOutputAngleDeg(data.q) + rightHipOffset
+                hipTorque = calculateOutputTorque(kpRotorHip, rightHipRotorAngleDesired, data.q, kdRotorHip, 0.0, data.dq, hipTau), outputData(rightLeg, id.hip, data.q, rightHipOffset, data.dq, hipTorque, data.temp, data.merror, hipTau)
                 rightHipOutputAngles.append(rightHipOutputAngleCurrent), rightHipCommandAngles.append(rightHipOutputAngleDesired), rightHipOutputTorque.append(hipTorque)
 
                 ###<<< LEFT KNEE >>>###
-                dataL = sendCmdRcvData(leftLeg, id.knee, kpRotorKnee, kdRotorKnee, leftKneeRotorAngleDesired, 0.0, kneeTau)
-                leftKneeOutputAngleCurrent = getOutputAngleDeg(dataL.q) + leftKneeOffset
-                kneeTorque = calculateOutputTorque(kpRotorKnee, leftKneeRotorAngleDesired, dataL.q, kdRotorKnee, 0.0, dataL.dq, kneeTau)
-                outputData(leftLeg, id.knee, dataL.q, leftKneeOffset, dataL.dq, kneeTorque, dataL.temp, dataL.merror, kneeTau)
+                data = sendCmdRcvData(leftLeg, id.knee, kpRotorKnee, kdRotorKnee, leftKneeRotorAngleDesired, 0.0, kneeTau)
+                leftKneeOutputAngleCurrent = getOutputAngleDeg(data.q) + leftKneeOffset
+                kneeTorque = calculateOutputTorque(kpRotorKnee, leftKneeRotorAngleDesired, data.q, kdRotorKnee, 0.0, data.dq, kneeTau)
+                outputData(leftLeg, id.knee, data.q, leftKneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 leftKneeOutputAngles.append(leftKneeOutputAngleCurrent), leftKneeCommandAngles.append(leftKneeOutputAngleDesired), leftKneeOutputTorque.append(kneeTorque)
 
                 ###<<< RIGHT KNEE >>>###
-                dataR = sendCmdRcvData(rightLeg, id.knee, kpRotorKnee, kdRotorKnee, rightKneeRotorAngleDesired, 0.0, kneeTau)
-                rightKneeOutputAngleCurrent = getOutputAngleDeg(dataR.q) + rightKneeOffset
-                kneeTorque = calculateOutputTorque(kpRotorKnee, rightKneeRotorAngleDesired, dataR.q, kdRotorKnee, 0.0, dataR.dq, kneeTau)
-                outputData(rightLeg, id.knee, dataR.q, rightKneeOffset, dataR.dq, kneeTorque, dataR.temp, dataR.merror, kneeTau)
+                data = sendCmdRcvData(rightLeg, id.knee, kpRotorKnee, kdRotorKnee, rightKneeRotorAngleDesired, 0.0, kneeTau)
+                rightKneeOutputAngleCurrent = getOutputAngleDeg(data.q) + rightKneeOffset
+                kneeTorque = calculateOutputTorque(kpRotorKnee, rightKneeRotorAngleDesired, data.q, kdRotorKnee, 0.0, data.dq, kneeTau)
+                outputData(rightLeg, id.knee, data.q, rightKneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 rightKneeOutputAngles.append(rightKneeOutputAngleCurrent), rightKneeCommandAngles.append(rightKneeOutputAngleDesired), rightKneeOutputTorque.append(kneeTorque)
 
                 ###<<< CROUCHING CONTROL >>>###

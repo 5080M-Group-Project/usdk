@@ -9,7 +9,6 @@ import pygame
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 
-serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 
@@ -32,13 +31,13 @@ hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces
 
 #### Class for serial? ####
 class leg:
-    rightLeg = SerialPort('/dev/ttyUSB0')
-    leftLeg = SerialPort('/dev/ttyUSB1')
+    right = SerialPort('/dev/ttyUSB0')
+    left = SerialPort('/dev/ttyUSB1')
     @staticmethod
     def getName(serialPort):
-        if serialPort == leftLeg:
+        if serialPort == leg.left:
             return 'Left'
-        if serialPort == rightLeg:
+        if serialPort == leg.right:
             return 'Right'
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0

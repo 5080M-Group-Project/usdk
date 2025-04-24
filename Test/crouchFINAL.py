@@ -74,9 +74,9 @@ try:
 except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
-        try:
+        #try:
                 ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
-                plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
-                print(f"Error encountered while saving figure: {e}")
-        finally:
+                #plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
+               # print(f"Error encountered while saving figure: {e}")
+        #finally:
                 sys.exit(0)  # Ensure clean exit

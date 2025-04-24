@@ -6,12 +6,8 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-rightLeg = leg.right
-leftLeg = leg.left
-
-print(f'\nleg.getName(leftLeg): {leg.getName(leftLeg)}, leg.getName(rightLeg): {leg.getName(rightLeg)}')
-print(f'\nleftLeg: {leftLeg}, rightLeg: {rightLeg}')
-print(f'\nUSB0: {SerialPort('/dev/ttyUSB0')}, USB1: {SerialPort('/dev/ttyUSB1')}')
+rightLeg = leg.serial.right
+leftLeg = leg.serial.left
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######

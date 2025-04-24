@@ -219,7 +219,7 @@ def calibrateJointReadings(serialPort):
         hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpRightHipCalibration, kdCalibration,rightHipCalibrationFix)
         kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpRightKneeCalibration, kdCalibration, rightKneeCalibrationFix)
 
-        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5)
+        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (36.5 < hipAngleInitialRaw < 37.5)
         if hipCalibration:
             kpRightHipCalibration = 30.0
             rightHipCalibrationFix = hipAngleInitialRaw
@@ -276,13 +276,13 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
     if kneeDir == 'front':
         thetaHip = (gamma - alpha) * (180.0 / np.pi)
         thetaKnee = (np.pi - beta) * (180.0 / np.pi)
+        return thetaHip, thetaKnee
 
     elif kneeDir == 'back':
         thetaHip = (gamma + alpha) * (180.0 / np.pi)
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)
+        return thetaHip, thetaKnee
 
-    # Return angles as a tuple
-    return thetaHip, thetaKnee
 
 def getCrouchCommand(events,crouchHeightDesiredNew,crouchIncrement):
     global crouchHeightMax

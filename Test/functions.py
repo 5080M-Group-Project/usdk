@@ -262,20 +262,21 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
         print("\nOut of range!\n")
         return None, None
 
+    # Calculate intermediate angles
+    beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
+    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
+    gamma = np.arctan2(ydes, xdes)
+
     # Handle kneeDir input
     kneeDir = kneeDir.lower()
     if kneeDir not in ['front', 'back']:
         print("\nInvalid Knee Direction!\n")
         return None, None
 
-    # Calculate intermediate angles
-    beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
-    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
-    gamma = np.arctan2(ydes, xdes)
-
     if kneeDir == 'front':
         thetaHip = (gamma - alpha) * (180.0 / np.pi)
         thetaKnee = (np.pi - beta) * (180.0 / np.pi)
+
     elif kneeDir == 'back':
         thetaHip = (gamma + alpha) * (180.0 / np.pi)
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)

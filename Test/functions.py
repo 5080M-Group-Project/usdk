@@ -27,7 +27,7 @@ startCrouchingLeft, stopCrouchingLeft = False, True
 leftHipAngleStart, leftHipAngleEnd, leftKneeAngleStart, leftKneeAngleEnd = 0.0, 0.0, 0.0, 0.0
 startCrouchingRight, stopCrouchingRight = False, True
 rightHipAngleStart, rightHipAngleEnd, rightKneeAngleStart, rightKneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
-crouchStartTimeLeft, crouchStartTimeRight = 0.0
+crouchStartTime = 0.0
 
 hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces, wheelsCommsFail = 0, 0, 0, 0, 0, 0
 

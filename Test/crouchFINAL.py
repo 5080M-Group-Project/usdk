@@ -1,5 +1,5 @@
 
-from functions import *
+from functions2 import *
 
 ######## NEEDED??? ########
 sys.path.append('../lib')

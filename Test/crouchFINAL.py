@@ -6,7 +6,7 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-serial = SerialPort('/dev/ttyUSB0')
+serial = SerialPort('/dev/ttyUSB1')
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
@@ -68,7 +68,7 @@ try:
                 ###<<< CROUCHING CONTROL >>>###
                 crouchHeightDesiredNew = getCrouchCommand(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
                 hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching \
-                        = crouchControl('front', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
+                        = crouchControl('back', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
 
                 ###<<< LOOP TIMING >>>###
                 loopTime = time.time() - loopStartTime

@@ -41,8 +41,8 @@ try:
 
         # Setup for USB1 - Hip and Knee Motors
         cmd.id = 0  # Hip motor ID for USB1
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
+        #cmd.kp = kpRotorWheel
+        #cmd.kd = kdRotorWheel
         #cmd.q = hip_angle_usb1  # Command hip angle in radians
         left.sendRecv(cmd, data)  # Send command to USB1 hip motor
         angle = data.q
@@ -50,8 +50,8 @@ try:
         print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
         cmd.id = 1  # Knee motor ID for USB1
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
+        #cmd.kp = kpRotorWheel
+        #cmd.kd = kdRotorWheel
         #cmd.q = knee_angle_usb1  # Command knee angle in radians
         left.sendRecv(cmd, data)  # Send command to USB1 knee motor
         angle = data.q
@@ -60,8 +60,8 @@ try:
 
         # Send commands for USB0 (hip and knee motors)
         cmd.id = 0  # Hip motor ID for USB0
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
+        #cmd.kp = kpRotorWheel
+        #cmd.kd = kdRotorWheel
         #cmd.q = hip_angle_usb0  # Command hip angle in radians
         right.sendRecv(cmd, data)  # Send command to USB0 hip motor
         angle = data.q
@@ -69,8 +69,8 @@ try:
         print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
 
         cmd.id = 1  # Knee motor ID for USB0
-        cmd.kp = kpRotorWheel
-        cmd.kd = kdRotorWheel
+        #cmd.kp = kpRotorWheel
+        #cmd.kd = kdRotorWheel
         #cmd.q = knee_angle_usb0  # Command knee angle in radians
         right.sendRecv(cmd, data)  # Send command to USB0 knee motor
         angle = data.q

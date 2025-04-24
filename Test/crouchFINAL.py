@@ -6,7 +6,7 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-serial = SerialPort('/dev/ttyUSB1')
+leftLeg = leftLegPort('/dev/ttyUSB1')
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
@@ -32,7 +32,7 @@ crouchDuration = 1.00 ### relative to the above ^, ~0.75s, ~1.25s???, ?????  ###
 try:
         while True:
                 while not offsetCalibration: ### & other
-                        hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings(serial)
+                        hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings(leftLeg)
                         time.sleep(0.1)
                         hipOutputAngleCurrent, kneeOutputAngleCurrent = hipOutputAngleDesired, kneeOutputAngleDesired
                         if offsetCalibration:
@@ -50,19 +50,19 @@ try:
                 print(f"🛠️ Raw Knee Rotor Angle Command (rad): {kneeRotorAngleDesired:.4f}")
 
                 ###<<< HIP >>>###
-                data = sendCmdRcvData(serial, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+                data = sendCmdRcvData(leftLeg, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
                 hipOutputAngleCurrent = (getOutputAngleDeg(data.q) + hipOffset)
                 #hipTau = data.tau
                 hipTorque = calculateOutputTorque(kpRotorHip, hipRotorAngleDesired, data.q, kdRotorHip, 0.0, data.dq, hipTau)
-                outputData(serial, id.hip, data.q, hipOffset, data.dq, hipTorque, data.temp, data.merror, hipTau)
+                outputData(leftLeg, id.hip, data.q, hipOffset, data.dq, hipTorque, data.temp, data.merror, hipTau)
                 hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired), hipOutputTorque.append(hipTorque)
 
                 ###<<< KNEE >>>###
-                data = sendCmdRcvData(serial, id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+                data = sendCmdRcvData(leftLeg, id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
                 kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                 #kneeTau = data.tau
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kneeRotorAngleDesired, data.q, kdRotorKnee, 0.0, data.dq, kneeTau)
-                outputData(serial, id.knee, data.q, kneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
+                outputData(leftLeg, id.knee, data.q, kneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired), kneeOutputTorque.append(kneeTorque)
 
                 ###<<< CROUCHING CONTROL >>>###
@@ -78,7 +78,7 @@ except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
         #try:
-                ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
+                ### ADD leftLeg INPUT TO DIFFERENTIATE LEFT AND RIGHT
                 #plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
                # print(f"Error encountered while saving figure: {e}")
         #finally:

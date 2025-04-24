@@ -23,7 +23,7 @@ knee_angle_usb1 = -1.797  # rad
 
 # USB0
 hip_angle_usb0 = 1.672 # rad
-knee_angle_usb0 = -1.797  # rad
+knee_angle_usb0 = 10.259  # rad
 
 # --- Initial motor setup ---
 cmd = MotorCmd()

@@ -18,11 +18,11 @@ kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # Define hip and knee angles for both USB ports
 # USB1
-hip_angle_usb1 = 6  # rad
+hip_angle_usb1 = 0  # rad
 knee_angle_usb1 = -3.82  # rad
 
 # USB0
-hip_angle_usb0 = 8.5 # rad
+hip_angle_usb0 = 0 # rad
 knee_angle_usb0 = 10.1687  # rad
 
 # --- Initial motor setup ---

@@ -3,7 +3,7 @@ import sys
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
-
+from functionsIMU import *  
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')

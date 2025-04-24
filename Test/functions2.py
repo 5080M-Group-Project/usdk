@@ -13,8 +13,11 @@ serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 
+'''
 pygame.init()
 screen = pygame.display.set_mode((400, 300)) # NEEDED????
+'''
+
 
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1

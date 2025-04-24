@@ -1,90 +1,68 @@
-from functions import *
 import time
-import pygame
 import sys
-
-sys.path.append('../lib')
 from unitree_actuator_sdk import *
 
-# Initialize Serial Ports
-serial_1 = SerialPort('/dev/ttyUSB0')  # Leg 1
-serial_2 = SerialPort('/dev/ttyUSB1')  # Leg 2
+# --- Setup Serial Communication ---
+serial = SerialPort('/dev/ttyUSB0')
 
-# Data logging
+# --- Initialize Loop Variables ---
+hipTau, kneeTau = 0.0, 0.0  # Torque
 timeSteps = []
 
-# Offsets, torque init
-hipOffset_1, kneeOffset_1 = 0.0, 0.0
-hipOffset_2, kneeOffset_2 = 0.0, 0.0
-hipTau, kneeTau = 0.0, 0.0
+# Define hip and knee angles for both USB ports
+# USB1
+hip_angle_usb1 = 9.0456  # rad
+knee_angle_usb1 = -10.1485  # rad
 
-offsetCalibration_1 = False
-offsetCalibration_2 = False
+# USB0
+hip_angle_usb0 = 2.0458  # rad
+knee_angle_usb0 = 10.1687  # rad
 
-# Crouch init
-crouching = False
-crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.75 * crouchHeightMax
-crouchDuration = 0.625
-crouchIncrement = 0.15 * crouchHeightMax
+# --- Initial motor setup ---
+cmd.q = 0.0
+cmd.dq = 0.0
+cmd.tau = 0.0
+cmd.kp = 0.0
+cmd.kd = 0.0
+serial.sendRecv(cmd, data)
+time.sleep(0.1)
 
-# Calibration loop
-while not (offsetCalibration_1 and offsetCalibration_2):
-    if not offsetCalibration_1:
-        hipOffset_1, kneeOffset_1, hipOutputAngleDesired_1, kneeOutputAngleDesired_1, offsetCalibration_1 = calibrateJointReadings(serial_1)
-    if not offsetCalibration_2:
-        hipOffset_2, kneeOffset_2, hipOutputAngleDesired_2, kneeOutputAngleDesired_2, offsetCalibration_2 = calibrateJointReadings(serial_2)
-    time.sleep(0.1)
-
-hipOutputAngleCurrent_1, kneeOutputAngleCurrent_1 = hipOutputAngleDesired_1, kneeOutputAngleDesired_1
-hipOutputAngleCurrent_2, kneeOutputAngleCurrent_2 = hipOutputAngleDesired_2, kneeOutputAngleDesired_2
-
-globalStartTime = time.time()
-
+# --- Main Loop ---
 try:
     while True:
-        loopStartTime = time.time()
-        elapsedTime = loopStartTime - globalStartTime
-        timeSteps.append(elapsedTime)
+        # Send commands for USB1 (hip and knee motors)
+        cmd = MotorCmd()
+        data = MotorData()
 
-        events = pygame.event.get()
-        crouchHeightDesiredNew = getCrouchCommand(events, crouchHeightDesiredNew, crouchIncrement)
+        # Setup for USB1 - Hip and Knee Motors
+        cmd.id = 0  # Hip motor ID for USB1
+        cmd.motorType = MotorType.A1
+        cmd.mode = MotorMode.POSITION_CONTROL
+        cmd.q = hip_angle_usb1  # Command hip angle in radians
+        cmd.dq = 0.0  # No speed control
+        cmd.tau = hipTau  # Torque
+        serial.sendRecv(cmd, data)  # Send command to USB1 hip motor
+        print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
-        for serial, id_suffix, hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, hipOutputAngleCurrent, kneeOutputAngleCurrent in [
-            (serial_1, "_1", hipOffset_1, kneeOffset_1, hipOutputAngleDesired_1, kneeOutputAngleDesired_1, hipOutputAngleCurrent_1, kneeOutputAngleCurrent_1),
-            (serial_2, "_2", hipOffset_2, kneeOffset_2, hipOutputAngleDesired_2, kneeOutputAngleDesired_2, hipOutputAngleCurrent_2, kneeOutputAngleCurrent_2),
-        ]:
+        cmd.id = 1  # Knee motor ID for USB1
+        cmd.q = knee_angle_usb1  # Command knee angle in radians
+        serial.sendRecv(cmd, data)  # Send command to USB1 knee motor
+        print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
 
-            hipRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset)
-            kneeRotorAngleDesired = getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
-            kpRotorHip, kdRotorHip, kpRotorKnee, kdRotorKnee = chooseRotorGains(crouching)
+        # Send commands for USB0 (hip and knee motors)
+        cmd.id = 0  # Hip motor ID for USB0
+        cmd.q = hip_angle_usb0  # Command hip angle in radians
+        serial.sendRecv(cmd, data)  # Send command to USB0 hip motor
+        print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
 
-            # Hip
-            data = sendCmdRcvData(serial, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
-            hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
+        cmd.id = 1  # Knee motor ID for USB0
+        cmd.q = knee_angle_usb0  # Command knee angle in radians
+        serial.sendRecv(cmd, data)  # Send command to USB0 knee motor
+        print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
 
-            # Knee
-            data = sendCmdRcvData(serial, id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
-            kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
-
-            # Crouch update
-            hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching = crouchControl(
-                'front', hipOutputAngleCurrent, kneeOutputAngleCurrent,
-                crouchHeightDesiredPrev, crouchHeightDesiredNew,
-                crouchDuration, crouching
-            )
-
-            # Store back into appropriate vars
-            if id_suffix == "_1":
-                hipOutputAngleDesired_1, kneeOutputAngleDesired_1 = hipOutputAngleDesired, kneeOutputAngleDesired
-                hipOutputAngleCurrent_1, kneeOutputAngleCurrent_1 = hipOutputAngleCurrent, kneeOutputAngleCurrent
-            else:
-                hipOutputAngleDesired_2, kneeOutputAngleDesired_2 = hipOutputAngleDesired, kneeOutputAngleDesired
-                hipOutputAngleCurrent_2, kneeOutputAngleCurrent_2 = hipOutputAngleCurrent, kneeOutputAngleCurrent
-
-        loopTime = time.time() - loopStartTime
-        print(f"Loop Time: {loopTime:.4f}s\n")
+        # Wait a little before sending the next command
+        time.sleep(0.1)
 
 except KeyboardInterrupt:
-    print("Exiting cleanly.")
-    sys.exit(0)
+    print("\nLoop stopped by user.")
+    sys.exit(0)  # Ensure clean exit

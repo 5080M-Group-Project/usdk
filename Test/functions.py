@@ -209,7 +209,7 @@ def calibrateJointReadings(serialPort):
             leftHipCalibrationFix = hipAngleInitialRaw
             print(f"\n {leg.getName(serialPort)} Hip Locked\n")
 
-        kneeCalibration =  (12.0 < kneeAngleInitialRaw < 13.0)
+        kneeCalibration =  (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)
         if kneeCalibration:
             kpLeftKneeCalibration = 30.0
             leftKneeCalibrationFix = kneeAngleInitialRaw
@@ -225,7 +225,7 @@ def calibrateJointReadings(serialPort):
             rightHipCalibrationFix = hipAngleInitialRaw
             print(f"\n {leg.getName(serialPort)} Hip Locked\n")
 
-        kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)
+        kneeCalibration = (12.0 < kneeAngleInitialRaw < 13.0) 
         if kneeCalibration:
             kpRightKneeCalibration = 30.0
             rightKneeCalibrationFix = kneeAngleInitialRaw

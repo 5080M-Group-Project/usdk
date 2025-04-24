@@ -138,7 +138,7 @@ def sendCmdRcvData(serialPort, ID, kp, kd, q, dq, tau):
     #NEEDED?
     while not serialPort.sendRecv(cmd, data):
         commsFail = id.logCommsFail(ID)
-        print(f'Waiting for {leg.getName(serial)} {id.getName(ID)} motor to respond. Response lost {commsFail} times')
+        print(f'Waiting for {leg.getName(serialPort)} {id.getName(ID)} motor to respond. Response lost {commsFail} times')
     return data
 
 # Function to compute output torque

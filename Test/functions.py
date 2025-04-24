@@ -23,10 +23,11 @@ gearRatio = queryGearRatio(MotorType.A1)
 
 # Global variables for crouching state
 crouchHeightMax = 0.33
+startCrouchingLeft, stopCrouchingLeft = False, True
 leftHipAngleStart, leftHipAngleEnd, leftKneeAngleStart, leftKneeAngleEnd = 0.0, 0.0, 0.0, 0.0
+startCrouchingRight, stopCrouchingRight = False, True
 rightHipAngleStart, rightHipAngleEnd, rightKneeAngleStart, rightKneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
-startCrouching, stopCrouching = False, True
-crouchStartTime = 0.0
+crouchStartTimeLeft, crouchStartTimeRight = 0.0
 
 hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces, wheelsCommsFail = 0, 0, 0, 0, 0, 0
 

@@ -6,7 +6,7 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-serial = SerialPort('/dev/ttyUSB0')
+serial = SerialPort('/dev/ttyUSB1')
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
@@ -74,9 +74,9 @@ try:
 except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
-        try:
+        #try:
                 ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
-                plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
-                print(f"Error encountered while saving figure: {e}")
-        finally:
-                sys.exit(0)  # Ensure clean exit
+                #plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
+               # print(f"Error encountered while saving figure: {e}")
+        #finally:
+        sys.exit(0)  # Ensure clean exit

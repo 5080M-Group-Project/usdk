@@ -31,14 +31,22 @@ hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces
 
 #### Class for serial? ####
 class leg:
+    '''
     right = SerialPort('/dev/ttyUSB0')
     left = SerialPort('/dev/ttyUSB1')
+    '''
+
+    right = rightLeg
+    left = leftLeg
+
     @staticmethod
-    def getName(serialPort):
-        if serialPort == leg.left:
+    def getName(serial):
+        if serial == leg.left:
             return 'Left'
-        if serialPort == leg.right:
+        elif serial == leg.right:
             return 'Right'
+        else:
+            return 'Unknown'
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
     # Static variables (class variables)

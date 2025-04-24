@@ -9,6 +9,8 @@ from unitree_actuator_sdk import *
 rightLeg = SerialPort('/dev/ttyUSB0')
 leftLeg = SerialPort('/dev/ttyUSB1')
 
+print(f'leftLeg: {leg.getName(leftLeg)}, rightLeg: {leg.getName(rightLeg)}')
+
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
 

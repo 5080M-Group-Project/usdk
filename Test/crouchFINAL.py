@@ -65,7 +65,7 @@ try:
                 ###<<< CROUCHING CONTROL >>>###
                 crouchHeightDesiredNew = getCrouchCommand(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
                 hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching \
-                        = crouchControl('front', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
+                        = crouchControl('back', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
 
                 ###<<< LOOP TIMING >>>###
                 loopTime = time.time() - loopStartTime

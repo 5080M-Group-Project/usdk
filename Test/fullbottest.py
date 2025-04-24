@@ -22,7 +22,7 @@ hip_angle_usb1 = 6  # rad
 knee_angle_usb1 = -3.82  # rad
 
 # USB0
-hip_angle_usb0 = 1.5 # rad
+hip_angle_usb0 = 2.5 # rad
 knee_angle_usb0 = 10.1687  # rad
 
 # --- Initial motor setup ---

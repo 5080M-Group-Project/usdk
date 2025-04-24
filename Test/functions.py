@@ -189,28 +189,34 @@ def getOffset(serialPort, motorID, modelledInitialAngle, kp, kd, fix):
 
 kpHipCalibration, kpKneeCalibration = 0.0, 0.0
 kdHipCalibration, kdKneeCalibration = 0.25, 0.25
-hipCalibrationFix, kneeCalibrationFix = None, None
+leftHipCalibrationFix, rightHipCalibrationFix, leftKneeCalibrationFix, rightKneeCalibrationFix = None, None, None, None
 
 def calibrateJointReadings(serialPort):
     """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
-    global kpHipCalibration, kpKneeCalibration, kdHipCalibration, kdKneeCalibration, hipCalibrationFix, kneeCalibrationFix
+    global kpHipCalibration, kpKneeCalibration, kdHipCalibration, kdKneeCalibration
+    global leftHipCalibrationFix, lefKneeCalibrationFix, rightHipCalibrationFix, rightKneeCalibrationFix
 
-    hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration, hipCalibrationFix)
-    kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, kneeCalibrationFix)
+    if leg.getName(serialPort) == 'Left':
+        hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration, leftHipCalibrationFix)
+        kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, leftKneeCalibrationFix)
+
+        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5)  # leg1 leg2 leg2
+        if hipCalibration:
+            kpHipCalibration = 30.0
+            leftHipCalibrationFix = hipAngleInitialRaw
+            print(f"\n {leg.getName(serialPort)} Hip Locked\n")
+
+        kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5) or (
+                    12.0 < kneeAngleInitialRaw < 13.0)  # leg1 leg1 leg2
+        if kneeCalibration:
+            kpKneeCalibration = 30.0
+            kneeCalibrationFix = kneeAngleInitialRaw
+            print(f"\n {leg.getName(serialPort)} Knee Locked\n")
+    elif leg.getName(serialPort) == 'Right':
+        hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration,rightHipCalibrationFix)
+        kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, rightKneeCalibrationFix)
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5) #leg1 leg2 leg2
-    if hipCalibration:
-        kpHipCalibration = 30.0
-        hipCalibrationFix = hipAngleInitialRaw
-        print(f"\n {leg.getName(serialPort)} Hip Locked\n")
-
-    kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)  or (12.0 < kneeAngleInitialRaw < 13.0) #leg1 leg1 leg2
-    if kneeCalibration:
-        kpKneeCalibration = 30.0
-        kneeCalibrationFix = kneeAngleInitialRaw
-        print(f"\n {leg.getName(serialPort)} Knee Locked\n")
-
     offsetCalibration = hipCalibration and kneeCalibration
     if offsetCalibration:
         print(f"\n {leg.getName(serialPort)} Leg Angle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}\n")

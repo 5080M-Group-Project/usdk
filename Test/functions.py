@@ -31,6 +31,14 @@ crouchStartTime = 0.0
 hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces, wheelsCommsFail = 0, 0, 0, 0, 0, 0
 
 #### Class for serial? ####
+class leg:
+    @staticmethod
+    def getName(serialPort):
+        if serialPort == leftLeg:
+            return 'Left'
+        if serialPort == rightLeg:
+            return 'Right'
+
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
     # Static variables (class variables)
@@ -126,7 +134,7 @@ def sendCmdRcvData(serialPort, ID, kp, kd, q, dq, tau):
     #NEEDED?
     while not serialPort.sendRecv(cmd, data):
         commsFail = id.logCommsFail(ID)
-        print(f'Waiting for {id.getName(ID)} motor to respond. Response lost {commsFail} times')
+        print(f'Waiting for {leg.getName(serial)} {id.getName(ID)} motor to respond. Response lost {commsFail} times')
     return data
 
 # Function to compute output torque
@@ -138,10 +146,11 @@ def calculateOutputTorque(kp, qDesired, qCurrent, kd, dqDesired, dqCurrent, tau)
 
 # Function to output motor data
 def outputData(serial, motorID, qRotorRads, offset, dqRotorRads, torqueNm, temperature, motorError,tau):
+        legLabel = leg.getName(serial)
         motorLabel = id.getName(motorID)
 
         print("\n")
-        print(f"<<<<<{motorLabel.upper()} MOTOR>>>>>")
+        print(f"<<<<<{legLabel.upper()} {motorLabel.upper()} MOTOR>>>>>")
         print(f"Angle (Deg): {getOutputAngleDeg(qRotorRads) + offset}")
         print(f"Angular Velocity (rad/s): {dqRotorRads / gearRatio}")
         print(f"Torque (N.m): {torqueNm}")
@@ -168,7 +177,7 @@ def getOffset(serialPort, motorID, modelledInitialAngle, kp, kd, fix):
         cmd.kd = kdRotor
 
     while not serialPort.sendRecv(cmd, data):
-        print('\nWaiting for motor response...\n')
+        print(f'\nWaiting for {leg.getName(serialPort)} {id.getName(motorID)} motor response...\n')
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
@@ -190,23 +199,23 @@ def calibrateJointReadings(serialPort):
     if hipCalibration:
         kpHipCalibration = 30.0
         hipCalibrationFix = hipAngleInitialRaw
-        print("\nHip Locked\n")
+        print(f"\n {leg.getName(serialPort)} Hip Locked\n")
 
     kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)  or (12.0 < kneeAngleInitialRaw < 13.0) #leg1 leg1 leg2
     if kneeCalibration:
         kpKneeCalibration = 30.0
         kneeCalibrationFix = kneeAngleInitialRaw
-        print("\nKnee Locked\n")
+        print(f"\n {leg.getName(serialPort)} Knee Locked\n")
 
     offsetCalibration = hipCalibration and kneeCalibration
     if offsetCalibration:
-        print(f"\nAngle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}\n")
+        print(f"\n {leg.getName(serialPort)} Leg Angle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}\n")
         hipOutputAngleDesired, kneeOutputAngleDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
         # Return offsets, desired angles, and calibration status
         return hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, True
 
     # Return offsets and status when calibration is not successful
-    print(f"\nRaw Initial Angles - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
+    print(f"\nRaw Initial Angles ({leg.getName(serial)} Leg) - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
     return hipOffset, kneeOffset, None, None, False
 
 def forwardKinematicsDeg(thetaHip, thetaKnee):
@@ -313,7 +322,7 @@ def chooseRotorGains(crouching):
         # Return fixed gains if not crouching
         return rotor.hip.fixed.kp, rotor.hip.fixed.kd, rotor.knee.fixed.kp, rotor.knee.fixed.kd
 
-def plotAndSaveLegData(timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, kneeOutputAngles, kneeCommandAngles, kneeTorque, T):
+def plotAndSaveLegData(serial, timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, kneeOutputAngles, kneeCommandAngles, kneeTorque, T):
     # Ensure all lists have the same length
     global kpOutputMoving, kdOutputMoving, kpOutputFixed, kdOutputFixed
 
@@ -346,12 +355,12 @@ def plotAndSaveLegData(timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, 
 
     plt.xlabel('Time (s)')
     plt.ylabel('Angle (deg)')
-    plt.title('Hip and Knee Angles Over Time')
+    plt.title(f'{leg.getName(serial)} Hip and Knee Angles Over Time')
     plt.legend(loc='best')
     plt.grid()
 
     # Base name for figure and CSV
-    base_name = f"JointAngleOverTime_crouch_Time_{T:.1f}_moving_kp_{kpOutputMoving:.1f}_kd_{kdOutputMoving:.1f}_fixed_kp_{kpOutputFixed:.1f}_kd_{kdOutputFixed:.1f}"
+    base_name = f"{leg.getName(serial)} JointAngleOverTime_crouch_Time_{T:.1f}_moving_kp_{kpOutputMoving:.1f}_kd_{kdOutputMoving:.1f}_fixed_kp_{kpOutputFixed:.1f}_kd_{kdOutputFixed:.1f}"
 
     # Save the figure
     figure_filename = f"{base_name}.png"

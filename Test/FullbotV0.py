@@ -26,9 +26,9 @@ offsetCalibration = False
 #Crouching Initialisation
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.6*crouchHeightMax
-crouchDuration = 1.0 #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
-crouchIncrement = 0.2*crouchHeightMax
+crouchHeightDesiredNew = 0.9*crouchHeightMax ### 0.9 or 0.75
+crouchIncrement = 0.15*crouchHeightMax ### 0.1, 0.15, or 0.2
+crouchDuration = 1.00 ### relative to the above ^, ~0.75s, ~1.25s???, ?????  #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
 
 try:
         while True:
@@ -51,14 +51,14 @@ try:
                 data = sendCmdRcvData(leg1, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
                 hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
                 hipTorque = calculateOutputTorque(kpRotorHip, hipRotorAngleDesired, data.q, kdRotorHip, 0.0, data.dq, hipTau)
-                outputData(leg1, id.hip, data.q, hipOffset, data.dq, hipTorque, data.temp, data.merror)
+                outputData(leg1, id.hip, data.q, hipOffset, data.dq, hipTorque, data.temp, data.merror, hipTau)
                 hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired), hipOutputTorque.append(hipTorque)
 
                 ###<<< KNEE 1 >>>###
                 data = sendCmdRcvData(leg1, id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
                 kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
                 kneeTorque = calculateOutputTorque(kpRotorKnee, kneeRotorAngleDesired, data.q, kdRotorKnee, 0.0, data.dq, kneeTau)
-                outputData(leg1, id.knee, data.q, kneeOffset, data.dq, kneeTorque, data.temp, data.merror)
+                outputData(leg1, id.knee, data.q, kneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired), kneeOutputTorque.append(kneeTorque)
 
                 ###<<< CROUCHING CONTROL >>>###

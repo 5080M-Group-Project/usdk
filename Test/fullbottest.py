@@ -13,7 +13,7 @@ hipTau, kneeTau = 0.0, 0.0  # Torque
 timeSteps = []
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 20, 10
+kpOutWheel, kdOutWheel = 20, 5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # Define hip and knee angles for both USB ports
@@ -22,7 +22,7 @@ hip_angle_usb1 = 6  # rad
 knee_angle_usb1 = -3.82  # rad
 
 # USB0
-hip_angle_usb0 = 2.5 # rad
+hip_angle_usb0 = 4.5 # rad
 knee_angle_usb0 = 10.1687  # rad
 
 # --- Initial motor setup ---

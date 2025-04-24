@@ -46,7 +46,7 @@ try:
         #cmd.q = hip_angle_usb1  # Command hip angle in radians
         left.sendRecv(cmd, data)  # Send command to USB1 hip motor
         angle = data.q
-        print(f"Raw angle reading (radx9):  {angle} ")
+        print(f"Raw left hip angle reading (radx9):  {angle} ")
         print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
         cmd.id = 1  # Knee motor ID for USB1
@@ -55,7 +55,7 @@ try:
         #cmd.q = knee_angle_usb1  # Command knee angle in radians
         left.sendRecv(cmd, data)  # Send command to USB1 knee motor
         angle = data.q
-        print(f"Raw angle reading (radx9):  {angle} ")
+        print(f"Raw left knee angle reading (radx9):  {angle} ")
         print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
 
         # Send commands for USB0 (hip and knee motors)
@@ -65,7 +65,7 @@ try:
         #cmd.q = hip_angle_usb0  # Command hip angle in radians
         right.sendRecv(cmd, data)  # Send command to USB0 hip motor
         angle = data.q
-        print(f"Raw angle reading (radx9):  {angle} ")
+        print(f"Raw right hip angle reading (radx9):  {angle} ")
         print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
 
         cmd.id = 1  # Knee motor ID for USB0
@@ -74,7 +74,7 @@ try:
         #cmd.q = knee_angle_usb0  # Command knee angle in radians
         right.sendRecv(cmd, data)  # Send command to USB0 knee motor
         angle = data.q
-        print(f"Raw angle reading (radx9):  {angle} ")
+        print(f"Raw right knee angle reading (radx9):  {angle} ")
         print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
 
         # Wait a little before sending the next command

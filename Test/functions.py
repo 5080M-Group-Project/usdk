@@ -13,32 +13,24 @@ serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
 
+pygame.init()
+screen = pygame.display.set_mode((400, 300)) # NEEDED????
+
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
 gearRatio = queryGearRatio(MotorType.A1)
 
-# Function to convert output gains to rotor gains
-def getRotorGains(kpOutput, kdOutput):
-    kpRotor = (kpOutput / (gearRatio * gearRatio)) / 26.07
-    kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
-    return np.array([kpRotor, kdRotor])
+# Global variables for crouching state
+crouchHeightMax = 0.33
+hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
+startCrouching, stopCrouching = False, True
+crouchStartTime = 0.0
 
-# HIP
-kpOutHipFixed, kdOutHipFixed = 20.0, 0.5  ### kp = 20, kd = 0.5
-kpRotorHipFixed, kdRotorHipFixed = getRotorGains(kpOutHipFixed, kdOutHipFixed)
+hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces, wheelsCommsFail = 0, 0, 0, 0, 0, 0
 
-kpOutHipMoving, kdOutHipMoving = 15.0, 2.0  ### kp = 10, kd = 3.0
-kpRotorHipMoving, kdRotorHipMoving = getRotorGains(kpOutHipMoving, kdOutHipMoving)
-
-# KNEE
-kpOutKneeFixed, kdOutKneeFixed = 20.0, 0.5
-kpRotorKneeFixed, kdRotorKneeFixed = getRotorGains(kpOutKneeFixed, kdOutKneeFixed)
-
-kpOutKneeMoving, kdOutKneeMoving = 15.0, 2.0
-kpRotorKneeMoving, kdRotorKneeMoving = getRotorGains(kpOutKneeMoving, kdOutKneeMoving)
-
-
-count = 0
-thetaHipVector = []
-thetaKneeVector = []
+#### Class for serial? ####
 
 class id: # e.g. id.hip = 0, id.get('Hip') = 0
     # Static variables (class variables)
@@ -71,6 +63,50 @@ class id: # e.g. id.hip = 0, id.get('Hip') = 0
         else:
             return None
 
+    @staticmethod
+    def logCommsFail(motorID):
+        # Return motor name based on the motor ID value
+        global hipCommsFail, kneeCommsFail, wheelCommsFail
+        if motorID == id.hip:
+            hipCommsFail += 1
+            return hipCommsFail
+        elif motorID == id.knee:
+            kneeCommsFail += 1
+            return kneeCommsFail
+        elif motorID == id.wheel:
+            wheelCommsFail += 1
+            return wheelCommsFail
+        else:
+            return None
+
+# Function to convert output gains to rotor gains
+def getRotorGains(kpOutput, kdOutput):
+    kpRotor = (kpOutput / (gearRatio * gearRatio)) / 26.07
+    kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
+    return kpRotor, kdRotor
+
+kpOutputMoving, kdOutputMoving = 15.0, 2.0
+kpOutputFixed, kdOutputFixed = 20.0, 0.8
+
+class rotorGains:
+
+    global kpOutputMoving, kdOutputMoving, kpOutputFixed, kdOutputFixed
+
+    class hip:
+        # Separate KP and KD for hip
+        class fixed:
+            kp, kd = getRotorGains(kpOutputFixed, kdOutputFixed)  # Fixed values for hip
+
+        class moving:
+            kp, kd = getRotorGains(kpOutputMoving, kdOutputMoving)  # Moving values for hip
+    class knee:
+        # Separate KP and KD for knee
+        class fixed:
+            kp, kd = getRotorGains(kpOutputFixed, kdOutputFixed)  # Fixed values for knee
+
+        class moving:
+            kp, kd = getRotorGains(kpOutputMoving, kdOutputMoving)  # Moving values for knee
+
 # Function to get the current motor output angle in DEGREES from rotor in RAD
 def getOutputAngleDeg(rotorAngle):
     return (rotorAngle / gearRatio) * (180 / np.pi)
@@ -79,47 +115,87 @@ def getOutputAngleDeg(rotorAngle):
 def getRotorAngleRad(outputAngle):
     return float (outputAngle * (np.pi / 180)) * gearRatio
 
-# Function to send actuator commands
-def cmdActuator(id, kp, kd, q, dq, tau):
-    '''
-    cmd.motorType = MotorType.A1
-    data.motorType = MotorType.A1
-    cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-    '''
-    cmd.id = id
+def sendCmdRcvData(serialPort, ID, kp, kd, q, dq, tau):
+    cmd.id = ID
     cmd.kp = kp  # proportional or position term. i.e. stiffness
     cmd.kd = kd  # derivative or velocity term, i.e damping
     cmd.q = q    # angle, radians
     cmd.dq = dq  # angular velocity, radians/s
     cmd.tau = tau  # rotor feedforward torque
 
-    #serial.sendRecv(cmd, data)
+    #NEEDED?
+    while not serialPort.sendRecv(cmd, data):
+        commsFail = id.logCommsFail(ID)
+        print(f'Waiting for {id.getName(ID)} motor to respond. Response lost {commsFail} times')
+    return data
 
-def getOffset(motorID, serial, modelledInitialAngle):
+# Function to compute output torque
+def calculateOutputTorque(kp, qDesired, qCurrent, kd, dqDesired, dqCurrent, tau):
+    return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
+
+# Function to output motor data
+def outputData(serial, motorID, qRotorRads, offset, dqRotorRads, torqueNm, temperature, motorError,tau):
+        motorLabel = id.getName(motorID)
+
+        print("\n")
+        print(f"<<<<<{motorLabel.upper()} MOTOR>>>>>")
+        print(f"Angle (Deg): {getOutputAngleDeg(qRotorRads) + offset}")
+        print(f"Angular Velocity (rad/s): {dqRotorRads / gearRatio}")
+        print(f"Torque (N.m): {torqueNm}")
+        print(f"Tau (N.m): {tau}")
+        print(f"Temperature: {temperature}")
+        print(f"ISSUE? {motorError}")
+        print("\n")
+
+
+def getOffset(serialPort, motorID, modelledInitialAngle, kp, kd, fix):
     """Calibrate a motor and return its offset and initial raw angle."""
-    cmd.motorType = MotorType.A1
-    data.motorType = MotorType.A1
-    cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-    cmd.id = motorID
-    while not serial.sendRecv(cmd, data):
-        print('/nWaiting for motor response...')
+    kpRotor, kdRotor = getRotorGains(kp, kd)
+    if fix is None:
+        cmd.id = motorID
+        cmd.dq = 0.0
+        cmd.kp = kpRotor
+        cmd.kd = kdRotor
+    else:
+        fixRotor = getRotorAngleRad(fix)
+        cmd.id = motorID
+        cmd.q = fixRotor
+        cmd.dq = 0.0
+        cmd.kp = kpRotor
+        cmd.kd = kdRotor
+
+    while not serialPort.sendRecv(cmd, data):
+        print('\nWaiting for motor response...\n')
 
     rawInitialAngle = getOutputAngleDeg(data.q)
     offset = modelledInitialAngle - rawInitialAngle  # Offset calculation integrated here
-    #time.sleep(0.002)  # 200 us
     return offset, rawInitialAngle
 
-def calibrateJointReadings(serial):
-    """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
-    hipOffset, hipAngleInitialRaw = getOffset(id.hip, serial, -90)
-    kneeOffset, kneeAngleInitialRaw = getOffset(id.knee, serial, 0.0)
+kpHipCalibration, kpKneeCalibration = 0.0, 0.0
+kdHipCalibration, kdKneeCalibration = 0.2, 0.2
+hipCalibrationFix, kneeCalibrationFix = None, None
 
+def calibrateJointReadings(serialPort):
+    """Calibrate hip and knee motors and return offsets, initial angles, and calibration status."""
+    global kpHipCalibration, kpKneeCalibration, kdHipCalibration, kdKneeCalibration, hipCalibrationFix, kneeCalibrationFix
+
+    hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration, hipCalibrationFix)
+    kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, kneeCalibrationFix)
 
     # Check if the combined offset is within the acceptable range
-    hipCalibration = 17.5 > hipAngleInitialRaw > 16.5
-    kneeCalibration = 27 > kneeAngleInitialRaw > 26
-    offsetCalibration = hipCalibration + kneeCalibration
+    hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5) #leg1 leg2 leg2
+    if hipCalibration:
+        kpHipCalibration = 30.0
+        hipCalibrationFix = hipAngleInitialRaw
+        print("\nHip Locked\n")
 
+    kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)  or (12.0 < kneeAngleInitialRaw < 13.0) #leg1 leg1 leg2
+    if kneeCalibration:
+        kpKneeCalibration = 30.0
+        kneeCalibrationFix = kneeAngleInitialRaw
+        print("\nKnee Locked\n")
+
+    offsetCalibration = hipCalibration and kneeCalibration
     if offsetCalibration:
         print(f"\nAngle Offsets Calibrated - Hip: {hipOffset:.6f}, Knee: {kneeOffset:.6f}\n")
         hipOutputAngleDesired, kneeOutputAngleDesired = hipAngleInitialRaw + hipOffset, kneeAngleInitialRaw + kneeOffset
@@ -129,31 +205,6 @@ def calibrateJointReadings(serial):
     # Return offsets and status when calibration is not successful
     print(f"\nRaw Initial Angles - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
     return hipOffset, kneeOffset, None, None, False
-
-# Function to compute output torque
-def calculateOutputTorque(kp, kd, qDesired, dqDesired, tau, qCurrent, dqCurrent):
-    return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
-
-# Function to output motor data
-def outputData(motorID, qDeg, dqRads, torqueNm, temp, merror):
-        '''
-        cmd.motorType = MotorType.A1
-        data.motorType = MotorType.A1
-        cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-        cmd.id = motorID
-        serial.sendRecv(cmd, data)
-        '''
-
-        motorLabel = id.getName(motorID)
-
-        print("\n")
-        print(f"{motorLabel} Motor")
-        print(f"Angle (Deg): {qDeg}")
-        print(f"Angular Velocity (rad/s): {dqRads / gearRatio}")
-        print(f"Torque (N.m): {torqueNm}")
-        print(f"Temperature: {temp}")
-        print(f"ISSUE? {merror}")
-        print("\n")
 
 def forwardKinematicsDeg(thetaHip, thetaKnee):
     L1 = 0.165  # Length of link 1
@@ -195,16 +246,9 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
     # Return angles as a tuple
     return thetaHip, thetaKnee
 
-
-# Global variables for crouching state
-crouchHeightMax = 0.33
-
-hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
-startCrouching, stopCrouching = False, True
-crouchStartTime = 0.0
-
-def getNewCrouchHeight(events,crouchHeightDesiredNew,crouchIncrement):
+def getCrouchCommand(events,crouchHeightDesiredNew,crouchIncrement):
     global crouchHeightMax
+    crouchHeightMin = 0.3*crouchHeightMax
     for event in events:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
@@ -212,16 +256,15 @@ def getNewCrouchHeight(events,crouchHeightDesiredNew,crouchIncrement):
             if event.key == pygame.K_DOWN:
                 crouchHeightDesiredNew -= crouchIncrement
 
-    crouchHeightDesiredNew = max(0.0 + crouchIncrement, min(crouchHeightMax, crouchHeightDesiredNew))
+    crouchHeightDesiredNew = max(crouchHeightMin, min(0.99999*crouchHeightMax, crouchHeightDesiredNew))
     return crouchHeightDesiredNew
-
 
 def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
         currentAngle = (desiredAngle - startAngle) * t/T + startAngle
         #currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
         return currentAngle
 
-def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouchDuration, crouching):
+def crouchControl(kneeDirection ,hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouchDuration, crouching):
 
     global hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd
     global startCrouching, stopCrouching
@@ -234,7 +277,7 @@ def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDe
     startCrouching = (heightDesiredNew != heightDesiredPrev)
 
     if startCrouching and not crouching:
-        hipAngleEnd, kneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, 'front')
+        hipAngleEnd, kneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, kneeDirection)
         hipAngleStart, kneeAngleStart = hipAngleCurrent, kneeAngleCurrent
         hipAngleNew, kneeAngleNew = hipAngleStart, kneeAngleStart
         crouchStartTime = time.time()
@@ -258,21 +301,21 @@ def crouchControl(hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDe
 
     return hipAngleNew, kneeAngleNew, heightDesiredPrev, crouching
 
-
 def chooseRotorGains(crouching):
-
+    rotor = rotorGains()
     if crouching:
         # Return moving gains if crouching
-        return kpRotorHipMoving, kdRotorHipMoving, kpRotorKneeMoving, kdRotorKneeMoving
+        return rotor.hip.moving.kp, rotor.hip.moving.kd, rotor.knee.moving.kp, rotor.knee.moving.kd
     else:
         # Return fixed gains if not crouching
-        return kpRotorHipFixed, kdRotorHipFixed, kpRotorKneeFixed, kdRotorKneeFixed
+        return rotor.hip.fixed.kp, rotor.hip.fixed.kd, rotor.knee.fixed.kp, rotor.knee.fixed.kd
 
-
-def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, T, kp, kd):
+def plotAndSaveLegData(timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, kneeOutputAngles, kneeCommandAngles, kneeTorque, T):
     # Ensure all lists have the same length
+    global kpOutputMoving, kdOutputMoving, kpOutputFixed, kdOutputFixed
+
     min_length = min(len(timeSteps), len(hipOutputAngles), len(kneeOutputAngles), len(hipCommandAngles),
-                     len(kneeCommandAngles))
+                     len(kneeCommandAngles), len(hipTorque), len(kneeTorque))
 
     if min_length == 0:
         print("No data collected. Exiting without saving.")
@@ -283,6 +326,9 @@ def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,
     kneeOutputAngles = kneeOutputAngles[:min_length]
     hipCommandAngles = hipCommandAngles[:min_length]
     kneeCommandAngles = kneeCommandAngles[:min_length]
+    hipTorque = hipTorque[:min_length]
+    kneeTorque = kneeTorque[:min_length]
+
 
     # Plotting
     plt.figure()
@@ -291,6 +337,10 @@ def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,
     plt.plot(timeSteps, hipCommandAngles, label='Hip Command Angle')
     plt.plot(timeSteps, kneeCommandAngles, label='Knee Command Angle')
 
+    ##plot on seperate y-axis?
+    plt.plot(timeSteps, hipTorque, label='Hip Output Torque')
+    plt.plot(timeSteps, kneeTorque, label='Knee Output Torque')
+
     plt.xlabel('Time (s)')
     plt.ylabel('Angle (deg)')
     plt.title('Hip and Knee Angles Over Time')
@@ -298,7 +348,7 @@ def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,
     plt.grid()
 
     # Base name for figure and CSV
-    base_name = "JointAnglesOverTime"
+    base_name = f"JointAngleOverTime_crouch_Time_{T:.1f}_moving_kp_{kpOutputMoving:.1f}_kd_{kdOutputMoving:.1f}_fixed_kp_{kpOutputFixed:.1f}_kd_{kdOutputFixed:.1f}"
 
     # Save the figure
     figure_filename = f"{base_name}.png"
@@ -309,16 +359,11 @@ def plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,
     csv_filename = f"{base_name}.csv"
     with open(csv_filename, 'w', newline='') as csvfile:
         writer = csv.writer(csvfile)
-        writer.writerow(['Time (s)', 'Hip Angle (deg)', 'Knee Angle (deg)'])
-        for t, hip, knee in zip(timeSteps, hipOutputAngles, kneeOutputAngles):
-            writer.writerow([t, hip, knee])
+        writer.writerow(['Time (s)', 'Hip Output Angle (deg)', 'Hip Command Angle (deg)','Hip Output Torque (Nm)','Knee Output Angle (deg)', 'Knee Command Angle (deg)', 'Knee Output Torque (Nm)'])
+        for t, hipOut, hipCmd,hipT, kneeOut, kneeCmd, kneeT in zip(timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, kneeOutputAngles, kneeCommandAngles, kneeTorque):
+            writer.writerow([t, hipOut, hipCmd,hipT, kneeOut, kneeCmd, kneeT])
 
     print(f"Data saved as {csv_filename}")
-
-    # Save the figure before exiting
-    plt.savefig(f"JointAngleOverTime_crouch_Time_{T:.1f}_kp_{kp:.1f}_kd_{kd:.1f}.png", dpi=300)
-
-    print("Figure saved as I am the Pennys-Man.png")
 
     # Close the plot
     plt.close()
@@ -336,6 +381,10 @@ def find_f710():
 
 #####<<<<<OLD CROUCH CODE>>>>####
 '''
+count = 0
+thetaHipVector = []
+thetaKneeVector = []
+
 def crouchingMechanismDeg(crouchHeightCurrent, crouchHeightDesired):
     # Define step size (dt) inside the function
     dt = 0.00001  # Fraction of the distance to move per iteration (LERP step size)

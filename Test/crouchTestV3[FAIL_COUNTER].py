@@ -14,14 +14,13 @@ from unitree_actuator_sdk import *
 serial = SerialPort('/dev/ttyUSB0')
 cmd = MotorCmd()
 data = MotorData()
-gearRatio = queryGearRatio(MotorType.A1)
 
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 pygame.init()
-screen = pygame.display.set_mode((400, 300))
+screen = pygame.display.set_mode((400, 300)) # NEEDED????
 ############################
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
@@ -30,53 +29,50 @@ screen = pygame.display.set_mode((400, 300))
 # Initialize Motor Gains - add to .h file or equivalent
 
 #Initialize Loop Variables
-torque = 0.0
+
+# Data storage for plotting
+hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, timeSteps = [], [], [], [], [], [], []
+
+
+#NEEDED?
+hipOffset, kneeOffset = 0.0, 0.0
 hipOutputAngleDesired, kneeOutputAngleDesired = 0.0, 0.0
-kpRotorHip, kdRotorHip = 0.0, 0.0
-kpRotorKnee, kdRotorKnee = 0.0, 0.0
+
 
 hipTau, kneeTau = 0.0, 0.0
-hipOffset, kneeOffset = 0.0, 0.0
 
-hipOutputAngleCurrent, kneeOutputAngleCurrent = 0.0, 0.0
 
-offsetCalibration, positionCalibration = False, False
-sleepTime = 0.1
+offsetCalibration = False
+#positionCalibration = False ????
 
+#Crouching Initialisation
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.75*crouchHeightMax
+crouchHeightDesiredNew = 0.6*crouchHeightMax
 crouchDuration = 1.0 #### scale by the distance required?
 crouchIncrement = 0.25*crouchHeightMax
 
-hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail = 0, 0, 0, 0
 
-# Data storage for plotting
-hipOutputAngles, hipCommandAngles, kneeOutputAngles, kneeCommandAngles, timeSteps = [], [], [], [], []
-
-globalStartTime = time.time()
 
 try:
         while True:
                 while not offsetCalibration: ### & other
                         hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, offsetCalibration = calibrateJointReadings(serial)
-                        time.sleep(sleepTime)
+                        time.sleep(0.01)
                         hipOutputAngleCurrent = hipOutputAngleDesired
                         kneeOutputAngleCurrent = kneeOutputAngleDesired
-                        ### IDEA: Add position calibration
-                        #globalStartTime = time.time()
+                        if offsetCalibration:
+                                globalStartTime = time.time()
 
-
-                startTime = time.time()
-                elapsedTime = startTime - globalStartTime
+                loopStartTime = time.time()
+                elapsedTime = loopStartTime - globalStartTime
                 timeSteps.append(elapsedTime)
 
-                # MAIN CONTROL LOOP
+                ######<<<<<< MAIN LOOP >>>>>>######
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
                 kpRotorHip, kdRotorHip, kpRotorKnee, kdRotorKnee = chooseRotorGains(crouching)
 
-                # Hip Motor Control
-                #cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+                ###<<< KNEE >>>###
                 cmd.id = id.hip
                 cmd.kp = kpRotorHip  # proportional or position term. i.e. stiffness
                 cmd.kd = kdRotorHip  # derivative or velocity term, i.e damping
@@ -85,27 +81,18 @@ try:
                 cmd.tau = hipTau  # rotor feedforward torque
                 hipRcvStart = time.time()
                 while not serial.sendRecv(cmd, data):
-                        print(f'Waiting for Hip motor to respond. Response lost {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! " f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate."')
                         hipCommsFail += 1
+                        print(f'Waiting for Hip motor to respond. Response lost {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! {100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate."')
                 hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
                 hipCommsSuccess += 1
-                '''
-                if serial.sendRecv(cmd, data):
-                        hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
-                        hipCommsSuccess += 1
-                else:
-                        hipOutputAngleCurrent = hipOutputAngleCurrent
-                        hipCommsFail += 1
-                        print(f"[WARNING] Hip Motor (ID {id.hip}) lost response {hipCommsFail} times out of {hipCommsFail + hipCommsSuccess}! " f"{100 * hipCommsFail / (hipCommsFail + hipCommsSuccess):.2f}% failure rate.")
-                '''
-                hipSendRcvLength = time.time() - hipRcvStart
-                hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
-                outputData(id.hip,hipOutputAngleCurrent,data.dq,hipTorque,data.temp,data.merror)
-                hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired)
-                kneeTimingBegin = time.time()
 
-                # Knee Motor Control
-                #cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+                hipSendRcvLength = time.time() - hipRcvStart
+
+                hipTorque = calculateOutputTorque(kpRotorHip, hipRotorAngleDesired, data.q, kdRotorHip, 0.0, data.dq, hipTau)
+                outputData(serial, id.hip, data.q, hipOffset, data.dq, hipTorque, data.temp, data.merror)
+                hipOutputAngles.append(hipOutputAngleCurrent), hipCommandAngles.append(hipOutputAngleDesired), hipOutputTorque.append(hipTorque)
+
+                ###<<< KNEE >>>###
                 cmd.id = id.knee
                 cmd.kp = kpRotorKnee # proportional or position term. i.e. stiffness
                 cmd.kd = kdRotorKnee  # derivative or velocity term, i.e damping
@@ -113,7 +100,6 @@ try:
                 cmd.dq = 0.0  # angular velocity, radians/s
                 cmd.tau = kneeTau  # rotor feedforward torque
                 kneeRcvStart = time.time()
-                serial.sendRecv(cmd, data)
                 while not serial.sendRecv(cmd, data):
                         kneeCommsFail += 1
                         print(f'Waiting for Knee motor to respond. Response lost {kneeCommsFail} times out of {kneeCommsFail + kneeCommsSuccess}! " f"{100 * kneeCommsFail / (kneeCommsFail + kneeCommsSuccess):.2f}% failure rate."')
@@ -121,25 +107,26 @@ try:
                 kneeCommsSuccess += 1
 
                 kneeSendRcvLength = time.time() - kneeRcvStart
-                kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
-                outputData(id.knee, kneeOutputAngleCurrent, data.dq, kneeTorque, data.temp, data.merror)
-                kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired)
 
-                # Crouch Control
-                crouchHeightDesiredNew = getNewCrouchHeight(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
+                kneeTorque = calculateOutputTorque(kpRotorKnee, kneeRotorAngleDesired, data.q, kdRotorKnee, 0.0, data.dq, kneeTau)
+                outputData(serial, id.knee, data.q, kneeOffset, data.dq, kneeTorque, data.temp, data.merror)
+                kneeOutputAngles.append(kneeOutputAngleCurrent), kneeCommandAngles.append(kneeOutputAngleDesired), kneeOutputTorque.append(kneeTorque)
+
+                ###<<< CROUCHING CONTROL >>>###
+                crouchHeightDesiredNew = getCrouchCommand(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
                 hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching = crouchControl(hipOutputAngleCurrent,kneeOutputAngleCurrent,crouchHeightDesiredPrev,crouchHeightDesiredNew,crouchDuration,crouching)
 
-
-                loopTime = time.time() - startTime
+                ###<<< LOOP TIMING >>>###
+                loopTime = time.time() - loopStartTime
                 print(f"Loop Time: {loopTime}\n")
                 print(f"Hip Send & Receive Timing: {hipSendRcvLength}\n") # >>> TAKES THE MOST TIME
                 print(f"Knee Send & Receive Timing: {kneeSendRcvLength}\n")  # >>> TAKES THE MOST TIME
-                #time.sleep(sleepTime - loopTime)  # 200 us ### IDEA: Link sleep time to dt in LERP of crouchingMechanism
+
 except KeyboardInterrupt:
-        ### Command everything to 0
+        ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
         try:
-                plotAndSaveData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, crouchDuration, kpOutHipMoving, kdOutHipMoving)
+                plotAndSaveLegData(timeSteps,hipOutputAngles,kneeOutputAngles,hipCommandAngles,kneeCommandAngles, hipOutputTorque, kneeOutputTorque, crouchDuration)
                 print(f"Error encountered while saving figure: {e}")
         finally:
                 sys.exit(0)  # Ensure clean exit

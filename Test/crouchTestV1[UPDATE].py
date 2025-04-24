@@ -22,19 +22,19 @@ gearRatio = queryGearRatio(MotorType.A1)
 # Initialize Hip Motor
 kpOutHip, kdOutHip = 5.0, 0.2 ### IDEA: Modify throughout the loop i.e. when locking legs
 kpRotorHip, kdRotorHip = getRotorGains(kpOutHip, kdOutHip)
-cmdActuator(id.hip,0.0,0.0,0.0,0.0,0.0) #NEEDED?
+sendCmdRcvData(id.hip, 0.0, 0.0, 0.0, 0.0, 0.0, )  #NEEDED?
 
 
 # Initialize Knee Motor
 kpOutKnee, kdOutKnee = 5.0, 0.2
 kpRotorKnee, kdRotorKnee = getRotorGains(kpOutKnee, kdOutKnee)
-cmdActuator(id.knee,0.0,0.0,0.0,0.0,0.0)
+sendCmdRcvData(id.knee, 0.0, 0.0, 0.0, 0.0, 0.0, )
 
 
 # Initialize Wheel Motor
 kpOutWheel, kdOutWheel = 0.0, 2.0
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
-cmdActuator(id.wheel,0.0,0.0,0.0,0.0,0.0)
+sendCmdRcvData(id.wheel, 0.0, 0.0, 0.0, 0.0, 0.0, )
 
 wheeAngularVelocityInitial  = getOutputAngleDeg(data.dq) #NEEDED?
 
@@ -60,7 +60,7 @@ while True:
 
         # Hip Motor Control
 
-        cmdActuator(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
+        sendCmdRcvData(id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau, )
         hipTorque = calculateOutputTorque(kpRotorHip, kdRotorHip, hipRotorAngleDesired,0.0, hipTau, data.q, data.dq) #kpRotor or kpOutput??
         hipOutputAngleCurrent = getOutputAngleDeg(data.q) + hipOffset
         outputData(id.hip,hipOutputAngleCurrent,data.dq,torque,data.temp,data.merror)
@@ -68,7 +68,7 @@ while True:
 
 
         # Knee Motor Control
-        cmdActuator(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau)
+        sendCmdRcvData(id.knee, kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired, 0.0, kneeTau, )
         kneeTorque = calculateOutputTorque(kpRotorKnee, kdRotorKnee, kneeRotorAngleDesired,0.0, kneeTau, data.q, data.dq) #kpRotor or kpOutput??
         kneeOutputAngleCurrent = getOutputAngleDeg(data.q) + kneeOffset
         outputData(id.knee, kneeOutputAngleCurrent, data.dq, torque, data.temp, data.merror)

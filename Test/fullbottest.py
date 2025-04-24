@@ -26,6 +26,8 @@ hip_angle_usb0 = 2.0458  # rad
 knee_angle_usb0 = 10.1687  # rad
 
 # --- Initial motor setup ---
+cmd = MotorCmd()
+data = MotorData()
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
@@ -35,8 +37,7 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 try:
     while True:
         # Send commands for USB1 (hip and knee motors)
-        cmd = MotorCmd()
-        data = MotorData()
+
 
         # Setup for USB1 - Hip and Knee Motors
         cmd.id = 0  # Hip motor ID for USB1

@@ -52,9 +52,11 @@ try:
                 ######<<<<<< MAIN LOOP >>>>>>######
                 leftHipRotorAngleDesired, leftKneeRotorAngleDesired = getRotorAngleRad(leftHipOutputAngleDesired - leftHipOffset), getRotorAngleRad(leftKneeOutputAngleDesired - leftKneeOffset)
                 kpRotorHipLeft, kdRotorHipLeft, kpRotorKneeLeft, kdRotorKneeLeft = chooseRotorGains(crouchingLeft)
+                print(f'\n RAW INPUT - Left:  Hip: {leftHipRotorAngleDesired:.3f}, Knee: {leftKneeRotorAngleDesired:.3f}')
 
                 rightHipRotorAngleDesired, rightKneeRotorAngleDesired = getRotorAngleRad(rightHipOutputAngleDesired - rightHipOffset), getRotorAngleRad(rightKneeOutputAngleDesired - rightKneeOffset)
                 kpRotorHipRight, kdRotorHipRight, kpRotorKneeRight, kdRotorKneeRight = chooseRotorGains(crouchingRight)
+                print(f'\n RAW INPUT - Right:  Hip: {rightHipRotorAngleDesired:.3f}, Knee: {rightKneeRotorAngleDesired:.3f}')
 
                 ###<<< LEFT HIP >>>###
                 data = sendCmdRcvData(leftLeg, id.hip, kpRotorHipLeft, kdRotorHipLeft, leftHipRotorAngleDesired, 0.0, hipTau)

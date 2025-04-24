@@ -29,21 +29,7 @@ knee_angle_usb0 = 10.1687  # rad
 cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-cmd.q = 0.0
-cmd.dq = 0.0
-cmd.tau = 0.0
-cmd.kp = kpRotorWheel
-cmd.kd = kdRotorWheel
-left.sendRecv(cmd, data)
-time.sleep(0.1)
 
-cmd.q = 0.0
-cmd.dq = 0.0
-cmd.tau = 0.0
-cmd.kp = kpRotorWheel
-cmd.kd = kdRotorWheel
-right.sendRecv(cmd, data)
-time.sleep(0.1)
 
 # --- Main Loop ---
 try:
@@ -57,7 +43,7 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb1  # Command hip angle in radians
-        cmd.tau = hipTau  # Torque
+
         left.sendRecv(cmd, data)  # Send command to USB1 hip motor
         print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 

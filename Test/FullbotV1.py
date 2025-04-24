@@ -6,8 +6,8 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-rightLeg = SerialPort('/dev/ttyUSB0')
-leftLeg = SerialPort('/dev/ttyUSB1')
+rightLeg = leg.right
+leftLeg = leg.left
 
 print(f'\nleg.getName(leftLeg): {leg.getName(leftLeg)}, leg.getName(rightLeg): {leg.getName(rightLeg)}')
 print(f'\nleftLeg: {leftLeg}, rightLeg: {rightLeg}')

@@ -307,8 +307,7 @@ def crouchControl(serial ,hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, 
 
     global leftHipAngleStart, leftHipAngleEnd, leftKneeAngleStart, leftKneeAngleEnd
     global rightHipAngleStart, rightHipAngleEnd, rightKneeAngleStart, rightKneeAngleEnd
-    global startCrouching, stopCrouching
-    global crouchStartTime
+    global startCrouching, stopCrouching, crouchStartTime
 
     # Estimate current crouch height from FK
     xWheel, yWheel = forwardKinematicsDeg(hipAngleCurrent, kneeAngleCurrent)

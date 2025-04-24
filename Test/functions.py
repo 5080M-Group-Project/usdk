@@ -31,13 +31,8 @@ hipCommsSuccess, hipCommsFail, kneeCommsSuccess, kneeCommsFail, wheelCommsSucces
 
 #### Class for serial? ####
 class leg:
-    '''
     right = SerialPort('/dev/ttyUSB0')
     left = SerialPort('/dev/ttyUSB1')
-    '''
-
-    right = rightLeg
-    left = leftLeg
 
     @staticmethod
     def getName(serial):

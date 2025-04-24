@@ -13,7 +13,7 @@ hipTau, kneeTau = 0.0, 0.0  # Torque
 timeSteps = []
 
 # Gain tuning
-kpOutWheel, kdOutWheel = 10, 5
+kpOutWheel, kdOutWheel = 20, 10
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # Define hip and knee angles for both USB ports

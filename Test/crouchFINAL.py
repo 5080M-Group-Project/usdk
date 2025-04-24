@@ -46,6 +46,9 @@ try:
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
                 kpRotorHip, kdRotorHip, kpRotorKnee, kdRotorKnee = chooseRotorGains(crouching)
 
+                print(f"🛠️ Raw Hip Rotor Angle Command (rad): {hipRotorAngleDesired:.4f}")
+                print(f"🛠️ Raw Knee Rotor Angle Command (rad): {kneeRotorAngleDesired:.4f}")
+
                 ###<<< HIP >>>###
                 data = sendCmdRcvData(serial, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
                 hipOutputAngleCurrent = (getOutputAngleDeg(data.q) + hipOffset)

@@ -203,7 +203,7 @@ def calibrateJointReadings(serialPort):
         hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpLeftHipCalibration, kdCalibration, leftHipCalibrationFix)
         kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpLeftKneeCalibration, kdCalibration, leftKneeCalibrationFix)
 
-        hipCalibration =  (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5)
+        hipCalibration =  (35.5 < hipAngleInitialRaw < 36.5) or (-0.5 < hipAngleInitialRaw < 0.5)
         if hipCalibration:
             kpLeftHipCalibration = kpFixed
             leftHipCalibrationFix = hipAngleInitialRaw

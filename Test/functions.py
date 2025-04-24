@@ -200,13 +200,13 @@ def calibrateJointReadings(serialPort):
         hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration, leftHipCalibrationFix)
         kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, leftKneeCalibrationFix)
 
-        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5)  # leg1 leg2 leg2
+        hipCalibration =  (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5)  # leg2 leg2
         if hipCalibration:
             kpHipCalibration = 30.0
             leftHipCalibrationFix = hipAngleInitialRaw
             print(f"\n {leg.getName(serialPort)} Hip Locked\n")
 
-        kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5) or (12.0 < kneeAngleInitialRaw < 13.0)  # leg1 leg1 leg2
+        kneeCalibration =  (12.0 < kneeAngleInitialRaw < 13.0)  # leg1 leg1 leg2
         if kneeCalibration:
             kpKneeCalibration = 30.0
             leftKneeCalibrationFix = kneeAngleInitialRaw
@@ -216,13 +216,13 @@ def calibrateJointReadings(serialPort):
         hipOffset, hipAngleInitialRaw = getOffset(serialPort, id.hip, -90, kpHipCalibration, kdHipCalibration,rightHipCalibrationFix)
         kneeOffset, kneeAngleInitialRaw = getOffset(serialPort, id.knee, 0.0, kpKneeCalibration, kdKneeCalibration, rightKneeCalibrationFix)
 
-        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5) or (38.5 < hipAngleInitialRaw < 39.5) or (-0.5 < hipAngleInitialRaw < 0.5)  # leg1 leg2 leg2
+        hipCalibration = (24.5 < hipAngleInitialRaw < 25.5)
         if hipCalibration:
             kpHipCalibration = 30.0
             leftHipCalibrationFix = hipAngleInitialRaw
             print(f"\n {leg.getName(serialPort)} Hip Locked\n")
 
-        kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5) or (12.0 < kneeAngleInitialRaw < 13.0)  # leg1 leg1 leg2
+        kneeCalibration = (-0.5 < kneeAngleInitialRaw < 0.5) or (39.5 < kneeAngleInitialRaw < 40.5)   # leg1 leg1 leg2
         if kneeCalibration:
             kpKneeCalibration = 30.0
             leftKneeCalibrationFix = kneeAngleInitialRaw

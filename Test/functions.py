@@ -215,7 +215,7 @@ def calibrateJointReadings(serialPort):
         return hipOffset, kneeOffset, hipOutputAngleDesired, kneeOutputAngleDesired, True
 
     # Return offsets and status when calibration is not successful
-    print(f"\nRaw Initial Angles ({leg.getName(serial)} Leg) - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
+    print(f"\nRaw Initial Angles ({leg.getName(serialPort)} Leg) - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
     return hipOffset, kneeOffset, None, None, False
 
 def forwardKinematicsDeg(thetaHip, thetaKnee):

@@ -23,7 +23,8 @@ gearRatio = queryGearRatio(MotorType.A1)
 
 # Global variables for crouching state
 crouchHeightMax = 0.33
-hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
+leftHipAngleStart, leftHipAngleEnd, leftKneeAngleStart, leftKneeAngleEnd = 0.0, 0.0, 0.0, 0.0
+rightHipAngleStart, rightHipAngleEnd, rightKneeAngleStart, rightKneeAngleEnd  = 0.0, 0.0, 0.0, 0.0
 startCrouching, stopCrouching = False, True
 crouchStartTime = 0.0
 
@@ -283,7 +284,6 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
         thetaKnee = (beta - np.pi) * (180.0 / np.pi)
         return thetaHip, thetaKnee
 
-
 def getCrouchCommand(events,crouchHeightDesiredNew,crouchIncrement):
     global crouchHeightMax
     crouchHeightMin = 0.3*crouchHeightMax
@@ -302,9 +302,10 @@ def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):
         #currentAngle = desiredAngle*t/T + startAngle*(1 - t/T)
         return currentAngle
 
-def crouchControl(kneeDirection ,hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouchDuration, crouching):
+def crouchControl(serial ,hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, heightDesiredNew, crouchDuration, crouching):
 
-    global hipAngleStart, hipAngleEnd, kneeAngleStart, kneeAngleEnd
+    global leftHipAngleStart, leftHipAngleEnd, leftKneeAngleStart, leftKneeAngleEnd
+    global rightHipAngleStart, rightHipAngleEnd, rightKneeAngleStart, rightKneeAngleEnd
     global startCrouching, stopCrouching
     global crouchStartTime
 
@@ -314,28 +315,52 @@ def crouchControl(kneeDirection ,hipAngleCurrent, kneeAngleCurrent, heightDesire
 
     startCrouching = (heightDesiredNew != heightDesiredPrev)
 
-    if startCrouching and not crouching:
-        hipAngleEnd, kneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, kneeDirection)
-        hipAngleStart, kneeAngleStart = hipAngleCurrent, kneeAngleCurrent
-        hipAngleNew, kneeAngleNew = hipAngleStart, kneeAngleStart
-        crouchStartTime = time.time()
-        crouching = True
-        stopCrouching = False
-    elif crouching:
-        dt = time.time() - crouchStartTime
-        if dt >= crouchDuration:
-            hipAngleNew, kneeAngleNew = hipAngleEnd, kneeAngleEnd
-            crouching = False
-            heightDesiredPrev = heightDesiredNew
+    if leg.getName(serial) == 'Left':
+        if startCrouching and not crouching:
+            leftHipAngleEnd, leftKneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, 'back')
+            leftHipAngleStart, leftKneeAngleStart = hipAngleCurrent, kneeAngleCurrent
+            hipAngleNew, kneeAngleNew = leftHipAngleStart, leftKneeAngleStart
+            crouchStartTime = time.time()
+            crouching = True
+            stopCrouching = False
+        elif crouching:
+            dt = time.time() - crouchStartTime
+            if dt >= crouchDuration:
+                hipAngleNew, kneeAngleNew = leftHipAngleEnd, leftKneeAngleEnd
+                crouching = False
+                heightDesiredPrev = heightDesiredNew
+            else:
+                hipAngleNew = getLinearInterpolationAngle(leftHipAngleStart, leftHipAngleEnd, crouchDuration, dt)
+                kneeAngleNew = getLinearInterpolationAngle(leftKneeAngleStart, leftKneeAngleEnd, crouchDuration, dt)
+                print(f"\nAdjusting Crouch Height - Current: {heightCurrent:.3f}, Desired: {heightDesiredNew:.3f}")
         else:
-            hipAngleNew = getLinearInterpolationAngle(hipAngleStart, hipAngleEnd, crouchDuration, dt)
-            kneeAngleNew = getLinearInterpolationAngle(kneeAngleStart, kneeAngleEnd, crouchDuration, dt)
-            print(f"\nAdjusting Crouch Height - Current: {heightCurrent:.3f}, Desired: {heightDesiredNew:.3f}")
+            hipAngleNew, kneeAngleNew = leftHipAngleEnd, leftKneeAngleEnd
+            heightDesiredPrev = heightDesiredNew
+            print("\nCrouch Height Fixed\n")
 
-    else:
-        hipAngleNew, kneeAngleNew = hipAngleEnd, kneeAngleEnd
-        heightDesiredPrev = heightDesiredNew
-        print("\nCrouch Height Fixed\n")
+    elif leg.getName(serial) == 'Right':
+        if startCrouching and not crouching:
+            rightHipAngleEnd, rightKneeAngleEnd = inverseKinematicsDeg(0.0, -heightDesiredNew, 'front')
+            rightHipAngleStart, rightKneeAngleStart = hipAngleCurrent, kneeAngleCurrent
+            hipAngleNew, kneeAngleNew = rightHipAngleStart, rightKneeAngleStart
+            crouchStartTime = time.time()
+            crouching = True
+            stopCrouching = False
+        elif crouching:
+            dt = time.time() - crouchStartTime
+            if dt >= crouchDuration:
+                hipAngleNew, kneeAngleNew = rightHipAngleEnd, rightKneeAngleEnd
+                crouching = False
+                heightDesiredPrev = heightDesiredNew
+            else:
+                hipAngleNew = getLinearInterpolationAngle(rightHipAngleStart, rightHipAngleEnd, crouchDuration, dt)
+                kneeAngleNew = getLinearInterpolationAngle(rightKneeAngleStart, rightKneeAngleEnd, crouchDuration, dt)
+                print(f"\nAdjusting Crouch Height - Current: {heightCurrent:.3f}, Desired: {heightDesiredNew:.3f}")
+
+        else:
+            hipAngleNew, kneeAngleNew = rightHipAngleEnd, rightKneeAngleEnd
+            heightDesiredPrev = heightDesiredNew
+            print("\nCrouch Height Fixed\n")
 
     return hipAngleNew, kneeAngleNew, heightDesiredPrev, crouching
 

@@ -131,7 +131,10 @@ def sendCmdRcvData(serialPort, ID, kp, kd, q, dq, tau):
 
 # Function to compute output torque
 def calculateOutputTorque(kp, qDesired, qCurrent, kd, dqDesired, dqCurrent, tau):
-    return tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
+    outputTorque = tau + kp * (qDesired - qCurrent) + kd * (dqDesired - dqCurrent)
+    if outputTorque > 30:
+        print(f'[WARNING] Commands result in excessive Toqrue ({outputTorque} Nm) asked of the actuator ')
+    return outputTorque
 
 # Function to output motor data
 def outputData(serial, motorID, qRotorRads, offset, dqRotorRads, torqueNm, temperature, motorError,tau):
@@ -172,7 +175,7 @@ def getOffset(serialPort, motorID, modelledInitialAngle, kp, kd, fix):
     return offset, rawInitialAngle
 
 kpHipCalibration, kpKneeCalibration = 0.0, 0.0
-kdHipCalibration, kdKneeCalibration = 0.2, 0.2
+kdHipCalibration, kdKneeCalibration = 0.25, 0.25
 hipCalibrationFix, kneeCalibrationFix = None, None
 
 def calibrateJointReadings(serialPort):

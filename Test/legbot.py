@@ -26,11 +26,20 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 kpOutWheel, kdOutWheel = 20, 5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
+# Define hip and knee angles for both USB ports
+# USB1
+hip_angle_usb1 = 9.503  # rad
+knee_angle_usb1 = -1.797  # rad
+
+# USB0
+hip_angle_usb0 = 1.672 # rad
+knee_angle_usb0 = 10.259  # rad
+
 # --- Hip and Knee Angles (rad) ---
-hip_angle_left = 9.503
-knee_angle_left = -1.797
-hip_angle_right = 1.672
-knee_angle_right = 10.259
+#hip_angle_left = 9.503
+#knee_angle_left = -1.797
+#hip_angle_right = 1.672
+#knee_angle_right = 10.259
 
 # --- LQR system setup ---
 wheel_radius = 0.05
@@ -72,17 +81,50 @@ dt = 1 / 240
 try:
     while True:
         # --- Set hip and knee angles ---
-        for port, hip_angle, knee_angle in [
-            (left, hip_angle_left, knee_angle_left),
-            (right, hip_angle_right, knee_angle_right)
-        ]:
-            for motor_id, angle in zip([0, 1], [hip_angle, knee_angle]):
-                cmd.id = motor_id
-                cmd.kp = kpRotorWheel
-                cmd.kd = kdRotorWheel
-                cmd.q = angle
-                port.sendRecv(cmd, data)
+        #for port, hip_angle, knee_angle in [
+        #    (left, hip_angle_left, knee_angle_left),
+        #    (right, hip_angle_right, knee_angle_right)
+        #]:
+        #    for motor_id, angle in zip([0, 1], [hip_angle, knee_angle]):
+        #        cmd.id = motor_id
+        #        cmd.kp = kpRotorWheel
+        #        cmd.kd = kdRotorWheel
+        #        cmd.q = angle
+        #        port.sendRecv(cmd, data)
+        # Send commands for USB1 (hip and knee motors)
+        # Setup for USB1 - Hip and Knee Motors
+        cmd.id = 0  # Hip motor ID for USB1
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = hip_angle_usb1  # Command hip angle in radians
+        left.sendRecv(cmd, data)  # Send command to USB1 hip motor
 
+        print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
+
+        cmd.id = 1  # Knee motor ID for USB1
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = knee_angle_usb1  # Command knee angle in radians
+        left.sendRecv(cmd, data)  # Send command to USB1 knee motor
+
+        print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
+
+        # Send commands for USB0 (hip and knee motors)
+        cmd.id = 0  # Hip motor ID for USB0
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = hip_angle_usb0  # Command hip angle in radians
+        right.sendRecv(cmd, data)  # Send command to USB0 hip motor
+
+        print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
+
+        cmd.id = 1  # Knee motor ID for USB0
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = knee_angle_usb0  # Command knee angle in radians
+        right.sendRecv(cmd, data)  # Send command to USB0 knee motor
+
+        print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
         # --- IMU readings ---
         euler = imu.euler
         gyro = imu.gyro

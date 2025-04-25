@@ -10,7 +10,7 @@ from unitree_actuator_sdk import *
 from functionsIMU import *  # Should include getOutputAngleDeg()
 
 # --- Setup motor ---
-serial = SerialPort('/dev/ttyUSB0')
+serial = SerialPort('/dev/ttyUSB1')
 cmd = MotorCmd()
 data = MotorData()
 cmd.id = 2

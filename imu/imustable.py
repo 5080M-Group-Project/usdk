@@ -9,8 +9,8 @@ while True:
     euler = imu.euler
     gyro = imu.gyro
 
-    if gyro and gyro[3] is not None:
-        yawrate = gyro[3]
+    if gyro and gyro[0] is not None:
+        yawrate = gyro[0]
     else:
         yawrate = None
     # Safely handle pitch (euler[2])

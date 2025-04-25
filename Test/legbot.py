@@ -161,9 +161,12 @@ try:
 
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         forward_velocity = 0 #(v_left + v_right) / 2
 =======
+=======
+>>>>>>> Stashed changes
         forward_velocity = (v_left + v_right) / 2
 >>>>>>> Stashed changes
 

@@ -1,12 +1,12 @@
 
-from functions import *
+from functions2 import *
 
 ######## NEEDED??? ########
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 ############################
 
-serial = SerialPort('/dev/ttyUSB0')
+serial = SerialPort('/dev/ttyUSB1')
 
 ##### NOTE 1: All rotor angles in RAD, all output angles in DEG########
 ##### NOTE 2: Whenever reading angles +offset, whenever commanding -offset. Offset in DEG######
@@ -25,9 +25,9 @@ offsetCalibration = False
 #Crouching Initialisation
 crouching = False
 crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.75*crouchHeightMax
-crouchDuration = 0.625 #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
-crouchIncrement = 0.15*crouchHeightMax
+crouchHeightDesiredNew = 0.9*crouchHeightMax ### 0.9 or 0.75
+crouchIncrement = 0.15*crouchHeightMax ### 0.1, 0.15, or 0.2
+crouchDuration = 1.00 ### relative to the above ^, ~0.75s, ~1.25s???, ?????  #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
 
 try:
         while True:
@@ -45,6 +45,9 @@ try:
                 ######<<<<<< MAIN LOOP >>>>>>######
                 hipRotorAngleDesired, kneeRotorAngleDesired = getRotorAngleRad(hipOutputAngleDesired - hipOffset), getRotorAngleRad(kneeOutputAngleDesired - kneeOffset)
                 kpRotorHip, kdRotorHip, kpRotorKnee, kdRotorKnee = chooseRotorGains(crouching)
+
+                print(f"🛠️ Raw Hip Rotor Angle Command (rad): {hipRotorAngleDesired:.4f}")
+                print(f"🛠️ Raw Knee Rotor Angle Command (rad): {kneeRotorAngleDesired:.4f}")
 
                 ###<<< HIP >>>###
                 data = sendCmdRcvData(serial, id.hip, kpRotorHip, kdRotorHip, hipRotorAngleDesired, 0.0, hipTau)
@@ -65,7 +68,7 @@ try:
                 ###<<< CROUCHING CONTROL >>>###
                 crouchHeightDesiredNew = getCrouchCommand(pygame.event.get(),crouchHeightDesiredNew, crouchIncrement)
                 hipOutputAngleDesired, kneeOutputAngleDesired, crouchHeightDesiredPrev, crouching \
-                        = crouchControl('front', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
+                        = crouchControl('back', hipOutputAngleCurrent, kneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouching)
 
                 ###<<< LOOP TIMING >>>###
                 loopTime = time.time() - loopStartTime
@@ -74,9 +77,9 @@ try:
 except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
-        try:
+        #try:
                 ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
-                plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
-                print(f"Error encountered while saving figure: {e}")
-        finally:
-                sys.exit(0)  # Ensure clean exit
+                #plotAndSaveLegData(timeSteps,hipOutputAngles, hipCommandAngles, hipOutputTorque, kneeOutputAngles, kneeCommandAngles, kneeOutputTorque, crouchDuration)
+               # print(f"Error encountered while saving figure: {e}")
+        #finally:
+        sys.exit(0)  # Ensure clean exit

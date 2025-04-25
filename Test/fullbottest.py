@@ -1,5 +1,10 @@
 import time
 import sys
+import pybullet as p
+import numpy as np
+import pybullet_data
+import os
+from scipy.linalg import solve_continuous_are
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *

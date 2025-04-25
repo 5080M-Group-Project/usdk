@@ -155,16 +155,7 @@ try:
             time.sleep(dt)
             continue
 
-        # --- Wheel velocities ---
 
-        for port, side in [(left, 'left'), (right, 'right')]:
-            cmd.id = 2
-            
-            port.sendRecv(cmd, data)
-            if side == 'left':
-                v_left = data.dq
-            else:
-                v_right = data.dq
 
         forward_velocity = (v_left + v_right) / 2
 
@@ -186,13 +177,22 @@ try:
             cmd.id = 2
             cmd.kp = 0
             cmd.kd = 0.3
-            cmd.q = 0
+            
             cmd.dq = vel*9 #gear
             cmd.tau = 0
-            port.sendRecv(cmd, data)
 
+            while not port.sendRecv(cmd, data):
+                print("no data")
+            if port == left:
+                v_left = data.dq
+            else:
+                v_right = data.dq
+
+            forward_velocity = (v_left + v_right) / 2
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
               f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
+
+        # --- Wheel velocities ---
 
         time.sleep(dt)
 

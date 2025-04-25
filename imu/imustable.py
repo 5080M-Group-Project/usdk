@@ -9,8 +9,8 @@ sensor = adafruit_bno055.BNO055_I2C(i2c)
 
 last_val = 0xFFFF
 
-pitch = sensor.euler[2]
-pitchrate = sensor.gyro[2]
+pitch = format(sensor.euler[2])
+pitchrate = format(sensor.gyro[2])
 while True:
 
     print(f"Gyroscope (rad/sec): {pitchrate:.4f}")

@@ -4,7 +4,7 @@ import os
 import csv
 import numpy as np
 import matplotlib.pyplot as plt
-import pygame
+#import pygame
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
@@ -14,8 +14,8 @@ cmd = MotorCmd()
 data = MotorData()
 
 
-pygame.init()
-screen = pygame.display.set_mode((400, 300)) # NEEDED????
+#pygame.init()
+#screen = pygame.display.set_mode((400, 300)) # NEEDED????
 
 
 
@@ -253,12 +253,12 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
 def getCrouchCommand(events,crouchHeightDesiredNew,crouchIncrement):
     global crouchHeightMax
     crouchHeightMin = 0.3*crouchHeightMax
-    for event in events:
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP:
-                crouchHeightDesiredNew += crouchIncrement
-            if event.key == pygame.K_DOWN:
-                crouchHeightDesiredNew -= crouchIncrement
+    #for event in events:
+    #    if event.type == pygame.KEYDOWN:
+    #        if event.key == pygame.K_UP:
+    #            crouchHeightDesiredNew += crouchIncrement
+    #        if event.key == pygame.K_DOWN:
+    #            crouchHeightDesiredNew -= crouchIncrement
 
     crouchHeightDesiredNew = max(crouchHeightMin, min(0.99999*crouchHeightMax, crouchHeightDesiredNew))
     return crouchHeightDesiredNew

@@ -58,7 +58,7 @@ B = np.array([[0, 0],
               [0, 0],
               [1 / (body_mass * wheel_radius), -1 / (body_mass * wheel_radius)]])
 
-Q = np.diag([100, 1, 180, 10])
+Q = np.diag([50, 1, 0, 0]) # Penalties for pitch error, pitch rate, velocity error, and yaw rate error
 R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
@@ -161,7 +161,7 @@ try:
 
 
 
-        forward_velocity = (v_left + v_right) / 2
+        forward_velocity = 0 #(v_left + v_right) / 2
 
         pitch_offset = base_pitch_offset #+ 0.04 * desired_velocity
 
@@ -192,7 +192,7 @@ try:
             else:
                 v_right = data.dq
 
-            forward_velocity = (v_left + v_right) / 2
+            forward_velocity = 0 #(v_left + v_right) / 2
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
               f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
 

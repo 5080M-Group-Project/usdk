@@ -156,13 +156,15 @@ try:
             continue
 
         # --- Wheel velocities ---
+
         for port, side in [(left, 'left'), (right, 'right')]:
             cmd.id = 2
+            
             port.sendRecv(cmd, data)
             if side == 'left':
-                v_left = left_cmd
+                v_left = data.dq
             else:
-                v_right = right_cmd
+                v_right = data.dq
 
         forward_velocity = (v_left + v_right) / 2
 

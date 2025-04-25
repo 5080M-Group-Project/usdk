@@ -1,31 +1,36 @@
-
 import time
 import board
 import adafruit_bno055
 
-i2c = board.I2C()  # uses board.SCL and board.SDA
-# i2c = board.STEMMA_I2C()  # For using the built-in STEMMA QT connector on a microcontroller
+i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
-
-last_val = 0xFFFF
-
 
 while True:
     euler = imu.euler
     gyro = imu.gyro
-    if euler:
+
+    # Safely handle pitch (euler[2])
+    if euler and euler[2] is not None:
         if euler[2] < 0:
-            pitch = -180-(euler[2])
+            pitch = -180 - euler[2]
         else:
-            pitch = 180-(euler[2])
+            pitch = 180 - euler[2]
     else:
         pitch = None
-    if gyro:
-        pitchrate = 10*(gyro[2])
+
+    # Safely handle gyro (gyro[2])
+    if gyro and gyro[2] is not None:
+        pitchrate = 10 * gyro[2]
     else:
         pitchrate = None
-    print(f"Gyroscope (rad/sec): {pitchrate:.2f}")
-    print(f"pitch angle: {pitch:.2f}")
+
+    if pitchrate is not None:
+        print(f"Gyroscope (rad/sec): {pitchrate:.2f}")
+
+
+    if pitch is not None:
+        print(f"Pitch angle: {pitch:.2f}")
+   
 
     print()
-
+    time.sleep(0.05)

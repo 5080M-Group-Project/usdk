@@ -42,12 +42,13 @@ try:
 
     while True:
         euler = imu.euler
-        pitch = euler[1] if euler else None  # Pitch in degrees
-
-        if pitch is None:
-            print("⚠️ IMU is not responding")
-            time.sleep(0.01)
-            continue
+        if euler and euler[2] is not None:
+            if euler[2] < 0:
+                pitch = -180 - euler[2]
+            else:
+                pitch = 180 - euler[2]
+        else:
+            pitch = None
 
 
 

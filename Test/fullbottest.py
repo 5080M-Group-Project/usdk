@@ -39,6 +39,7 @@ try:
         # Send commands for USB1 (hip and knee motors)
         # Setup for USB1 - Hip and Knee Motors
         cmd.id = 0  # Hip motor ID for USB1
+        cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb1  # Command hip angle in radians
@@ -48,6 +49,7 @@ try:
         print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
         cmd.id = 1  # Knee motor ID for USB1
+        cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb1  # Command knee angle in radians

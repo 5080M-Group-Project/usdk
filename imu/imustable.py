@@ -20,7 +20,7 @@ while True:
 
     # Safely handle gyro (gyro[2])
     if gyro and gyro[2] is not None:
-        pitchrate = 1000 * gyro[2]
+        pitchrate = -1 * gyro[2]
     else:
         pitchrate = None
 

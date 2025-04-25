@@ -14,13 +14,13 @@ while True:
     else:
         yawrate = None
     # Safely handle pitch (euler[2])
-    if euler and euler[2] is not None:
-        if euler[2] < 0:
-            pitch = -180 - euler[2]
-        else:
-            pitch = 180 - euler[2]
+    #if euler and euler[2] is not None:
+    if euler[2] < 0:
+        pitch = -180 - euler[2]
     else:
-        pitch = None
+        pitch = 180 - euler[2]
+   # else:
+    #    pitch = None
 
     # Safely handle gyro (gyro[2])
     if gyro and gyro[2] is not None:

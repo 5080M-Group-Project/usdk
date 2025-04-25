@@ -150,7 +150,7 @@ try:
 
         # Read yawrate (not used yet)
         if gyro and gyro[0] is not None:
-            yawrate = 1000 * gyro[0]  # LEFT TURN IS POSITIVE
+            yawrate =  gyro[0]  # LEFT TURN IS POSITIVE
         else:
             yawrate = 0
 

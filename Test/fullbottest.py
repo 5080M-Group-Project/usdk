@@ -76,6 +76,7 @@ try:
         print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
 
         #CONTROL LOOP
+        '''
         cmd.id = 2  # Knee motor ID for USB0
         cmd.kp = 0.0
         cmd.kd = 1.0*100/81
@@ -89,8 +90,7 @@ try:
         cmd.dq = 54.0 # Command knee angle in radians
         left.sendRecv(cmd, data)  # Send command to USB0 knee motor
         angle = data.q
-        print(f"Raw right knee angle reading (radx9):  {angle} ")
-        print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
+        '''
 
 
         # Wait a little before sending the next command

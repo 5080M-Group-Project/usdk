@@ -157,8 +157,15 @@ try:
             continue
 
 
+<<<<<<< Updated upstream
+<<<<<<< Updated upstream
 
         forward_velocity = 0 #(v_left + v_right) / 2
+=======
+=======
+>>>>>>> Stashed changes
+        forward_velocity = (v_left + v_right) / 2
+>>>>>>> Stashed changes
 
         pitch_offset = base_pitch_offset #+ 0.04 * desired_velocity
 

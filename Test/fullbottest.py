@@ -9,7 +9,7 @@ from functions2 import *
 left = SerialPort('/dev/ttyUSB1')
 right = SerialPort('/dev/ttyUSB0')
 # --- Initialize Loop Variables ---
-hipTau, kneeTau = 0.0, 0.0  # Torque
+
 timeSteps = []
 
 # Gain tuning
@@ -37,8 +37,6 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 try:
     while True:
         # Send commands for USB1 (hip and knee motors)
-
-
         # Setup for USB1 - Hip and Knee Motors
         cmd.id = 0  # Hip motor ID for USB1
         cmd.kp = kpRotorWheel
@@ -76,6 +74,11 @@ try:
         angle = data.q
         print(f"Raw right knee angle reading (radx9):  {angle} ")
         print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
+
+        #CONTROL LOOP
+        
+
+
 
         # Wait a little before sending the next command
         time.sleep(0.1)

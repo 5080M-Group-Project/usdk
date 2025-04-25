@@ -3,10 +3,13 @@ import sys
 import numpy as np
 from scipy.linalg import solve_continuous_are
 
+# New IMU imports
+import board
+import adafruit_bno055
+
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 from functions2 import *  # Includes getRotorGains()
-from bno055 import BNO055  # Real IMU
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')   # Left leg: hip(0), knee(1), wheel(2)
@@ -31,10 +34,10 @@ knee_angle_right = 10.259
 
 # --- LQR system setup ---
 wheel_radius = 0.05
-body_mass = 6.37
-robot_height = 0.20
+body_mass = 8.79
+robot_height = 0.175
 g = 9.81
-max_wheel_speed = 20  # rad/s
+max_wheel_speed = 10  # rad/s
 
 A = np.array([[0, 1, 0, 0],
               [0, 0, g / robot_height, 0],
@@ -56,10 +59,12 @@ desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2
 
+left_cmd = 0
+right_cmd = 0
+
 # --- IMU Setup ---
-imu = BNO055(serial_port='/dev/ttyUSB2')
-if not imu.begin():
-    raise RuntimeError("Failed to initialize BNO055")
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Loop Settings ---
 dt = 1 / 240
@@ -79,28 +84,54 @@ try:
                 port.sendRecv(cmd, data)
 
         # --- IMU readings ---
-        pitch, _, _ = imu.read_euler()
-        pitch_rate = imu.read_gyro()[1]
+        euler = imu.euler
+        gyro = imu.gyro
+
+        # Pitch (euler[2])
+        if euler and euler[2] is not None:
+            if euler[2] < 0:
+                pitch = -180 - euler[2]
+            else:
+                pitch = 180 - euler[2]
+        else:
+            pitch = None
+
+        # Pitch rate (gyro[2])
+        if gyro and gyro[2] is not None:
+            pitch_rate = -1 * gyro[2]
+        else:
+            pitch_rate = None
+
+        # Read yawrate (not used yet)
+        if gyro and gyro[0] is not None:
+            yawrate = 1000 * gyro[0]  # LEFT TURN IS POSITIVE
+        else:
+            yawrate = 0
+
+        # Skip loop if sensor failed
+        if pitch is None or pitch_rate is None:
+            time.sleep(dt)
+            continue
 
         # --- Wheel velocities ---
         for port, side in [(left, 'left'), (right, 'right')]:
             cmd.id = 2
             port.sendRecv(cmd, data)
             if side == 'left':
-                v_left = data.dq * wheel_radius
+                v_left = left_cmd
             else:
-                v_right = data.dq * wheel_radius
+                v_right = right_cmd
 
         forward_velocity = (v_left + v_right) / 2
-        yaw_rate = (v_right - v_left) / wheel_separation
-        pitch_offset = base_pitch_offset + 0.04 * desired_velocity
+
+        pitch_offset = base_pitch_offset #+ 0.04 * desired_velocity
 
         # --- LQR control ---
         state = np.array([
             np.radians(pitch),
             np.radians(pitch_rate),
             forward_velocity,
-            yaw_rate
+            yawrate
         ])
         control = -K @ (state - np.array([pitch_offset, 0, desired_velocity, desired_yaw_rate]))
         control = np.clip(control, -max_wheel_speed, max_wheel_speed)
@@ -112,7 +143,7 @@ try:
             cmd.kp = 0
             cmd.kd = 0.3
             cmd.q = 0
-            cmd.dq = vel
+            cmd.dq = vel*9 #gear
             cmd.tau = 0
             port.sendRecv(cmd, data)
 

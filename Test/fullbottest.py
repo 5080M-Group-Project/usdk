@@ -1,8 +1,5 @@
 import time
 import sys
-import numpy as np
-import os
-from scipy.linalg import solve_continuous_are
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *

@@ -20,7 +20,7 @@ while True:
 
     # Safely handle gyro (gyro[2])
     if gyro and gyro[2] is not None:
-        pitchrate = 10 * gyro[2]
+        pitchrate = 1000 * gyro[2]
     else:
         pitchrate = None
 
@@ -30,7 +30,7 @@ while True:
 
     if pitch is not None:
         print(f"Pitch angle: {pitch:.2f}")
-   
+
 
     print()
     time.sleep(0.05)

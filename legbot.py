@@ -1,54 +1,41 @@
 import time
-import math
 import sys
-import board
-import busio
-import adafruit_bno055
 import numpy as np
 from scipy.linalg import solve_continuous_are
 
-# === UNITREE SDK ===
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
+from functions2 import *  # Includes getRotorGains()
+from bno055 import BNO055  # Real IMU
 
-# === IMU SETUP ===
-i2c = board.I2C()
-imu = adafruit_bno055.BNO055_I2C(i2c)
+# --- Setup Serial Communication ---
+left = SerialPort('/dev/ttyUSB1')   # Left leg: hip(0), knee(1), wheel(2)
+right = SerialPort('/dev/ttyUSB0')  # Right leg: hip(0), knee(1), wheel(2)
 
-# === MOTOR SETUP ===
-serial = SerialPort('/dev/ttyUSB0')
+# --- Command and Data Structs ---
+cmd = MotorCmd()
+data = MotorData()
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
-# Joint IDs (update if needed)
-LEFT_WHEEL = 1
-RIGHT_WHEEL = 2
-HIP_JOINT = 3
-KNEE_JOINT = 4
+# --- Gain tuning ---
+kpOutWheel, kdOutWheel = 20, 5
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
-# Create command and data objects
-motors = {}
-for motor_id in [LEFT_WHEEL, RIGHT_WHEEL, HIP_JOINT, KNEE_JOINT]:
-    cmd = MotorCmd()
-    data = MotorData()
-    cmd.id = motor_id
-    cmd.motorType = MotorType.A1
-    data.motorType = MotorType.A1
-    cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
-    cmd.q = 0.0
-    cmd.dq = 0.0
-    cmd.tau = 0.0
-    cmd.kp = 0.0
-    cmd.kd = 0.0
-    motors[motor_id] = {'cmd': cmd, 'data': data}
+# --- Hip and Knee Angles (rad) ---
+hip_angle_left = 9.503
+knee_angle_left = -1.797
+hip_angle_right = 1.672
+knee_angle_right = 10.259
 
-# === ROBOT PARAMETERS ===
-wheel_radius = 0.05  # meters
-body_mass = 6.37  # kg
-robot_height = 0.20  # meters
+# --- LQR system setup ---
+wheel_radius = 0.05
+body_mass = 6.37
+robot_height = 0.20
 g = 9.81
-max_wheel_speed = 20.0  # rad/s
-base_pitch_offset = 0.07  # radians
+max_wheel_speed = 20  # rad/s
 
-# === LQR SETUP ===
 A = np.array([[0, 1, 0, 0],
               [0, 0, g / robot_height, 0],
               [0, 0, 0, 1],
@@ -64,86 +51,76 @@ R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-# === CONTROL TARGETS ===
-desired_velocity = 0.0  # m/s
-desired_yaw_rate = 0.0  # rad/s
-desired_hip_angle = 0.0  # rad
-desired_knee_angle = 0.0  # rad
+base_pitch_offset = 0.07
+desired_velocity = 0.0
+desired_yaw_rate = 0.0
+wheel_separation = 0.2
 
-# === FUNCTION TO SEND POSITION COMMAND ===
-def send_position_command(joint_id, target_angle):
-    cmd = motors[joint_id]['cmd']
-    cmd.q = target_angle
-    cmd.dq = 0.0
-    cmd.tau = 0.0
-    cmd.kp = 25.0
-    cmd.kd = 1.0
-    serial.sendRecv(cmd, motors[joint_id]['data'])
+# --- IMU Setup ---
+imu = BNO055(serial_port='/dev/ttyUSB2')
+if not imu.begin():
+    raise RuntimeError("Failed to initialize BNO055")
 
-# === FUNCTION TO SEND WHEEL SPEED COMMAND ===
-def send_wheel_speed(joint_id, speed):
-    cmd = motors[joint_id]['cmd']
-    cmd.q = 0.0
-    cmd.dq = speed
-    cmd.tau = 0.0
-    cmd.kp = 0.0
-    cmd.kd = 0.5
-    serial.sendRecv(cmd, motors[joint_id]['data'])
-
-# === LQR CONTROL ===
-def lqr_control(state, velocity_ref, yaw_ref, pitch_offset):
-    error = np.array([
-        state[0] - pitch_offset,
-        state[1],
-        state[2] - velocity_ref,
-        state[3] - yaw_ref
-    ])
-    control = -K @ error
-    return np.clip(control, -max_wheel_speed, max_wheel_speed)
-
-# === MAIN LOOP ===
-print("🟢 LQR Balancing Started")
-loop_dt = 1 / 240
-last_pitch = 0.0
-last_time = time.time()
+# --- Loop Settings ---
+dt = 1 / 240
 
 try:
     while True:
-        current_time = time.time()
-        dt = current_time - last_time
-        last_time = current_time
+        # --- Set hip and knee angles ---
+        for port, hip_angle, knee_angle in [
+            (left, hip_angle_left, knee_angle_left),
+            (right, hip_angle_right, knee_angle_right)
+        ]:
+            for motor_id, angle in zip([0, 1], [hip_angle, knee_angle]):
+                cmd.id = motor_id
+                cmd.kp = kpRotorWheel
+                cmd.kd = kdRotorWheel
+                cmd.q = angle
+                port.sendRecv(cmd, data)
 
-        euler = imu.euler
-        pitch_deg = euler[1] if euler else None
-        if pitch_deg is None:
-            print("⚠️ IMU not responding")
-            time.sleep(0.01)
-            continue
+        # --- IMU readings ---
+        pitch, _, _ = imu.read_euler()
+        pitch_rate = imu.read_gyro()[1]
 
-        pitch = math.radians(pitch_deg)
-        pitch_rate = imu.gyro[1] if imu.gyro else 0.0
-        yaw_rate = imu.gyro[2] if imu.gyro else 0.0
+        # --- Wheel velocities ---
+        for port, side in [(left, 'left'), (right, 'right')]:
+            cmd.id = 2
+            port.sendRecv(cmd, data)
+            if side == 'left':
+                v_left = data.dq * wheel_radius
+            else:
+                v_right = data.dq * wheel_radius
 
-        forward_velocity = (pitch - last_pitch) / dt
-        last_pitch = pitch
-
-        # Adjust pitch offset dynamically
+        forward_velocity = (v_left + v_right) / 2
+        yaw_rate = (v_right - v_left) / wheel_separation
         pitch_offset = base_pitch_offset + 0.04 * desired_velocity
 
-        # LQR controller
-        state = np.array([pitch, pitch_rate, forward_velocity, yaw_rate])
-        left_speed, right_speed = lqr_control(state, desired_velocity, desired_yaw_rate, pitch_offset)
+        # --- LQR control ---
+        state = np.array([
+            np.radians(pitch),
+            np.radians(pitch_rate),
+            forward_velocity,
+            yaw_rate
+        ])
+        control = -K @ (state - np.array([pitch_offset, 0, desired_velocity, desired_yaw_rate]))
+        control = np.clip(control, -max_wheel_speed, max_wheel_speed)
+        left_cmd, right_cmd = control
 
-        # Send commands to wheels
-        send_wheel_speed(LEFT_WHEEL, -left_speed)
-        send_wheel_speed(RIGHT_WHEEL, -right_speed)
+        # --- Send wheel commands (ID 2) ---
+        for port, vel in [(left, -left_cmd), (right, -right_cmd)]:
+            cmd.id = 2
+            cmd.kp = 0
+            cmd.kd = 0.3
+            cmd.q = 0
+            cmd.dq = vel
+            cmd.tau = 0
+            port.sendRecv(cmd, data)
 
-        # Send static joint positions
-        send_position_command(HIP_JOINT, desired_hip_angle)
-        send_position_command(KNEE_JOINT, desired_knee_angle)
+        print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
+              f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
 
-        print(f"Pitch: {pitch_deg:+.2f}°, Vel: {forward_velocity:.2f}, L: {left_speed:.2f}, R: {right_speed:.2f}")
-        time.sleep(loop_dt)
+        time.sleep(dt)
 
 except KeyboardInterrupt:
-    print("🛑 Balancing stopped.")
+    print("\nLoop stopped by user.")
+    sys.exit(0)

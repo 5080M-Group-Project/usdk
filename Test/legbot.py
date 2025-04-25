@@ -183,7 +183,7 @@ try:
             cmd.kd = 0.3
 
             cmd.dq = vel*9 #gear
-           
+
 
             while not port.sendRecv(cmd, data):
                 print("no data")

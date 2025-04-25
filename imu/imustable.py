@@ -21,7 +21,7 @@ while True:
     else:
         pitch = None
     if gyro:
-        pitchrate = (gyro[2])
+        pitchrate = 10*(gyro[2])
     else:
         pitchrate = None
     print(f"Gyroscope (rad/sec): {pitchrate:.2f}")

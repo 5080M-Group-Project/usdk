@@ -1,0 +1,199 @@
+import time
+import sys
+import numpy as np
+from scipy.linalg import solve_continuous_are
+
+# New IMU imports
+import board
+import adafruit_bno055
+
+sys.path.append('../lib')
+from unitree_actuator_sdk import *
+from functions2 import *  # Includes getRotorGains()
+
+# --- Setup Serial Communication ---
+left = SerialPort('/dev/ttyUSB1')   # Left leg: hip(0), knee(1), wheel(2)
+right = SerialPort('/dev/ttyUSB0')  # Right leg: hip(0), knee(1), wheel(2)
+
+# --- Command and Data Structs ---
+cmd = MotorCmd()
+data = MotorData()
+cmd.motorType = MotorType.A1
+data.motorType = MotorType.A1
+cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
+
+# --- Gain tuning ---
+kpOutWheel, kdOutWheel = 20, 5
+kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
+
+# Define hip and knee angles for both USB ports
+# USB1
+hip_angle_usb1 = 9.503  # rad
+knee_angle_usb1 = -1.797  # rad
+
+# USB0
+hip_angle_usb0 = 1.672 # rad
+knee_angle_usb0 = 10.259  # rad
+
+# --- Hip and Knee Angles (rad) ---
+#hip_angle_left = 9.503
+#knee_angle_left = -1.797
+#hip_angle_right = 1.672
+#knee_angle_right = 10.259
+
+# --- LQR system setup ---
+wheel_radius = 0.05
+body_mass = 8.79
+robot_height = 0.175
+g = 9.81
+max_wheel_speed = 10  # rad/s
+
+A = np.array([[0, 1, 0, 0],
+              [0, 0, g / robot_height, 0],
+              [0, 0, 0, 1],
+              [0, 0, 0, 0]])
+
+B = np.array([[0, 0],
+              [1 / (body_mass * wheel_radius ** 2), 1 / (body_mass * wheel_radius ** 2)],
+              [0, 0],
+              [1 / (body_mass * wheel_radius), -1 / (body_mass * wheel_radius)]])
+
+Q = np.diag([100, 1, 180, 10])
+R = np.diag([0.1, 0.1])
+P = solve_continuous_are(A, B, Q, R)
+K = np.linalg.inv(R) @ B.T @ P
+
+base_pitch_offset = 0.07
+desired_velocity = 0.0
+desired_yaw_rate = 0.0
+wheel_separation = 0.2
+
+left_cmd = 0
+right_cmd = 0
+
+# --- IMU Setup ---
+i2c = board.I2C()
+imu = adafruit_bno055.BNO055_I2C(i2c)
+
+# --- Loop Settings ---
+dt = 1 / 240
+
+try:
+    while True:
+        # --- Set hip and knee angles ---
+        #for port, hip_angle, knee_angle in [
+        #    (left, hip_angle_left, knee_angle_left),
+        #    (right, hip_angle_right, knee_angle_right)
+        #]:
+        #    for motor_id, angle in zip([0, 1], [hip_angle, knee_angle]):
+        #        cmd.id = motor_id
+        #        cmd.kp = kpRotorWheel
+        #        cmd.kd = kdRotorWheel
+        #        cmd.q = angle
+        #        port.sendRecv(cmd, data)
+        # Send commands for USB1 (hip and knee motors)
+        # Setup for USB1 - Hip and Knee Motors
+        cmd.id = 0  # Hip motor ID for USB1
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = hip_angle_usb1  # Command hip angle in radians
+        left.sendRecv(cmd, data)  # Send command to USB1 hip motor
+
+        print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
+
+        cmd.id = 1  # Knee motor ID for USB1
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = knee_angle_usb1  # Command knee angle in radians
+        left.sendRecv(cmd, data)  # Send command to USB1 knee motor
+
+        print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
+
+        # Send commands for USB0 (hip and knee motors)
+        cmd.id = 0  # Hip motor ID for USB0
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = hip_angle_usb0  # Command hip angle in radians
+        right.sendRecv(cmd, data)  # Send command to USB0 hip motor
+
+        print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
+
+        cmd.id = 1  # Knee motor ID for USB0
+        cmd.kp = kpRotorWheel
+        cmd.kd = kdRotorWheel
+        cmd.q = knee_angle_usb0  # Command knee angle in radians
+        right.sendRecv(cmd, data)  # Send command to USB0 knee motor
+
+        print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
+        # --- IMU readings ---
+        euler = imu.euler
+        gyro = imu.gyro
+
+        # Pitch (euler[2])
+        if euler and euler[2] is not None:
+            if euler[2] < 0:
+                pitch = -180 - euler[2]
+            else:
+                pitch = 180 - euler[2]
+        else:
+            pitch = None
+
+        # Pitch rate (gyro[2])
+        if gyro and gyro[2] is not None:
+            pitch_rate = -1 * gyro[2]
+        else:
+            pitch_rate = None
+
+        # Read yawrate (not used yet)
+        if gyro and gyro[0] is not None:
+            yawrate = 1000 * gyro[0]  # LEFT TURN IS POSITIVE
+        else:
+            yawrate = 0
+
+        # Skip loop if sensor failed
+        if pitch is None or pitch_rate is None:
+            time.sleep(dt)
+            continue
+
+        # --- Wheel velocities ---
+        for port, side in [(left, 'left'), (right, 'right')]:
+            cmd.id = 2
+            port.sendRecv(cmd, data)
+            if side == 'left':
+                v_left = left_cmd
+            else:
+                v_right = right_cmd
+
+        forward_velocity = (v_left + v_right) / 2
+
+        pitch_offset = base_pitch_offset #+ 0.04 * desired_velocity
+
+        # --- LQR control ---
+        state = np.array([
+            np.radians(pitch),
+            np.radians(pitch_rate),
+            forward_velocity,
+            yawrate
+        ])
+        control = -K @ (state - np.array([pitch_offset, 0, desired_velocity, desired_yaw_rate]))
+        control = np.clip(control, -max_wheel_speed, max_wheel_speed)
+        left_cmd, right_cmd = control
+
+        # --- Send wheel commands (ID 2) ---
+        for port, vel in [(left, -left_cmd), (right, -right_cmd)]:
+            cmd.id = 2
+            cmd.kp = 0
+            cmd.kd = 0.3
+            cmd.q = 0
+            cmd.dq = vel*9 #gear
+            cmd.tau = 0
+            port.sendRecv(cmd, data)
+
+        print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
+              f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
+
+        time.sleep(dt)
+
+except KeyboardInterrupt:
+    print("\nLoop stopped by user.")
+    sys.exit(0)

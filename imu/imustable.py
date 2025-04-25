@@ -13,8 +13,8 @@ last_val = 0xFFFF
 while True:
     pitch = sensor.euler[2]
     pitchrate = sensor.gyro[2]
-    print(f"Gyroscope (rad/sec): {pitchrate:.4f}")
-    print(f"pitch angle: {pitch:.4f}")
+    print(f"Gyroscope (rad/sec): {pitchrate:.2f}")
+    print(f"pitch angle: {pitch:.2f}")
 
     print()
 

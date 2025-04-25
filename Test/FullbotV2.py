@@ -19,23 +19,25 @@ leftHipOutputAngles, leftHipCommandAngles, leftHipOutputTorque, leftKneeOutputAn
 rightHipOutputAngles, rightHipCommandAngles, rightHipOutputTorque, rightKneeOutputAngles, rightKneeCommandAngles, rightKneeOutputTorque = [], [], [], [], [], []
 
 
-#NEEDED?
-leftHipOffset, leftKneeOffset = 0.0, 0.0
-rightHipOffset, rightKneeOffset = 0.0, 0.0
 hipTau, kneeTau = 0.0, 0.0
 
+# Calibration Variables
 offsetCalibration = False
+leftHipOffset, leftKneeOffset = 0.0, 0.0
+rightHipOffset, rightKneeOffset = 0.0, 0.0
 
-#Crouching Initialisation
+
+# Crouching Initialisation
 crouchingLeft, crouchingRight = False, False
-crouchHeightDesiredPrev = crouchHeightMax
-crouchHeightDesiredNew = 0.9*crouchHeightMax ### 0.9 or 0.75
+crouchHeightDesiredPrevLeft, crouchHeightDesiredPrevRight = crouchHeightMax, crouchHeightMax
+crouchHeightDesiredNewLeft, crouchHeightDesiredNewRight = 0.9*crouchHeightMax, 0.9*crouchHeightMax ### 0.9 or 0.75
 crouchIncrement = 0.15*crouchHeightMax ### 0.1, 0.15, or 0.2
 crouchDuration = 1.00 ### relative to the above ^, ~0.75s, ~1.25s???, ?????  #### MOVE TO FUNCTIONS, MAKE GLOBAL WHERE NEEDED
 
 try:
         while True:
                 while not offsetCalibration:  ### & other
+                        ######<<<<<< CALIBRATION >>>>>>######
                         leftHipOffset, leftKneeOffset, leftHipOutputAngleDesired, leftKneeOutputAngleDesired, leftOffsetCalibration = calibrateJointReadings(leftLeg)
                         rightHipOffset, rightKneeOffset, rightHipOutputAngleDesired, rightKneeOutputAngleDesired, rightOffsetCalibration = calibrateJointReadings(rightLeg)
                         offsetCalibration = (leftOffsetCalibration and rightOffsetCalibration)
@@ -45,56 +47,65 @@ try:
                         if offsetCalibration:
                                 globalStartTime = time.time()
 
+                ######<<<<<< TIMING >>>>>>######
                 loopStartTime = time.time()
                 elapsedTime = loopStartTime - globalStartTime
                 timeSteps.append(elapsedTime)
 
-                ######<<<<<< MAIN LOOP >>>>>>######
+
+                ######<<<<<< GET INPUTS >>>>>>######
+                #<<< LEFT LEG >>>#
                 leftHipRotorAngleDesired, leftKneeRotorAngleDesired = getRotorAngleRad(leftHipOutputAngleDesired - leftHipOffset), getRotorAngleRad(leftKneeOutputAngleDesired - leftKneeOffset)
                 kpRotorHipLeft, kdRotorHipLeft, kpRotorKneeLeft, kdRotorKneeLeft = chooseRotorGains(crouchingLeft)
                 print(f'\n RAW INPUT - Left:  Hip: {leftHipRotorAngleDesired:.3f}, Knee: {leftKneeRotorAngleDesired:.3f}')
 
+                # <<< RIGHT LEG >>>#
                 rightHipRotorAngleDesired, rightKneeRotorAngleDesired = getRotorAngleRad(rightHipOutputAngleDesired - rightHipOffset), getRotorAngleRad(rightKneeOutputAngleDesired - rightKneeOffset)
                 kpRotorHipRight, kdRotorHipRight, kpRotorKneeRight, kdRotorKneeRight = chooseRotorGains(crouchingRight)
                 print(f'\n RAW INPUT - Right:  Hip: {rightHipRotorAngleDesired:.3f}, Knee: {rightKneeRotorAngleDesired:.3f}')
 
-                ###<<< LEFT HIP >>>###
+
+                ######<<<<<< COMMAND & DATA >>>>>>######
+                #<<< LEFT HIP >>>#
                 data = sendCmdRcvData(leftLeg, id.hip, kpRotorHipLeft, kdRotorHipLeft, leftHipRotorAngleDesired, 0.0, hipTau)
                 leftHipOutputAngleCurrent = getOutputAngleDeg(data.q) + leftHipOffset
                 hipTorque = calculateOutputTorque(kpRotorHipLeft, leftHipRotorAngleDesired, data.q, kdRotorHipLeft, 0.0, data.dq, hipTau)
                 outputData(leftLeg, id.hip, data.q, leftHipOffset, data.dq, hipTorque, data.temp, data.merror,hipTau)
                 leftHipOutputAngles.append(leftHipOutputAngleCurrent), leftHipCommandAngles.append(leftHipOutputAngleDesired), leftHipOutputTorque.append(hipTorque)
 
-                ###<<< LEFT KNEE >>>###
+                #<<< LEFT KNEE >>>#
                 data = sendCmdRcvData(leftLeg, id.knee, kpRotorKneeLeft, kdRotorKneeLeft, leftKneeRotorAngleDesired,0.0, kneeTau)
                 leftKneeOutputAngleCurrent = getOutputAngleDeg(data.q) + leftKneeOffset
                 kneeTorque = calculateOutputTorque(kpRotorKneeLeft, leftKneeRotorAngleDesired, data.q, kdRotorKneeLeft, 0.0, data.dq, kneeTau)
                 outputData(leftLeg, id.knee, data.q, leftKneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 leftKneeOutputAngles.append(leftKneeOutputAngleCurrent), leftKneeCommandAngles.append(leftKneeOutputAngleDesired), leftKneeOutputTorque.append(kneeTorque)
 
-                ###<<< RIGHT HIP >>>###
+                #<<< RIGHT HIP >>>#
                 data = sendCmdRcvData(rightLeg, id.hip, kpRotorHipRight, kdRotorHipRight, rightHipRotorAngleDesired, 0.0, hipTau)
                 rightHipOutputAngleCurrent = getOutputAngleDeg(data.q) + rightHipOffset
                 hipTorque = calculateOutputTorque(kpRotorHipRight, rightHipRotorAngleDesired, data.q, kdRotorHipRight, 0.0, data.dq, hipTau), outputData(rightLeg, id.hip, data.q, rightHipOffset, data.dq, hipTorque, data.temp, data.merror, hipTau)
                 rightHipOutputAngles.append(rightHipOutputAngleCurrent), rightHipCommandAngles.append(rightHipOutputAngleDesired), rightHipOutputTorque.append(hipTorque)
 
-                ###<<< RIGHT KNEE >>>###
+                #<<< RIGHT KNEE >>>#
                 data = sendCmdRcvData(rightLeg, id.knee, kpRotorKneeRight, kdRotorKneeRight, rightKneeRotorAngleDesired, 0.0, kneeTau)
                 rightKneeOutputAngleCurrent = getOutputAngleDeg(data.q) + rightKneeOffset
                 kneeTorque = calculateOutputTorque(kpRotorKneeRight, rightKneeRotorAngleDesired, data.q, kdRotorKneeRight, 0.0, data.dq, kneeTau)
                 outputData(rightLeg, id.knee, data.q, rightKneeOffset, data.dq, kneeTorque, data.temp, data.merror, kneeTau)
                 rightKneeOutputAngles.append(rightKneeOutputAngleCurrent), rightKneeCommandAngles.append(rightKneeOutputAngleDesired), rightKneeOutputTorque.append(kneeTorque)
 
-                ###<<< CROUCHING CONTROL >>>###
-                crouchHeightDesiredNew = getCrouchCommand(pygame.event.get(), crouchHeightDesiredNew, crouchIncrement)
 
-                leftHipOutputAngleDesired, leftKneeOutputAngleDesired, crouchHeightDesiredPrev, crouchingLeft \
-                        = crouchControl(leftLeg, leftHipOutputAngleCurrent, leftKneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouchingLeft)
+                ######<<<<<< CROUCHING >>>>>>######
+                #<<< LEFT LEG >>>#
+                crouchHeightDesiredNewLeft = getCrouchCommand(pygame.event.get(), crouchHeightDesiredNewLeft, crouchIncrement)
+                leftHipOutputAngleDesired, leftKneeOutputAngleDesired, crouchHeightDesiredPrevLeft, crouchingLeft \
+                        = crouchControl(leftLeg, leftHipOutputAngleCurrent, leftKneeOutputAngleCurrent, crouchHeightDesiredPrevLeft, crouchHeightDesiredNewLeft, crouchDuration, crouchingLeft)
 
-                rightHipOutputAngleDesired, rightKneeOutputAngleDesired, crouchHeightDesiredPrev, crouchingRight \
-                        = crouchControl(rightLeg, rightHipOutputAngleCurrent, rightKneeOutputAngleCurrent, crouchHeightDesiredPrev, crouchHeightDesiredNew, crouchDuration, crouchingRight)
+                #<<< RIGHT LEG >>>#
+                crouchHeightDesiredNewRight = getCrouchCommand(pygame.event.get(), crouchHeightDesiredNewRight, crouchIncrement)
+                rightHipOutputAngleDesired, rightKneeOutputAngleDesired, crouchHeightDesiredPrevRight, crouchingRight \
+                        = crouchControl(rightLeg, rightHipOutputAngleCurrent, rightKneeOutputAngleCurrent, crouchHeightDesiredPrevRight, crouchHeightDesiredNewRight, crouchDuration, crouchingRight)
 
-                ###<<< LOOP TIMING >>>###
+                ######<<<<<< TIMING >>>>>>######
                 loopTime = time.time() - loopStartTime
                 print(f"Loop Time: {loopTime}\n")
 

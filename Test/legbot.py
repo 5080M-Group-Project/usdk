@@ -177,7 +177,7 @@ try:
         left_cmd, right_cmd = control
 
         # --- Send wheel commands (ID 2) ---
-        for port, vel in [(left, -left_cmd), (right, -right_cmd)]:
+        for port, vel in [(left, -left_cmd), (right, right_cmd)]:
             cmd.id = 2
             cmd.kp = 0
             cmd.kd = 0.9

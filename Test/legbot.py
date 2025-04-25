@@ -68,8 +68,8 @@ desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2
 
-left_cmd = 0
-right_cmd = 0
+v_left = 0
+v_right = 0
 
 # --- IMU Setup ---
 i2c = board.I2C()
@@ -180,7 +180,7 @@ try:
         for port, vel in [(left, -left_cmd), (right, -right_cmd)]:
             cmd.id = 2
             cmd.kp = 0
-            cmd.kd = 0.3
+            cmd.kd = 0.9
 
             cmd.dq = vel*9 #gear
 

@@ -296,6 +296,7 @@ def getCrouchCommand(events,crouchHeightDesiredNew,crouchIncrement):
                 crouchHeightDesiredNew -= crouchIncrement
 
     crouchHeightDesiredNew = max(crouchHeightMin, min(0.99999*crouchHeightMax, crouchHeightDesiredNew))
+    #crouchHeightDesiredNew = np.clip(crouchHeightDesiredNew, crouchHeightMin, crouchHeightMax*0.99999)
     return crouchHeightDesiredNew
 
 def getLinearInterpolationAngle(startAngle, desiredAngle, T, t):

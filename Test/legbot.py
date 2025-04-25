@@ -134,25 +134,22 @@ try:
         gyro = imu.gyro
 
         # Pitch (euler[2])
-        if euler and euler[2] is not None:
-            if euler[2] < 0:
-                pitch = -180 - euler[2]
-            else:
-                pitch = 180 - euler[2]
+
+        if euler[2] < 0:
+            pitch = -180 - euler[2]
         else:
-            pitch = None
+            pitch = 180 - euler[2]
+
 
         # Pitch rate (gyro[2])
-        if gyro and gyro[2] is not None:
-            pitch_rate = -1 * gyro[2]
-        else:
-            pitch_rate = None
+
+        pitch_rate = -1 * gyro[2]
+
 
         # Read yawrate (not used yet)
-        if gyro and gyro[0] is not None:
-            yawrate =  gyro[0]  # LEFT TURN IS POSITIVE
-        else:
-            yawrate = 0
+
+        yawrate =  gyro[0]  # LEFT TURN IS POSITIVE
+
 
         # Skip loop if sensor failed
         if pitch is None or pitch_rate is None:

@@ -13,7 +13,10 @@ last_val = 0xFFFF
 while True:
     euler = imu.euler
     gyro = imu.gyro
-    pitch = 180-(euler[2]) if euler else None
+    if euler[2] < 0:
+        pitch = -180-(euler[2])  if euler else None
+    else:
+        pitch = 180-(euler[2]) if euler else None
     pitchrate = (gyro[2]) if gyro else None
     print(f"Gyroscope (rad/sec): {pitchrate:.2f}")
     print(f"pitch angle: {pitch:.2f}")

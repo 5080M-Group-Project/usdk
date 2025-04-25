@@ -10,7 +10,7 @@ while True:
     gyro = imu.gyro
 
     if gyro and gyro[0] is not None:
-        yawrate = gyro[0]
+        yawrate = 1000*gyro[0]
     else:
         yawrate = None
     # Safely handle pitch (euler[2])

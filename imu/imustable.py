@@ -9,6 +9,10 @@ while True:
     euler = imu.euler
     gyro = imu.gyro
 
+    if gyro and gyro[3] is not None:
+        yawrate = gyro[3]
+    else:
+        yawrate = None
     # Safely handle pitch (euler[2])
     if euler and euler[2] is not None:
         if euler[2] < 0:
@@ -30,7 +34,8 @@ while True:
 
     if pitch is not None:
         print(f"Pitch angle: {pitch:.2f}")
-
+    if yawrate is not None:
+        print(f"Yawrate: {yawrate:.2f}")
 
     print()
     time.sleep(0.05)

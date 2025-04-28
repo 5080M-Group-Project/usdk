@@ -75,7 +75,7 @@ max_wheel_speed = 20  # rad/s
 
 A = np.array([[0, 1, 0, 0],
               [-g/robot_height, 0, -wheel_radius / robot_height, 0],
-              [0, 0, 0, 0]
+              [0, 0, 0, 0],
               [0, 0, 0, 0]])
 
 B = np.array([[0, 0],

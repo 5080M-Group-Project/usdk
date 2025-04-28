@@ -2,10 +2,22 @@ import time
 import sys
 import board
 import adafruit_bno055
+import os
+import contextlib
 
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 from functions2 import *
+
+@contextlib.contextmanager
+def suppress_stdout():
+    with open(os.devnull, 'w') as devnull:
+        old_stdout = sys.stdout
+        sys.stdout = devnull
+        try:
+            yield
+        finally:
+            sys.stdout = old_stdout
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')
@@ -48,7 +60,9 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb1  # Command hip angle in radians
-        left.sendRecv(cmd, data)  # Send command to USB1 hip motor
+        with suppress_stdout():
+            left.sendRecv(cmd, data)
+
         angle = data.q
         #print(f"Raw left hip angle reading (radx9):  {angle} ")
         #print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
@@ -58,7 +72,9 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb1  # Command knee angle in radians
-        left.sendRecv(cmd, data)  # Send command to USB1 knee motor
+        with suppress_stdout():
+            left.sendRecv(cmd, data)
+
         angle = data.q
         #print(f"Raw left knee angle reading (radx9):  {angle} ")
         #print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
@@ -68,7 +84,9 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb0  # Command hip angle in radians
-        right.sendRecv(cmd, data)  # Send command to USB0 hip motor
+        with suppress_stdout():
+            right.sendRecv(cmd, data)
+
         angle = data.q
         #print(f"Raw right hip angle reading (radx9):  {angle} ")
         #print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
@@ -77,7 +95,9 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb0  # Command knee angle in radians
-        right.sendRecv(cmd, data)  # Send command to USB0 knee motor
+        with suppress_stdout():
+            right.sendRecv(cmd, data)
+
         angle = data.q
         #print(f"Raw right knee angle reading (radx9):  {angle} ")
         #print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
@@ -88,16 +108,20 @@ try:
         cmd.kp = 0.0
         cmd.kd = 1.0*100/81
         cmd.dq = -54.0  # Command knee angle in radians
-        right.sendRecv(cmd, data)  # Send command to USB0 knee motor
+        with suppress_stdout():
+            right.sendRecv(cmd, data)
+
         angle = data.q
         
         cmd.id = 2  # Knee motor ID for USB1
         cmd.kp = 0.0
         cmd.kd = 0.9
         cmd.dq = 54.0 # Command knee angle in radians
-        left.sendRecv(cmd, data)  # Send command to USB0 knee motor
+        with suppress_stdout():
+            left.sendRecv(cmd, data)
+
         angle = data.q
-        
+
         euler = imu.euler
         if euler[2] is not None:
             if euler[2] < 0:
@@ -109,7 +133,7 @@ try:
         print(f"Pitch:  {pitch} ")
 
         # Wait a little before sending the next command
-        time.sleep(0.1)
+        time.sleep(0)
 
 except KeyboardInterrupt:
     print("\nLoop stopped by user.")

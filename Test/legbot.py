@@ -63,7 +63,7 @@ R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-base_pitch_offset = 0.0
+base_pitch_offset = 0.07
 desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2
@@ -77,7 +77,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Loop Settings ---
 dt = 1 / 240
-pitch = 0.087
+pitch = 0
 try:
     while True:
         # --- Set hip and knee angles ---

@@ -68,7 +68,7 @@ wheel_radius = 0.05
 body_mass = 8.79
 robot_height = 0.175
 g = 9.81
-max_wheel_speed = 54  # rad/s
+max_wheel_speed = 20  # rad/s
 
 A = np.array([[0, 1, 0, 0],
               [0, 0, g / robot_height, 0],

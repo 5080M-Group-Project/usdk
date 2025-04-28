@@ -184,9 +184,9 @@ try:
             cmd.kd = 0.9
 
             cmd.dq = vel*9 #gear
-        
-            #while not port.sendRecv(cmd, data):
-            #    print("no data")
+
+            while not port.sendRecv(cmd, data):
+                print("no data")
             if port == left:
                 v_left = data.dq
             else:

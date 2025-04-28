@@ -185,7 +185,7 @@ try:
 
 
 
-        forward_velocity = 0 #(v_left + v_right) / 2
+        forward_velocity = (v_left + v_right) / 2
 
         #forward_velocity = (v_left + v_right) / 2
 
@@ -218,7 +218,7 @@ try:
                 else:
                     v_right = data.dq
 
-            forward_velocity = 0 #(v_left + v_right) / 2
+            #forward_velocity = 0 #(v_left + v_right) / 2
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
               f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
 

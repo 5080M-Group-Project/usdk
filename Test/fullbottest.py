@@ -9,21 +9,25 @@ sys.path.append('../lib')
 from unitree_actuator_sdk import *
 from functions2 import *
 
+# Open once at program start
+_devnull = open(os.devnull, 'w')
+
 @contextlib.contextmanager
 def suppress_stdout_stderr():
-    """Suppress C-level stdout and stderr (e.g., from C libraries like Unitree SDK)."""
-    with open(os.devnull, 'w') as devnull:
-        old_stdout_fd = os.dup(1)
-        old_stderr_fd = os.dup(2)
+    """Suppress C-level stdout and stderr."""
+    old_stdout_fd = os.dup(1)
+    old_stderr_fd = os.dup(2)
 
-        os.dup2(devnull.fileno(), 1)  # Redirect stdout (fd 1)
-        os.dup2(devnull.fileno(), 2)  # Redirect stderr (fd 2)
+    os.dup2(_devnull.fileno(), 1)  # Redirect stdout
+    os.dup2(_devnull.fileno(), 2)  # Redirect stderr
 
-        try:
-            yield
-        finally:
-            os.dup2(old_stdout_fd, 1)  # Restore stdout
-            os.dup2(old_stderr_fd, 2)  # Restore stderr
+    try:
+        yield
+    finally:
+        os.dup2(old_stdout_fd, 1)  # Restore stdout
+        os.dup2(old_stderr_fd, 2)  # Restore stderr
+        os.close(old_stdout_fd)
+        os.close(old_stderr_fd)
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')

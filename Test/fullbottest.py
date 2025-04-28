@@ -97,7 +97,8 @@ try:
         cmd.dq = 54.0 # Command knee angle in radians
         left.sendRecv(cmd, data)  # Send command to USB0 knee motor
         angle = data.q
-
+        
+        euler = imu.euler
         if euler[2] is not None:
             if euler[2] < 0:
                 pitch = -180 - euler[2]

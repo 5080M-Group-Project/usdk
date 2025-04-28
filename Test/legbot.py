@@ -2,6 +2,8 @@ import time
 import sys
 import numpy as np
 from scipy.linalg import solve_continuous_are
+import os
+import contextlib
 
 # New IMU imports
 import board
@@ -10,6 +12,26 @@ import adafruit_bno055
 sys.path.append('../lib')
 from unitree_actuator_sdk import *
 from functions2 import *  # Includes getRotorGains()
+
+# Open once at program start
+_devnull = open(os.devnull, 'w')
+
+@contextlib.contextmanager
+def suppress_stdout_stderr():
+    """Suppress C-level stdout and stderr."""
+    old_stdout_fd = os.dup(1)
+    old_stderr_fd = os.dup(2)
+
+    os.dup2(_devnull.fileno(), 1)  # Redirect stdout
+    os.dup2(_devnull.fileno(), 2)  # Redirect stderr
+
+    try:
+        yield
+    finally:
+        os.dup2(old_stdout_fd, 1)  # Restore stdout
+        os.dup2(old_stderr_fd, 2)  # Restore stderr
+        os.close(old_stdout_fd)
+        os.close(old_stderr_fd)
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')   # Left leg: hip(0), knee(1), wheel(2)
@@ -63,7 +85,7 @@ R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-base_pitch_offset = 0.087
+base_pitch_offset = 0.118
 desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2
@@ -98,18 +120,20 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb1  # Command hip angle in radians
-        left.sendRecv(cmd, data)  # Send command to USB1 hip motor
+        with suppress_stdout_stderr():
+            left.sendRecv(cmd, data)
 
-        print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
+        #print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
         cmd.id = 1  # Knee motor ID for USB1
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb1  # Command knee angle in radians
-        left.sendRecv(cmd, data)  # Send command to USB1 knee motor
+        with suppress_stdout_stderr():
+            left.sendRecv(cmd, data)
 
-        print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
+        #print(f"USB1 - Knee Commanded Angle (rad): {knee_angle_usb1}")
 
         # Send commands for USB0 (hip and knee motors)
         cmd.id = 0  # Hip motor ID for USB0
@@ -117,18 +141,20 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb0  # Command hip angle in radians
-        right.sendRecv(cmd, data)  # Send command to USB0 hip motor
+        with suppress_stdout_stderr():
+            right.sendRecv(cmd, data)
 
-        print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
+        #print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
 
         cmd.id = 1  # Knee motor ID for USB0
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb0  # Command knee angle in radians
-        right.sendRecv(cmd, data)  # Send command to USB0 knee motor
+        with suppress_stdout_stderr():
+            right.sendRecv(cmd, data)
 
-        print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
+        #print(f"USB0 - Knee Commanded Angle (rad): {knee_angle_usb0}")
         # --- IMU readings ---
         euler = imu.euler
         gyro = imu.gyro
@@ -184,13 +210,13 @@ try:
             cmd.kd = 0.9
 
             cmd.dq = vel*9 #gear
-
-            while not port.sendRecv(cmd, data):
-                print("no data")
-            if port == left:
-                v_left = data.dq
-            else:
-                v_right = data.dq
+            with suppress_stdout_stderr():
+                while not port.sendRecv(cmd, data):
+                    print("no data")
+                if port == left:
+                    v_left = data.dq
+                else:
+                    v_right = data.dq
 
             forward_velocity = 0 #(v_left + v_right) / 2
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "

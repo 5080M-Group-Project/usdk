@@ -85,7 +85,7 @@ R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-base_pitch_offset = 0.9
+base_pitch_offset = 0.09
 desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2

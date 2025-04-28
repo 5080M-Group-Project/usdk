@@ -80,12 +80,12 @@ B = np.array([[0, 0],
               [0, 0],
               [1 / (body_mass * wheel_radius), -1 / (body_mass * wheel_radius)]])
 
-Q = np.diag([50, 1, 0, 0]) # Penalties for pitch error, pitch rate, velocity error, and yaw rate error
+Q = np.diag([1000, 1, 0, 0]) # Penalties for pitch error, pitch rate, velocity error, and yaw rate error
 R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-base_pitch_offset = 5
+base_pitch_offset = 0.8
 desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2

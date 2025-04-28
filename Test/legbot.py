@@ -88,7 +88,7 @@ R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
 
-base_pitch_offset = 0.08 # decreasing makes drift more backward, increasing causes foward drift
+base_pitch_offset = 0.06 # decreasing makes drift more backward, increasing causes foward drift
 desired_velocity = 0.0
 desired_yaw_rate = 0.0
 wheel_separation = 0.2

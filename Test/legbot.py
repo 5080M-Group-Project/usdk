@@ -48,6 +48,9 @@ cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 kpOutWheel, kdOutWheel = 30, 5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
+
+gearRatio = queryGearRatio(MotorType.A1)
+
 # Define hip and knee angles for both USB ports
 # USB1
 hip_angle_usb1 = 9.503  # rad
@@ -80,7 +83,7 @@ B = np.array([[0, 0],
               [0, 0],
               [1 / (body_mass * wheel_radius), -1 / (body_mass * wheel_radius)]])
 
-Q = np.diag([1000, 1, 0, 0]) # Penalties for pitch error, pitch rate, velocity error, and yaw rate error
+Q = np.diag([2000, 1, 0, 0]) # Penalties for pitch error, pitch rate, velocity error, and yaw rate error
 R = np.diag([0.1, 0.1])
 P = solve_continuous_are(A, B, Q, R)
 K = np.linalg.inv(R) @ B.T @ P
@@ -210,14 +213,14 @@ try:
             cmd.kp = 0
             cmd.kd = 0.1
 
-            cmd.dq = vel*9 #gear
+            cmd.dq = vel*9.1 #gear
             with suppress_stdout_stderr():
                 while not port.sendRecv(cmd, data):
                     print("no data")
                 if port == left:
-                    v_left = data.dq
+                    v_left = (data.dq)/9.1
                 else:
-                    v_right = data.dq
+                    v_right = (data.dq)/9.1
 
             #forward_velocity = 0 #(v_left + v_right) / 2
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "

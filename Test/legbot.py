@@ -77,7 +77,7 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Loop Settings ---
 dt = 1 / 240
-pitch = 0
+pitch = 0.07
 try:
     while True:
         # --- Set hip and knee angles ---

@@ -215,7 +215,7 @@ try:
         for port, vel in [(left, -left_cmd), (right, right_cmd)]:
             cmd.id = 2
             cmd.kp = 0
-            cmd.kd = 0.3
+            cmd.kd = 0.1
             #cmd.tau = 5
             cmd.dq = vel*9.1 #gear
             with suppress_stdout_stderr():

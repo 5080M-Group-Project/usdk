@@ -161,11 +161,11 @@ try:
 
         # Pitch (euler[2])
         if euler[2] is not None:
-            if abs(euler[2])<100:
-                if euler[2] < 0:
-                    pitch = -180 - euler[2]
-                else:
-                    pitch = 180 - euler[2]
+            #if abs(euler[2])<100:
+            if euler[2] < 0:
+                pitch = -180 - euler[2]
+            else:
+                pitch = 180 - euler[2]
         else:
             pitch = pitch
 

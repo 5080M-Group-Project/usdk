@@ -113,7 +113,7 @@ try:
         cmd.id = 2  # Knee motor ID for USB0
         cmd.kp = 0.0
         cmd.kd = 1.0*100/81
-        cmd.dq = -54.0  # Command knee angle in radians
+        cmd.dq = 0 #-54.0  # Command knee angle in radians
         with suppress_stdout_stderr():
             right.sendRecv(cmd, data)
 
@@ -122,7 +122,7 @@ try:
         cmd.id = 2  # Knee motor ID for USB1
         cmd.kp = 0.0
         cmd.kd = 0.9
-        cmd.dq = 54.0 # Command knee angle in radians
+        cmd.dq = 0 #54.0 # Command knee angle in radians
         with suppress_stdout_stderr():
             left.sendRecv(cmd, data)
 

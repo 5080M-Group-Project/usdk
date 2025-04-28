@@ -98,7 +98,7 @@ i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
 
 # --- Loop Settings ---
-dt = 1 / 500
+dt = 1 / 1000
 pitch = 0
 try:
     while True:
@@ -161,10 +161,11 @@ try:
 
         # Pitch (euler[2])
         if euler[2] is not None:
-            if euler[2] < 0:
-                pitch = -180 - euler[2]
-            else:
-                pitch = 180 - euler[2]
+            if abs(euler[2])<100:
+                if euler[2] < 0:
+                    pitch = -180 - euler[2]
+                else:
+                    pitch = 180 - euler[2]
         else:
             pitch = pitch
 

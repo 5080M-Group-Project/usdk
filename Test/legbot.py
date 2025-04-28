@@ -45,7 +45,7 @@ data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
 # --- Gain tuning ---
-kpOutWheel, kdOutWheel = 20, 5
+kpOutWheel, kdOutWheel = 30, 5
 kpRotorWheel, kdRotorWheel = getRotorGains(kpOutWheel, kdOutWheel)
 
 # Define hip and knee angles for both USB ports

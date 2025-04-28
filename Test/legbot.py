@@ -134,12 +134,13 @@ try:
         gyro = imu.gyro
 
         # Pitch (euler[2])
-
-        if euler[2] < 0:
-            pitch = -180 - euler[2]
+        if euler[2] is not None:
+            if euler[2] < 0:
+                pitch = -180 - euler[2]
+            else:
+                pitch = 180 - euler[2]
         else:
-            pitch = 180 - euler[2]
-
+            pitch = pitch
 
         # Pitch rate (gyro[2])
 

@@ -119,6 +119,7 @@ try:
         # Send commands for USB1 (hip and knee motors)
         # Setup for USB1 - Hip and Knee Motors
         cmd.id = 0  # Hip motor ID for USB1
+        cmd.tau = 0
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
@@ -129,6 +130,7 @@ try:
         #print(f"USB1 - Hip Commanded Angle (rad): {hip_angle_usb1}")
 
         cmd.id = 1  # Knee motor ID for USB1
+        cmd.tau = 0
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
@@ -140,6 +142,7 @@ try:
 
         # Send commands for USB0 (hip and knee motors)
         cmd.id = 0  # Hip motor ID for USB0
+        cmd.tau = 0
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
@@ -150,6 +153,7 @@ try:
         #print(f"USB0 - Hip Commanded Angle (rad): {hip_angle_usb0}")
 
         cmd.id = 1  # Knee motor ID for USB0
+        cmd.tau = 0
         cmd.dq = 0
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel

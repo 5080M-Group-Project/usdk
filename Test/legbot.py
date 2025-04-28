@@ -185,7 +185,7 @@ try:
 
 
 
-        forward_velocity = (v_left + v_right) / 2
+        forward_velocity = 0#(v_left + v_right) / 2
 
         #forward_velocity = (v_left + v_right) / 2
 

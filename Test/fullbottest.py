@@ -10,14 +10,20 @@ from unitree_actuator_sdk import *
 from functions2 import *
 
 @contextlib.contextmanager
-def suppress_stdout():
+def suppress_stdout_stderr():
+    """Suppress C-level stdout and stderr (e.g., from C libraries like Unitree SDK)."""
     with open(os.devnull, 'w') as devnull:
-        old_stdout = sys.stdout
-        sys.stdout = devnull
+        old_stdout_fd = os.dup(1)
+        old_stderr_fd = os.dup(2)
+
+        os.dup2(devnull.fileno(), 1)  # Redirect stdout (fd 1)
+        os.dup2(devnull.fileno(), 2)  # Redirect stderr (fd 2)
+
         try:
             yield
         finally:
-            sys.stdout = old_stdout
+            os.dup2(old_stdout_fd, 1)  # Restore stdout
+            os.dup2(old_stderr_fd, 2)  # Restore stderr
 
 # --- Setup Serial Communication ---
 left = SerialPort('/dev/ttyUSB1')
@@ -60,7 +66,7 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb1  # Command hip angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             left.sendRecv(cmd, data)
 
         angle = data.q
@@ -72,7 +78,7 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb1  # Command knee angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             left.sendRecv(cmd, data)
 
         angle = data.q
@@ -84,7 +90,7 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = hip_angle_usb0  # Command hip angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             right.sendRecv(cmd, data)
 
         angle = data.q
@@ -95,7 +101,7 @@ try:
         cmd.kp = kpRotorWheel
         cmd.kd = kdRotorWheel
         cmd.q = knee_angle_usb0  # Command knee angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             right.sendRecv(cmd, data)
 
         angle = data.q
@@ -108,7 +114,7 @@ try:
         cmd.kp = 0.0
         cmd.kd = 1.0*100/81
         cmd.dq = -54.0  # Command knee angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             right.sendRecv(cmd, data)
 
         angle = data.q
@@ -117,7 +123,7 @@ try:
         cmd.kp = 0.0
         cmd.kd = 0.9
         cmd.dq = 54.0 # Command knee angle in radians
-        with suppress_stdout():
+        with suppress_stdout_stderr():
             left.sendRecv(cmd, data)
 
         angle = data.q

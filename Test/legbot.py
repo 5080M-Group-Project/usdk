@@ -212,7 +212,7 @@ try:
             cmd.id = 2
             cmd.kp = 0
             cmd.kd = 0.1
-
+            cmd.tau = 5
             cmd.dq = vel*9.1 #gear
             with suppress_stdout_stderr():
                 while not port.sendRecv(cmd, data):

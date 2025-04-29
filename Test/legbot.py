@@ -190,17 +190,15 @@ try:
 
         yawrate =  gyro[0]  # LEFT TURN IS POSITIVE
 
+        pitchLog.append(pitch)
+        pitchRateLog.append(pitch_rate)
+        yawLog.append(0.0)
+        yawRateLog.append(yawrate)
 
         # Skip loop if sensor failed
         if pitch is None or pitch_rate is None:
             time.sleep(dt)
             continue
-
-
-        pitchLog.append(pitch)
-        pitchRateLog.append(pitch_rate)
-        yawLog.append(0.0)
-        yawRateLog.append(yawrate)
 
 
         forward_velocity = 0#(v_left + v_right) / 2

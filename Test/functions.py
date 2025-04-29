@@ -99,8 +99,8 @@ def getRotorGains(kpOutput, kdOutput):
     kdRotor = (kdOutput / (gearRatio * gearRatio)) * 100.0
     return kpRotor, kdRotor
 
-kpOutputMoving, kdOutputMoving = 15.0, 2.0
-kpOutputFixed, kdOutputFixed = 20.0, 0.8
+kpOutputMoving, kdOutputMoving = 20.0, 2.0
+kpOutputFixed, kdOutputFixed = 25.0, 0.8
 
 class rotorGains:
 

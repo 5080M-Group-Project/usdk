@@ -101,10 +101,10 @@ try:
 except KeyboardInterrupt:
         ### Command everything to 0?
         print("\nLoop stopped by user. Saving figure...")
-        #try:
+        try:
                 ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
-                #plotAndSaveLegData(leftLeg, timeSteps, leftHipOutputAngles, leftHipCommandAngles, leftHipOutputTorque, leftKneeOutputAngles, leftKneeCommandAngles, leftKneeOutputTorque, crouchDuration)
-                #plotAndSaveLegData(rightLeg, timeSteps, rightHipOutputAngles, rightHipCommandAngles, rightHipOutputTorque, rightKneeOutputAngles, rightKneeCommandAngles, rightKneeOutputTorque, crouchDuration)
-                #print(f"Error encountered while saving figure: {e}")
-        #finally:
+                plotAndSaveLegData(leftLeg, timeSteps, leftHipOutputAngles, leftHipCommandAngles, leftHipOutputTorque, leftKneeOutputAngles, leftKneeCommandAngles, leftKneeOutputTorque, crouchDuration)
+                plotAndSaveLegData(rightLeg, timeSteps, rightHipOutputAngles, rightHipCommandAngles, rightHipOutputTorque, rightKneeOutputAngles, rightKneeCommandAngles, rightKneeOutputTorque, crouchDuration)
+                print(f"Error encountered while saving figure: {e}")
+        finally:
         sys.exit(0)  # Ensure clean exit

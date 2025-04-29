@@ -432,7 +432,7 @@ def plotAndSaveBalanceData(timeSteps, leftWheelOutputW, leftWheelCommandW, leftW
     plt.grid()
 
     # Base name for figure and CSV
-    base_name = f"BalanceData_Time_{timeSteps[0]:.1f}_to_{timeSteps[-1]:.1f}"
+    base_name = f"BalanceData_Time_{timeSteps[0]:.1f}_to_{timeSteps[1]:.1f}"
 
     # Save the figure
     figure_filename = f"{base_name}.png"

@@ -96,6 +96,9 @@ wheel_separation = 0.2
 v_left = 0
 v_right = 0
 
+wOutLeftLog, wOutRightLog, wCmdLeftLog, wCmdRightLog, tLeftLog, tRightLog = [],[],[],[],[],[]
+timeSteps, pitchLog, pitchRateLog, yawLog, yawRateLog = [], [], [], [], []
+
 # --- IMU Setup ---
 i2c = board.I2C()
 imu = adafruit_bno055.BNO055_I2C(i2c)
@@ -105,6 +108,7 @@ dt = 1 / 500
 pitch = 0
 try:
     while True:
+        startTime = time.time()
         # --- Set hip and knee angles ---
         #for port, hip_angle, knee_angle in [
         #    (left, hip_angle_left, knee_angle_left),
@@ -185,6 +189,10 @@ try:
 
         yawrate =  gyro[0]  # LEFT TURN IS POSITIVE
 
+        pitchLog.append(pitch)
+        pitchRateLog.append(pitch_rate)
+        yawLog.append(0.0)
+        yawRateLog.append(yawrate)
 
         # Skip loop if sensor failed
         if pitch is None or pitch_rate is None:
@@ -230,10 +238,24 @@ try:
         print(f"Pitch: {pitch:.2f}°, Rate: {pitch_rate:.2f}°/s, "
               f"Vel: {forward_velocity:.2f} m/s | L: {left_cmd:.2f}, R: {right_cmd:.2f}")
 
+        wOutLeftLog.append(v_left)
+        wOutRightLog.append(v_right)
+        wCmdLeftLog.append(-left_cmd*9.1)
+        wCmdRightLog.append(right_cmd*9.1)
+        tLeftLog.append(0.0)
+        tRightLog.append(0.0)
         # --- Wheel velocities ---
 
         time.sleep(dt)
+        timeSteps.append(time.time()-startTime)
 
 except KeyboardInterrupt:
     print("\nLoop stopped by user.")
-    sys.exit(0)
+    try:
+        ### ADD SERIAL INPUT TO DIFFERENTIATE LEFT AND RIGHT
+        plotAndSaveBalanceData(timeSteps, wOutLeftLog, wCmdLeftLog, tLeftLog,wOutRightLog, wCmdRightLog, tRightLog, pitchLog, pitchRateLog, yawLog, yawRateLog)
+        print(f"Error encountered while saving figure: {e}")
+    finally:
+        sys.exit(0)  # Ensure clean exit
+
+

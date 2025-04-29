@@ -382,6 +382,78 @@ def find_f710():
     print("Logitech F710 not found. Ensure it is connected and in DirectInput mode.")
     exit()
 
+import sys
+import matplotlib.pyplot as plt
+import csv
+
+def plotAndSaveBalanceData(timeSteps, leftWheelOutputW, leftWheelCommandW, leftWheelOutputT, rightWheelOutputW, rightWheelCommandW, rightWheelOutput, pitch, pitchRate, yaw, yawRate):
+    # Ensure all lists have the same length
+    min_length = min(len(timeSteps), len(leftWheelOutputW), len(leftWheelCommandW), len(leftWheelOutputT),
+                     len(rightWheelOutputW), len(rightWheelCommandW), len(rightWheelOutput), len(pitch), len(pitchRate), len(yaw), len(yawRate))
+
+    if min_length == 0:
+        print("No data collected. Exiting without saving.")
+        sys.exit(0)  # Exit safely if no data
+
+    # Truncate lists to the minimum length
+    timeSteps = timeSteps[:min_length]
+    leftWheelOutputW = leftWheelOutputW[:min_length]
+    leftWheelCommandW = leftWheelCommandW[:min_length]
+    leftWheelOutputT = leftWheelOutputT[:min_length]
+    rightWheelOutputW = rightWheelOutputW[:min_length]
+    rightWheelCommandW = rightWheelCommandW[:min_length]
+    rightWheelOutput = rightWheelOutput[:min_length]
+    pitch = pitch[:min_length]
+    pitchRate = pitchRate[:min_length]
+    yaw = yaw[:min_length]
+    yawRate = yawRate[:min_length]
+
+    # Plotting
+    plt.figure()
+
+    # Plot wheel outputs and commands
+    plt.plot(timeSteps, leftWheelOutputW, label='Left Wheel Output (W)')
+    plt.plot(timeSteps, leftWheelCommandW, label='Left Wheel Command (W)')
+    plt.plot(timeSteps, leftWheelOutputT, label='Left Wheel Output Torque (Nm)')
+    plt.plot(timeSteps, rightWheelOutputW, label='Right Wheel Output (W)')
+    plt.plot(timeSteps, rightWheelCommandW, label='Right Wheel Command (W)')
+    plt.plot(timeSteps, rightWheelOutput, label='Right Wheel Output Torque (Nm)')
+
+    # Plot pitch and yaw data
+    plt.plot(timeSteps, pitch, label='Pitch (deg)')
+    plt.plot(timeSteps, pitchRate, label='Pitch Rate (deg/s)')
+    plt.plot(timeSteps, yaw, label='Yaw (deg)')
+    plt.plot(timeSteps, yawRate, label='Yaw Rate (deg/s)')
+
+    plt.xlabel('Time (s)')
+    plt.ylabel('Value')
+    plt.title('Wheeled Biped Balance Data Over Time')
+    plt.legend(loc='best')
+    plt.grid()
+
+    # Base name for figure and CSV
+    base_name = f"BalanceData_Time_{timeSteps[0]:.1f}_to_{timeSteps[-1]:.1f}"
+
+    # Save the figure
+    figure_filename = f"{base_name}.png"
+    plt.savefig(figure_filename, dpi=300)
+    print(f"Figure saved as {figure_filename}")
+
+    # Save the data as CSV
+    csv_filename = f"{base_name}.csv"
+    with open(csv_filename, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['Time (s)', 'Left Wheel Output (W)', 'Left Wheel Command (W)', 'Left Wheel Output Torque (Nm)',
+                         'Right Wheel Output (W)', 'Right Wheel Command (W)', 'Right Wheel Output Torque (Nm)',
+                         'Pitch (deg)', 'Pitch Rate (deg/s)', 'Yaw (deg)', 'Yaw Rate (deg/s)'])
+        for t, lwOutW, lwCmdW, lwOutT, rwOutW, rwCmdW, rwOut, p, pRate, y, yRate in zip(timeSteps, leftWheelOutputW, leftWheelCommandW, leftWheelOutputT,
+                                                                                    rightWheelOutputW, rightWheelCommandW, rightWheelOutput, pitch, pitchRate, yaw, yawRate):
+            writer.writerow([t, lwOutW, lwCmdW, lwOutT, rwOutW, rwCmdW, rwOut, p, pRate, y, yRate])
+
+    print(f"Data saved as {csv_filename}")
+
+    # Close the plot
+    plt.close()
 
 #####<<<<<OLD CROUCH CODE>>>>####
 '''

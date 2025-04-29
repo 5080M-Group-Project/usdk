@@ -97,7 +97,7 @@ v_left = 0
 v_right = 0
 
 wOutLeftLog, wOutRightLog, wCmdLeftLog, wCmdRightLog, tLeftLog, tRightLog = [],[],[],[],[],[]
-timeSteps, pitchLog, pitchRateLog, yawLog, yawRateLog = [], [], [], [], []
+timeSteps, pitchLog, pitchRateLog, yawLog, yawRateLog = [0], [], [], [], []
 
 # --- IMU Setup ---
 i2c = board.I2C()
@@ -106,9 +106,10 @@ imu = adafruit_bno055.BNO055_I2C(i2c)
 # --- Loop Settings ---
 dt = 1 / 500
 pitch = 0
+
+startTime = time.time()
 try:
     while True:
-        startTime = time.time()
         # --- Set hip and knee angles ---
         #for port, hip_angle, knee_angle in [
         #    (left, hip_angle_left, knee_angle_left),

@@ -410,7 +410,7 @@ def plotAndSaveLegData(serial, timeSteps, hipOutputAngles, hipCommandAngles, hip
     plt.xlabel('Time (s)')
     plt.ylabel('Angle (deg)')
     plt.title(f'{leg.getName(serial)} Hip and Knee Angles Over Time')
-    plt.legend(loc='south outside')
+    plt.legend(loc='best')
     plt.grid()
 
     # Base name for figure and CSV
@@ -477,7 +477,7 @@ def plotAndSaveBalanceData(timeSteps, leftWheelOutputW, leftWheelCommandW, leftW
     plt.xlabel('Time (s)')
     plt.ylabel('Value')
     plt.title('Wheeled Biped Balance Data Over Time')
-    plt.legend(loc='south outside')
+    plt.legend(loc='best')
     plt.grid()
 
     # Base name for figure and CSV

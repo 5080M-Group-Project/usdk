@@ -241,8 +241,8 @@ try:
 
         wOutLeftLog.append(v_left)
         wOutRightLog.append(v_right)
-        wCmdLeftLog.append(-left_cmd*9.1)
-        wCmdRightLog.append(right_cmd*9.1)
+        wCmdLeftLog.append(-left_cmd)
+        wCmdRightLog.append(right_cmd)
         tLeftLog.append(0.0)
         tRightLog.append(0.0)
         # --- Wheel velocities ---

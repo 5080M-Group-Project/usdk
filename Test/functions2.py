@@ -428,7 +428,7 @@ def plotAndSaveBalanceData(timeSteps, leftWheelOutputW, leftWheelCommandW, leftW
     plt.xlabel('Time (s)')
     plt.ylabel('Value')
     plt.title('Wheeled Biped Balance Data Over Time')
-    plt.legend(loc='best')
+    plt.legend(loc='south outside')
     plt.grid()
 
     # Base name for figure and CSV

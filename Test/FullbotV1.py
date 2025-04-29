@@ -107,4 +107,4 @@ except KeyboardInterrupt:
                 plotAndSaveLegData(rightLeg, timeSteps, rightHipOutputAngles, rightHipCommandAngles, rightHipOutputTorque, rightKneeOutputAngles, rightKneeCommandAngles, rightKneeOutputTorque, crouchDuration)
                 print(f"Error encountered while saving figure: {e}")
         finally:
-        sys.exit(0)  # Ensure clean exit
+                sys.exit(0)  # Ensure clean exit

@@ -19,7 +19,7 @@ cmd.motorType = MotorType.A1
 data.motorType = MotorType.A1
 cmd.mode = queryMotorMode(MotorType.A1, MotorMode.FOC)
 
-gearRatio = queryGearRatio(MotorType.A1)
+gearRatio = queryGearRatio(MotorType.A1) #9.1 for A1 Motor
 
 # Global variables for crouching state
 crouchHeightMax = 0.33
@@ -260,13 +260,15 @@ def inverseKinematicsDeg(xdes, ydes, kneeDir):
     # Define link lengths
     L1 = 0.165  # Length of link 1
     L2 = 0.165  # Length of link 2
-    if np.sqrt(xdes ** 2 + ydes ** 2) > L1 + L2:
+
+    C = np.sqrt(xdes ** 2 + ydes ** 2)
+    if C > L1 + L2:
         print("\nOut of range!\n")
         return None, None
 
     # Calculate intermediate angles
     beta = np.arccos((L1**2 + L2**2 - xdes**2 - ydes**2) / (2 * L1 * L2))
-    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * np.sqrt(xdes**2 + ydes**2)))
+    alpha = np.arccos((xdes**2 + ydes**2 + L1**2 - L2**2) / (2 * L1 * C))
     gamma = np.arctan2(ydes, xdes)
 
     # Handle kneeDir input

@@ -100,7 +100,7 @@ def getRotorGains(kpOutput, kdOutput):
     return kpRotor, kdRotor
 
 kpOutputMoving, kdOutputMoving = 15.0, 2.0
-kpOutputFixed, kdOutputFixed = 22.5, 0.8
+kpOutputFixed, kdOutputFixed = 30, 0.8
 
 class rotorGains:
 
@@ -164,7 +164,6 @@ def outputData(serial, motorID, qRotorRads, offset, dqRotorRads, torqueNm, tempe
         print(f"Temperature: {temperature}")
         print(f"ISSUE? {motorError}")
         print("\n")
-
 
 def getOffset(serialPort, motorID, modelledInitialAngle, kp, kd, fix):
     """Calibrate a motor and return its offset and initial raw angle."""
@@ -245,7 +244,7 @@ def calibrateJointReadings(serialPort):
     print(f"\nRaw Initial Angles ({leg.getName(serialPort)} Leg) - Hip: {hipAngleInitialRaw:.6f}, Knee: {kneeAngleInitialRaw:.6f}\n")
     return hipOffset, kneeOffset, None, None, False
 
-def forwardKinematicsDeg(thetaHip, thetaKnee):
+def forwardKinematicsDeg(thetaHip, thetaKnee, frame):
     L1 = 0.165  # Length of link 1
     L2 = 0.165  # Length of link 2
 
@@ -254,7 +253,11 @@ def forwardKinematicsDeg(thetaHip, thetaKnee):
 
     yWheel = yKnee + L2*np.sin(thetaKnee + thetaHip)
     xWheel = xKnee + L2*np.cos(thetaKnee + thetaHip)
-    return xWheel, yWheel
+
+    if frame.lower() == "wheel":
+        return xWheel, yWheel
+    elif frame.lower() == "knee":
+        return xKnee, yKnee
 
 def inverseKinematicsDeg(xdes, ydes, kneeDir):
     # Define link lengths
@@ -313,7 +316,7 @@ def crouchControl(serial ,hipAngleCurrent, kneeAngleCurrent, heightDesiredPrev, 
     global startCrouching, stopCrouching, crouchStartTime
 
     # Estimate current crouch height from FK
-    xWheel, yWheel = forwardKinematicsDeg(hipAngleCurrent, kneeAngleCurrent)
+    xWheel, yWheel = forwardKinematicsDeg(hipAngleCurrent, kneeAngleCurrent, "wheel")
     heightCurrent = abs(yWheel)
 
     startCrouching = (heightDesiredNew != heightDesiredPrev)
@@ -375,6 +378,96 @@ def chooseRotorGains(crouching):
     else:
         # Return fixed gains if not crouching
         return rotor.hip.fixed.kp, rotor.hip.fixed.kd, rotor.knee.fixed.kp, rotor.knee.fixed.kd
+
+# link lengths (m)
+legLinkLength1 = 0.165
+legLinkLength2 = 0.165
+
+# masses (kg)
+actuatorMass     = 0.5        # same motor/gearbox at hip, knee, wheel hub
+link1Mass        = 1.2
+link2Mass        = 1.0
+connectorMass    = 0.1        # mass of the wheel–leg connector
+wheelBodyMass    = 0.3        # just the wheel rim/tyre/etc.
+mainBodyMass     = 8.0        # robot’s torso/frame mass
+
+# COM offset fractions along each link (0 = at proximal joint, 1 = at distal joint)
+link1ComOffset = 0.5
+link2ComOffset = 0.5
+
+# lateral distance between the two hip joints (m)
+legSeparation = 0.4
+
+# wheel assembly mass
+wheelMass = actuatorMass + connectorMass + wheelBodyMass
+
+
+def computeLegCom(qHip: float, qKnee: float) -> tuple[float, float]:
+    """
+    Compute the (x,y) CoM of one planar 2R leg+wheel,
+    measured from that hip joint in its sagittal plane.\
+
+    IGNORES LEG DEPTH; uses forwardKinematicsDeg for joint positions
+    """
+    # hip at origin
+    rHip = np.array([0.0, 0.0])
+
+    # get knee position via updated FK
+    xKnee, yKnee = forwardKinematicsDeg(qHip, qKnee, "knee")
+    rKnee = np.array([xKnee, yKnee])
+
+    # get wheel position via updated FK
+    xWheel, yWheel = forwardKinematicsDeg(qHip, qKnee, "wheel")
+    rWheel = np.array([xWheel, yWheel])
+
+    # link-1 COM at fraction along thigh
+    link1_com = link1ComOffset * rKnee
+
+    # link-2 COM at fraction along shank
+    link2_com = rKnee + link2ComOffset * (rWheel - rKnee)
+
+    # mass-weighted sum of all point masses
+    S = (
+        actuatorMass * rHip
+      + link1Mass    * link1_com
+      + actuatorMass * rKnee
+      + link2Mass    * link2_com
+      + wheelMass    * rWheel
+    )
+    Mtot = actuatorMass + link1Mass + actuatorMass + link2Mass + wheelMass
+
+    com2D = S / Mtot
+    return float(com2D[0]), float(com2D[1])
+
+def computeRobotCom(qHipLeft:  float, qKneeLeft: float, qHipRight: float, qKneeRight:float) -> np.ndarray:
+    """
+    Compute the full 3-D CoM [x, y, z] of:
+      – left leg+wheel (in its sagittal plane at +z/2)
+      – right leg+wheel (at -z/2)
+      – main body (assumed centered at origin)
+
+    Angles in radians. Returns metres.
+    """
+    # each leg's sagittal CoM
+    xL, yL = computeLegCom(qHipLeft,  qKneeLeft)
+    xR, yR = computeLegCom(qHipRight, qKneeRight)
+
+    # lift into 3D with ±z offsets
+    halfSep = legSeparation / 2.0
+    rLeft  = np.array([xL, yL, +halfSep])
+    rRight = np.array([xR, yR, -halfSep])
+
+    # main body COM at origin
+    rBody = np.array([0.0, 0.0, 0.0])
+
+    # masses
+    Mleg  = actuatorMass + link1Mass + actuatorMass + link2Mass + wheelMass
+    Mbody = mainBodyMass
+
+    # weighted sum & normalize
+    S    = Mbody * rBody + Mleg * rLeft + Mleg * rRight
+    Mtot = Mbody + 2.0 * Mleg
+    return S / Mtot
 
 def plotAndSaveLegData(serial, timeSteps, hipOutputAngles, hipCommandAngles, hipTorque, kneeOutputAngles, kneeCommandAngles, kneeTorque, T):
     # Ensure all lists have the same length
@@ -503,7 +596,6 @@ def plotAndSaveBalanceData(timeSteps, leftWheelOutputW, leftWheelCommandW, leftW
 
     # Close the plot
     plt.close()
-
 
 
 def find_f710():
